@@ -52,23 +52,6 @@ export interface ExpressStackProps {
   readonly stackProps?: StackProps;
 }
 
-export interface ExpressStackPropsOmitStage {
-  /**
-   * The parent of this stack, usually an `App` but could be any construct.
-   */
-  readonly scope: Construct;
-
-  /**
-   * The stack identifier which will be used to construct the final id as a combination of the wave, stage and stack id.
-   */
-  readonly id: string;
-
-  /**
-   * The stage that the stack belongs to.
-   */
-  readonly stackProps?: StackProps;
-}
-
 
 /**
  * A CDK Express Pipeline Stack that belongs to an ExpressStage

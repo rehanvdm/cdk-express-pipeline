@@ -1,4 +1,4 @@
-import { ExpressStack, ExpressStackPropsOmitStage } from './express-stack';
+import { ExpressStack } from './express-stack';
 import { ExpressWave } from './express-wave';
 
 export interface IExpressStage {
@@ -17,11 +17,6 @@ export interface IExpressStage {
    */
   stacks: ExpressStack[];
 
-  /**
-   * Add a stack to the stage
-   * @param stack The ExpressStack to add without the stage property
-   */
-  addStack(stack: ExpressStackPropsOmitStage): ExpressStack;
 }
 
 export interface ExpressStageProps {
@@ -58,13 +53,5 @@ export class ExpressStage implements IExpressStage {
     if (this.id.includes(this.wave.separator)) {
       throw new Error(`ExpressStage '${props.id}' cannot contain a '${this.wave.separator} ' (separator)`);
     }
-  }
-
-  public addStack(stack: ExpressStackPropsOmitStage) {
-    return new ExpressStack({
-      ...stack,
-      stage: this,
-    });
-    ;
   }
 }

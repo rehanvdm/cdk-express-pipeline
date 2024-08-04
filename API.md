@@ -1042,62 +1042,6 @@ Stack properties.
 
 ---
 
-### ExpressStackPropsOmitStage <a name="ExpressStackPropsOmitStage" id="cdk-express-pipeline.ExpressStackPropsOmitStage"></a>
-
-#### Initializer <a name="Initializer" id="cdk-express-pipeline.ExpressStackPropsOmitStage.Initializer"></a>
-
-```typescript
-import { ExpressStackPropsOmitStage } from 'cdk-express-pipeline'
-
-const expressStackPropsOmitStage: ExpressStackPropsOmitStage = { ... }
-```
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#cdk-express-pipeline.ExpressStackPropsOmitStage.property.id">id</a></code> | <code>string</code> | The stack identifier which will be used to construct the final id as a combination of the wave, stage and stack id. |
-| <code><a href="#cdk-express-pipeline.ExpressStackPropsOmitStage.property.scope">scope</a></code> | <code>constructs.Construct</code> | The parent of this stack, usually an `App` but could be any construct. |
-| <code><a href="#cdk-express-pipeline.ExpressStackPropsOmitStage.property.stackProps">stackProps</a></code> | <code>aws-cdk-lib.StackProps</code> | The stage that the stack belongs to. |
-
----
-
-##### `id`<sup>Required</sup> <a name="id" id="cdk-express-pipeline.ExpressStackPropsOmitStage.property.id"></a>
-
-```typescript
-public readonly id: string;
-```
-
-- *Type:* string
-
-The stack identifier which will be used to construct the final id as a combination of the wave, stage and stack id.
-
----
-
-##### `scope`<sup>Required</sup> <a name="scope" id="cdk-express-pipeline.ExpressStackPropsOmitStage.property.scope"></a>
-
-```typescript
-public readonly scope: Construct;
-```
-
-- *Type:* constructs.Construct
-
-The parent of this stack, usually an `App` but could be any construct.
-
----
-
-##### `stackProps`<sup>Optional</sup> <a name="stackProps" id="cdk-express-pipeline.ExpressStackPropsOmitStage.property.stackProps"></a>
-
-```typescript
-public readonly stackProps: StackProps;
-```
-
-- *Type:* aws-cdk-lib.StackProps
-
-The stage that the stack belongs to.
-
----
-
 ### ExpressStageProps <a name="ExpressStageProps" id="cdk-express-pipeline.ExpressStageProps"></a>
 
 #### Initializer <a name="Initializer" id="cdk-express-pipeline.ExpressStageProps.Initializer"></a>
@@ -1413,27 +1357,6 @@ new ExpressStage(props: ExpressStageProps)
 
 ---
 
-#### Methods <a name="Methods" id="Methods"></a>
-
-| **Name** | **Description** |
-| --- | --- |
-| <code><a href="#cdk-express-pipeline.ExpressStage.addStack">addStack</a></code> | Add a stack to the stage. |
-
----
-
-##### `addStack` <a name="addStack" id="cdk-express-pipeline.ExpressStage.addStack"></a>
-
-```typescript
-public addStack(stack: ExpressStackPropsOmitStage): ExpressStack
-```
-
-Add a stack to the stage.
-
-###### `stack`<sup>Required</sup> <a name="stack" id="cdk-express-pipeline.ExpressStage.addStack.parameter.stack"></a>
-
-- *Type:* <a href="#cdk-express-pipeline.ExpressStackPropsOmitStage">ExpressStackPropsOmitStage</a>
-
----
 
 
 #### Properties <a name="Properties" id="Properties"></a>
@@ -1841,29 +1764,6 @@ The stage that the stack belongs to.
 
 - *Implemented By:* <a href="#cdk-express-pipeline.ExpressStage">ExpressStage</a>, <a href="#cdk-express-pipeline.IExpressStage">IExpressStage</a>
 
-#### Methods <a name="Methods" id="Methods"></a>
-
-| **Name** | **Description** |
-| --- | --- |
-| <code><a href="#cdk-express-pipeline.IExpressStage.addStack">addStack</a></code> | Add a stack to the stage. |
-
----
-
-##### `addStack` <a name="addStack" id="cdk-express-pipeline.IExpressStage.addStack"></a>
-
-```typescript
-public addStack(stack: ExpressStackPropsOmitStage): ExpressStack
-```
-
-Add a stack to the stage.
-
-###### `stack`<sup>Required</sup> <a name="stack" id="cdk-express-pipeline.IExpressStage.addStack.parameter.stack"></a>
-
-- *Type:* <a href="#cdk-express-pipeline.ExpressStackPropsOmitStage">ExpressStackPropsOmitStage</a>
-
-The ExpressStack to add without the stage property.
-
----
 
 #### Properties <a name="Properties" id="Properties"></a>
 
