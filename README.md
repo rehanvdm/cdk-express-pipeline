@@ -187,8 +187,10 @@ ORDER OF DEPLOYMENT
 
 ```
 
+<br>
+
 <details>
-<summary>**2️⃣ Pipeline Definition Alternative - Stacks Nested in Stages:**</summary>
+<summary><b>2️⃣ Pipeline Definition Alternative - Stacks Nested in Stages:</b></summary>
 
 ```typescript
 const app = new App();
@@ -233,8 +235,10 @@ expressPipeline.synth([wave1, wave2]);
 
 </details>
 
+<br>
+
 <details>
-<summary>**3️⃣ Pipeline Definition Alternative - Extending all without nesting:**</summary>
+<summary><b>3️⃣ Pipeline Definition Alternative - Extending all without nesting:</b></summary>
 
 ```typescript
 const app = new App();
@@ -368,7 +372,7 @@ ORDER OF DEPLOYMENT
 ```
 
 <details>
-<summary>**2️⃣ Pipeline Definition Alternative - method builder:**</summary>
+<summary><b>2️⃣ Pipeline Definition Alternative - method builder:</b></summary>
 
 ```typescript
 const app = new App();
