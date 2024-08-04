@@ -41,6 +41,9 @@ Will create a dependency graph as follows:
 When used with `cdk deploy '**' --concurrency 10`, it will deploy all stacks in parallel, 10 at a time, where possible
 while still adhering to the dependency graph. Stacks will be deployed in the following order:
 
+<details>
+<summary>✨ Deployment order visualized ✨</summary>
+
 ![order_1.png](docs/_imgs/order_1.png)
 
 ![order_2.png](docs/_imgs/order_2.png)
@@ -50,6 +53,8 @@ while still adhering to the dependency graph. Stacks will be deployed in the fol
 ![order_4.png](docs/_imgs/order_4.png)
 
 ![order_5.png](docs/_imgs/order_5.png)
+
+</details>
 
 ## Selective Deployment
 
@@ -112,9 +117,11 @@ from cdk_express_pipelines import CdkExpressPipeline
 ## Usage
 
 The `ExpressStack` extends the `cdk.Stack` class and has a very similar signature, only taking an extra `stage`
-parameter. There ara multiple ways to build your pipeline, see the alternative expand sections.
+parameter. There ara multiple ways to build your pipeline, it involves creating the Pipeline, adding Waves, Stages and
+Stacks to your Stages and then calling `.synth()` on the Pipeline. See the alternative expand sections for other
+methods.
 
-Stack Definition:
+**Stack Definition:**
 
 ```typescript
   class StackA extends ExpressStack {
@@ -135,10 +142,10 @@ class StackC extends ExpressStack {
 }
 ```
 
-1️⃣ Pipeline Definition:
+**1️⃣ Pipeline Definition:**
 
 ```typescript
-    const app = new App();
+const app = new App();
 const expressPipeline = new CdkExpressPipeline();
 
 // === Wave 1 ===
@@ -161,8 +168,27 @@ expressPipeline.synth([
 ]);
 ```
 
+The stack deployment order will be printed to the console when running `cdk` commands:
+
+```plaintext
+ORDER OF DEPLOYMENT
+🌊 Waves  - Deployed sequentially
+🔲 Stages - Deployed in parallel, all stages within a wave are deployed at the same time
+📄 Stack  - Dependency driven, will be deployed after all its dependent stacks, denoted by ↳ below it, is deployed
+
+🌊 Wave1
+  🔲 Stage1
+    📄 StackA (Wave1_Stage1_StackA)
+    📄 StackB (Wave1_Stage1_StackB)
+        ↳ StackA
+🌊 Wave2
+  🔲 Stage1
+    📄 StackC (Wave2_Stage1_StackC)
+
+```
+
 <details>
-<summary> 2️⃣ Pipeline Definition Alternative - Stacks Nested in Stages:</summary>
+<summary>**2️⃣ Pipeline Definition Alternative - Stacks Nested in Stages:**</summary>
 
 ```typescript
 const app = new App();
@@ -208,10 +234,10 @@ expressPipeline.synth([wave1, wave2]);
 </details>
 
 <details>
-<summary>3️⃣ Pipeline Definition Alternative - Extending all without nesting:</summary>
+<summary>**3️⃣ Pipeline Definition Alternative - Extending all without nesting:**</summary>
 
 ```typescript
-    const app = new App();
+const app = new App();
 
 // --- Custom Wave Class ---
 class MyExpressWave extends ExpressWave {
@@ -264,10 +290,10 @@ The following features are not available when using the Legacy classes:
 - Stack ids are not changed and have to be unique across all stacks in the CDK app, whereas with the non-legacy
   classes, stack ids only have to be unique within a Wave.
 
-Stack Definition:
+**Stack Definition:**
 
 ```typescript
-  class StackA extends cdk.Stack {
+class StackA extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -285,7 +311,7 @@ class StackC extends cdk.Stack {
 }
 ```
 
-1️⃣ Pipeline Definition:
+**1️⃣ Pipeline Definition:**
 
 ```typescript
 const app = new App();
@@ -324,7 +350,25 @@ expressPipeline.synth([
 ]);
 ```
 
-2️⃣ Pipeline Definition Alternative - method builder:
+The stack deployment order will be printed to the console when running `cdk` commands:
+
+```plaintext
+ORDER OF DEPLOYMENT
+🌊 Waves  - Deployed sequentially
+🔲 Stages - Deployed in parallel, all stages within a wave are deployed at the same time
+📄 Stack  - Dependency driven
+
+🌊 Wave1
+  🔲 Stage1
+    📄 StackA
+    📄 StackB
+🌊 Wave2
+  🔲 Stage1
+    📄 StackC
+```
+
+<details>
+<summary>**2️⃣ Pipeline Definition Alternative - method builder:**</summary>
 
 ```typescript
 const app = new App();
@@ -349,3 +393,5 @@ expressPipeline.synth([
   wave2,
 ]);
 ```
+
+</details>
