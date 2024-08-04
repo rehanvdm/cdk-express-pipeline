@@ -42,20 +42,20 @@ export class ExpressWave implements IExpressWave {
   public separator: string;
   public stages: ExpressStage[] = [];
 
-  constructor(props: ExpressWaveProps) {
-    this.id = props.id;
-    this.separator = props.separator || CDK_EXPRESS_PIPELINE_DEFAULT_SEPARATOR;
+  /**
+   * Constructs a new instance of the ExpressWave class
+   * @param id
+   * @param separator Separator between the wave, stage and stack ids that are concatenated to form the stack id. Default: '_'.
+   */
+  constructor(id: string, separator: string = CDK_EXPRESS_PIPELINE_DEFAULT_SEPARATOR) {
+    this.id = id;
+    this.separator = separator;
     if (this.id.includes(this.separator)) {
       throw new Error(`ExpressWave '${this.id}' cannot contain a '${this.separator}' (separator)`);
     }
   }
 
   public addStage(id: string): ExpressStage {
-    return new ExpressStage({
-      id: id,
-      wave: this,
-      stacks: [],
-    });
-    ;
+    return new ExpressStage(id, this);
   }
 }

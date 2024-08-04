@@ -13,18 +13,47 @@ A CDK Express Pipeline Stack that belongs to an ExpressStage.
 ```typescript
 import { ExpressStack } from 'cdk-express-pipeline'
 
-new ExpressStack(props: ExpressStackProps)
+new ExpressStack(scope: Construct, id: string, stage: ExpressStage, stackProps?: StackProps)
 ```
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#cdk-express-pipeline.ExpressStack.Initializer.parameter.props">props</a></code> | <code><a href="#cdk-express-pipeline.ExpressStackProps">ExpressStackProps</a></code> | *No description.* |
+| <code><a href="#cdk-express-pipeline.ExpressStack.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | The parent of this stack, usually an `App` but could be any construct. |
+| <code><a href="#cdk-express-pipeline.ExpressStack.Initializer.parameter.id">id</a></code> | <code>string</code> | The stack identifier which will be used to construct the final id as a combination of the wave, stage and stack id. |
+| <code><a href="#cdk-express-pipeline.ExpressStack.Initializer.parameter.stage">stage</a></code> | <code><a href="#cdk-express-pipeline.ExpressStage">ExpressStage</a></code> | The stage that the stack belongs to. |
+| <code><a href="#cdk-express-pipeline.ExpressStack.Initializer.parameter.stackProps">stackProps</a></code> | <code>aws-cdk-lib.StackProps</code> | Stack properties. |
 
 ---
 
-##### `props`<sup>Required</sup> <a name="props" id="cdk-express-pipeline.ExpressStack.Initializer.parameter.props"></a>
+##### `scope`<sup>Required</sup> <a name="scope" id="cdk-express-pipeline.ExpressStack.Initializer.parameter.scope"></a>
 
-- *Type:* <a href="#cdk-express-pipeline.ExpressStackProps">ExpressStackProps</a>
+- *Type:* constructs.Construct
+
+The parent of this stack, usually an `App` but could be any construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="cdk-express-pipeline.ExpressStack.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+The stack identifier which will be used to construct the final id as a combination of the wave, stage and stack id.
+
+---
+
+##### `stage`<sup>Required</sup> <a name="stage" id="cdk-express-pipeline.ExpressStack.Initializer.parameter.stage"></a>
+
+- *Type:* <a href="#cdk-express-pipeline.ExpressStage">ExpressStage</a>
+
+The stage that the stack belongs to.
+
+---
+
+##### `stackProps`<sup>Optional</sup> <a name="stackProps" id="cdk-express-pipeline.ExpressStack.Initializer.parameter.stackProps"></a>
+
+- *Type:* aws-cdk-lib.StackProps
+
+Stack properties.
 
 ---
 
@@ -973,131 +1002,6 @@ The waves in the pipeline.
 
 ---
 
-### ExpressStackProps <a name="ExpressStackProps" id="cdk-express-pipeline.ExpressStackProps"></a>
-
-#### Initializer <a name="Initializer" id="cdk-express-pipeline.ExpressStackProps.Initializer"></a>
-
-```typescript
-import { ExpressStackProps } from 'cdk-express-pipeline'
-
-const expressStackProps: ExpressStackProps = { ... }
-```
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#cdk-express-pipeline.ExpressStackProps.property.id">id</a></code> | <code>string</code> | The stack identifier which will be used to construct the final id as a combination of the wave, stage and stack id. |
-| <code><a href="#cdk-express-pipeline.ExpressStackProps.property.scope">scope</a></code> | <code>constructs.Construct</code> | The parent of this stack, usually an `App` but could be any construct. |
-| <code><a href="#cdk-express-pipeline.ExpressStackProps.property.stage">stage</a></code> | <code><a href="#cdk-express-pipeline.ExpressStage">ExpressStage</a></code> | The stage that the stack belongs to. |
-| <code><a href="#cdk-express-pipeline.ExpressStackProps.property.stackProps">stackProps</a></code> | <code>aws-cdk-lib.StackProps</code> | Stack properties. |
-
----
-
-##### `id`<sup>Required</sup> <a name="id" id="cdk-express-pipeline.ExpressStackProps.property.id"></a>
-
-```typescript
-public readonly id: string;
-```
-
-- *Type:* string
-
-The stack identifier which will be used to construct the final id as a combination of the wave, stage and stack id.
-
----
-
-##### `scope`<sup>Required</sup> <a name="scope" id="cdk-express-pipeline.ExpressStackProps.property.scope"></a>
-
-```typescript
-public readonly scope: Construct;
-```
-
-- *Type:* constructs.Construct
-
-The parent of this stack, usually an `App` but could be any construct.
-
----
-
-##### `stage`<sup>Required</sup> <a name="stage" id="cdk-express-pipeline.ExpressStackProps.property.stage"></a>
-
-```typescript
-public readonly stage: ExpressStage;
-```
-
-- *Type:* <a href="#cdk-express-pipeline.ExpressStage">ExpressStage</a>
-
-The stage that the stack belongs to.
-
----
-
-##### `stackProps`<sup>Optional</sup> <a name="stackProps" id="cdk-express-pipeline.ExpressStackProps.property.stackProps"></a>
-
-```typescript
-public readonly stackProps: StackProps;
-```
-
-- *Type:* aws-cdk-lib.StackProps
-
-Stack properties.
-
----
-
-### ExpressStageProps <a name="ExpressStageProps" id="cdk-express-pipeline.ExpressStageProps"></a>
-
-#### Initializer <a name="Initializer" id="cdk-express-pipeline.ExpressStageProps.Initializer"></a>
-
-```typescript
-import { ExpressStageProps } from 'cdk-express-pipeline'
-
-const expressStageProps: ExpressStageProps = { ... }
-```
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#cdk-express-pipeline.ExpressStageProps.property.id">id</a></code> | <code>string</code> | The stage identifier. |
-| <code><a href="#cdk-express-pipeline.ExpressStageProps.property.wave">wave</a></code> | <code><a href="#cdk-express-pipeline.ExpressWave">ExpressWave</a></code> | The wave that the stage belongs to. |
-| <code><a href="#cdk-express-pipeline.ExpressStageProps.property.stacks">stacks</a></code> | <code><a href="#cdk-express-pipeline.ExpressStack">ExpressStack</a>[]</code> | The ExpressStacks in the stage. |
-
----
-
-##### `id`<sup>Required</sup> <a name="id" id="cdk-express-pipeline.ExpressStageProps.property.id"></a>
-
-```typescript
-public readonly id: string;
-```
-
-- *Type:* string
-
-The stage identifier.
-
----
-
-##### `wave`<sup>Required</sup> <a name="wave" id="cdk-express-pipeline.ExpressStageProps.property.wave"></a>
-
-```typescript
-public readonly wave: ExpressWave;
-```
-
-- *Type:* <a href="#cdk-express-pipeline.ExpressWave">ExpressWave</a>
-
-The wave that the stage belongs to.
-
----
-
-##### `stacks`<sup>Optional</sup> <a name="stacks" id="cdk-express-pipeline.ExpressStageProps.property.stacks"></a>
-
-```typescript
-public readonly stacks: ExpressStack[];
-```
-
-- *Type:* <a href="#cdk-express-pipeline.ExpressStack">ExpressStack</a>[]
-
-The ExpressStacks in the stage.
-
----
-
 ### ExpressWaveProps <a name="ExpressWaveProps" id="cdk-express-pipeline.ExpressWaveProps"></a>
 
 #### Initializer <a name="Initializer" id="cdk-express-pipeline.ExpressWaveProps.Initializer"></a>
@@ -1342,18 +1246,38 @@ A CDK Express Pipeline Stage that belongs to an ExpressWave.
 ```typescript
 import { ExpressStage } from 'cdk-express-pipeline'
 
-new ExpressStage(props: ExpressStageProps)
+new ExpressStage(id: string, wave: ExpressWave, stacks?: ExpressStack[])
 ```
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#cdk-express-pipeline.ExpressStage.Initializer.parameter.props">props</a></code> | <code><a href="#cdk-express-pipeline.ExpressStageProps">ExpressStageProps</a></code> | *No description.* |
+| <code><a href="#cdk-express-pipeline.ExpressStage.Initializer.parameter.id">id</a></code> | <code>string</code> | The stage identifier. |
+| <code><a href="#cdk-express-pipeline.ExpressStage.Initializer.parameter.wave">wave</a></code> | <code><a href="#cdk-express-pipeline.ExpressWave">ExpressWave</a></code> | The wave that the stage belongs to. |
+| <code><a href="#cdk-express-pipeline.ExpressStage.Initializer.parameter.stacks">stacks</a></code> | <code><a href="#cdk-express-pipeline.ExpressStack">ExpressStack</a>[]</code> | The ExpressStacks in the stage. |
 
 ---
 
-##### `props`<sup>Required</sup> <a name="props" id="cdk-express-pipeline.ExpressStage.Initializer.parameter.props"></a>
+##### `id`<sup>Required</sup> <a name="id" id="cdk-express-pipeline.ExpressStage.Initializer.parameter.id"></a>
 
-- *Type:* <a href="#cdk-express-pipeline.ExpressStageProps">ExpressStageProps</a>
+- *Type:* string
+
+The stage identifier.
+
+---
+
+##### `wave`<sup>Required</sup> <a name="wave" id="cdk-express-pipeline.ExpressStage.Initializer.parameter.wave"></a>
+
+- *Type:* <a href="#cdk-express-pipeline.ExpressWave">ExpressWave</a>
+
+The wave that the stage belongs to.
+
+---
+
+##### `stacks`<sup>Optional</sup> <a name="stacks" id="cdk-express-pipeline.ExpressStage.Initializer.parameter.stacks"></a>
+
+- *Type:* <a href="#cdk-express-pipeline.ExpressStack">ExpressStack</a>[]
+
+The ExpressStacks in the stage.
 
 ---
 
@@ -1505,18 +1429,31 @@ A CDK Express Pipeline Wave that contains ExpressStages.
 ```typescript
 import { ExpressWave } from 'cdk-express-pipeline'
 
-new ExpressWave(props: ExpressWaveProps)
+new ExpressWave(id: string, separator?: string)
 ```
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#cdk-express-pipeline.ExpressWave.Initializer.parameter.props">props</a></code> | <code><a href="#cdk-express-pipeline.ExpressWaveProps">ExpressWaveProps</a></code> | *No description.* |
+| <code><a href="#cdk-express-pipeline.ExpressWave.Initializer.parameter.id">id</a></code> | <code>string</code> | The wave identifier. |
+| <code><a href="#cdk-express-pipeline.ExpressWave.Initializer.parameter.separator">separator</a></code> | <code>string</code> | Separator between the wave, stage and stack ids that are concatenated to form the stack id. |
 
 ---
 
-##### `props`<sup>Required</sup> <a name="props" id="cdk-express-pipeline.ExpressWave.Initializer.parameter.props"></a>
+##### `id`<sup>Required</sup> <a name="id" id="cdk-express-pipeline.ExpressWave.Initializer.parameter.id"></a>
 
-- *Type:* <a href="#cdk-express-pipeline.ExpressWaveProps">ExpressWaveProps</a>
+- *Type:* string
+
+The wave identifier.
+
+---
+
+##### `separator`<sup>Optional</sup> <a name="separator" id="cdk-express-pipeline.ExpressWave.Initializer.parameter.separator"></a>
+
+- *Type:* string
+
+Separator between the wave, stage and stack ids that are concatenated to form the stack id.
+
+Default: '_'.
 
 ---
 

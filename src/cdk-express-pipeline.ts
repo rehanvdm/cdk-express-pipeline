@@ -33,10 +33,7 @@ export class CdkExpressPipeline {
    * @param id The wave identifier
    */
   public addWave(id: string): ExpressWave {
-    const wave = new ExpressWave({
-      id,
-      separator: this.separator,
-    });
+    const wave = new ExpressWave(id, this.separator);
     this.waves.push(wave);
     return wave;
   }

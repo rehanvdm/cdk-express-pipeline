@@ -19,23 +19,6 @@ export interface IExpressStage {
 
 }
 
-export interface ExpressStageProps {
-  /**
-   * The stage identifier
-   */
-  readonly id: string;
-
-  /**
-   * The wave that the stage belongs to
-   */
-  readonly wave: ExpressWave;
-
-  /**
-   * The ExpressStacks in the stage
-   */
-  readonly stacks?: ExpressStack[];
-}
-
 
 /**
  * A CDK Express Pipeline Stage that belongs to an ExpressWave
@@ -45,13 +28,19 @@ export class ExpressStage implements IExpressStage {
   public wave: ExpressWave;
   public stacks: ExpressStack[] = [];
 
-  constructor(props: ExpressStageProps) {
-    this.id = props.id;
-    this.wave = props.wave;
+  /**
+   * Constructs a new instance of the ExpressStage class
+   * @param id The stage identifier
+   * @param wave The wave that the stage belongs to
+   * @param stacks The ExpressStacks in the stage
+   */
+  constructor(id: string, wave: ExpressWave, stacks: ExpressStack[] = []) {
+    this.id = id;
+    this.wave = wave;
     this.wave.stages.push(this);
-    this.stacks = props.stacks || [];
+    this.stacks = stacks;
     if (this.id.includes(this.wave.separator)) {
-      throw new Error(`ExpressStage '${props.id}' cannot contain a '${this.wave.separator} ' (separator)`);
+      throw new Error(`ExpressStage '${id}' cannot contain a '${this.wave.separator} ' (separator)`);
     }
   }
 }

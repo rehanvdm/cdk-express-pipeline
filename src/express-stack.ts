@@ -30,29 +30,6 @@ export interface IExpressStack {
   addExpressDependency(target: ExpressStack, reason?: string): void;
 }
 
-export interface ExpressStackProps {
-  /**
-   * The parent of this stack, usually an `App` but could be any construct.
-   */
-  readonly scope: Construct;
-
-  /**
-   * The stack identifier which will be used to construct the final id as a combination of the wave, stage and stack id.
-   */
-  readonly id: string;
-
-  /**
-   * The stage that the stack belongs to.
-   */
-  readonly stage: ExpressStage;
-
-  /**
-   * Stack properties
-   */
-  readonly stackProps?: StackProps;
-}
-
-
 /**
  * A CDK Express Pipeline Stack that belongs to an ExpressStage
  */
@@ -61,27 +38,33 @@ export class ExpressStack extends Stack implements IExpressStack {
   public stage: ExpressStage;
   private expressStackDependencies: ExpressStack[] = [];
 
-  constructor(props: ExpressStackProps) {
+  /**
+   * Constructs a new instance of the ExpressStack class
+   * @param scope The parent of this stack, usually an `App` but could be any construct.
+   * @param id The stack identifier which will be used to construct the final id as a combination of the wave, stage and stack id.
+   * @param stage The stage that the stack belongs to.
+   * @param stackProps Stack properties.
+   */
+  constructor(scope: Construct, id: string, stage: ExpressStage, stackProps?: StackProps) {
 
     let stackId: string;
-    let stackProps: StackProps | undefined;
 
     // Create a composite key to address waves, stages and stacks
-    if (props.id.includes(props.stage.wave.separator)) {
-      throw new Error(`ExpressStack '${props.id}' cannot contain a '${props.stage.wave.separator}' (separator)`);
+    if (id.includes(stage.wave.separator)) {
+      throw new Error(`ExpressStack '${id}' cannot contain a '${stage.wave.separator}' (separator)`);
     }
-    stackId = [props.stage.wave.id, props.stage.id, props.id].join(props.stage.wave.separator);
+    stackId = [stage.wave.id, stage.id, id].join(stage.wave.separator);
 
     // Use the id as the stack name if the stack name is not provided
-    stackProps = !props.stackProps?.stackName ? {
-      ...props.stackProps,
-      stackName: props.id,
-    } : { ...props.stackProps };
+    stackProps = !stackProps?.stackName ? {
+      ...stackProps,
+      stackName: id,
+    } : { ...stackProps };
 
-    super(props.scope, stackId, stackProps);
+    super(scope, stackId, stackProps);
 
     this.id = stackId;
-    this.stage = props.stage;
+    this.stage = stage;
     this.stage.stacks.push(this);
   }
 

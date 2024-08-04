@@ -117,12 +117,9 @@ parameter. There ara multiple ways to build your pipeline, see the alternative e
 Stack Definition:
 
 ```typescript
-class StackA extends ExpressStack {
-  constructor(props: ExpressStackProps) {
-    super({
-      ...props,
-      id: props.id,
-    });
+  class StackA extends ExpressStack {
+  constructor(scope: Construct, id: string, stage: ExpressStage, stackProps?: StackProps) {
+    super(scope, id, stage, stackProps);
 
     new cdk.aws_sns.Topic(this, 'MyTopic');
     // ... more resources
@@ -141,7 +138,7 @@ class StackC extends ExpressStack {
 1️⃣ Pipeline Definition:
 
 ```typescript
- const app = new App();
+    const app = new App();
 const expressPipeline = new CdkExpressPipeline();
 
 // === Wave 1 ===
@@ -149,28 +146,15 @@ const wave1 = expressPipeline.addWave('Wave1');
 // --- Wave 1, Stage 1---
 const wave1Stage1 = wave1.addStage('Stage1');
 
-const stackA = new StackA({
-  scope: app,
-  id: 'StackA',
-  stage: wave1Stage1,
-});
-const stackB = new StackB({
-  scope: app,
-  id: 'StackB',
-  stage: wave1Stage1,
-});
+const stackA = new StackA(app, 'StackA', wave1Stage1);
+const stackB = new StackB(app, 'StackB', wave1Stage1);
 stackB.addExpressDependency(stackA);
 
 // === Wave 2 ===
 const wave2 = expressPipeline.addWave('Wave2');
 // --- Wave 2, Stage 1---
 const wave2Stage1 = wave2.addStage('Stage1');
-new StackC({
-  scope: app,
-  id: 'StackC',
-  stage: wave2Stage1,
-});
-
+new StackC(app, 'StackC', wave2Stage1);
 expressPipeline.synth([
   wave1,
   wave2,
@@ -185,49 +169,31 @@ const app = new App();
 
 class Wave1 extends ExpressWave {
   constructor() {
-    super({ id: 'Wave1' });
+    super('Wave1');
   }
 }
 
 class Wave1Stage1 extends ExpressStage {
   constructor(wave1: Wave1) {
-    super({
-      id: 'Stage1',
-      wave: wave1,
-    });
+    super('Stage1', wave1);
 
-    const stackA = new StackA({
-      scope: app,
-      id: 'StackA',
-      stage: this,
-    });
-    const stackB = new StackB({
-      scope: app,
-      id: 'StackB',
-      stage: this,
-    });
+    const stackA = new StackA(app, 'StackA', this);
+    const stackB = new StackB(app, 'StackB', this);
     stackB.addExpressDependency(stackA);
   }
 }
 
 class Wave2 extends ExpressWave {
   constructor() {
-    super({ id: 'Wave2' });
+    super('Wave2');
   }
 }
 
 class Wave2Stage1 extends ExpressStage {
   constructor(wave2: Wave2) {
-    super({
-      id: 'Stage1',
-      wave: wave2,
-    });
+    super('Stage1', wave2);
 
-    new StackC({
-      scope: app,
-      id: 'StackC',
-      stage: this,
-    });
+    new StackC(app, 'StackC', this);
   }
 }
 
@@ -245,59 +211,36 @@ expressPipeline.synth([wave1, wave2]);
 <summary>3️⃣ Pipeline Definition Alternative - Extending all without nesting:</summary>
 
 ```typescript
-const app = new App();
+    const app = new App();
 
 // --- Custom Wave Class ---
 class MyExpressWave extends ExpressWave {
   constructor(props: ExpressWaveProps) {
-    super({
-      ...props,
-      id: 'MY' + props.id,
-    });
+    super('My' + props.id);
   }
 }
 
 // --- Custom Stage Class ---
-interface MyExpressStageProps extends ExpressStageProps {
-  wave: MyExpressWave;
-  stacks?: MyExpressStack[];
-}
-
 class MyExpressStage extends ExpressStage {
-  constructor(props: MyExpressStageProps) {
-    super({
-      ...props,
-      id: 'MY' + props.id,
-    });
+  constructor(id: string, wave: MyExpressWave, stacks?: MyExpressStack[]) {
+    super('My' + id, wave, stacks);
   }
 }
 
 // --- Custom Stack Class ---
-interface MyExpressStackProps extends ExpressStackProps {
-  stage: MyExpressStage;
-}
-
 class MyExpressStack extends ExpressStack {
-  constructor(props: MyExpressStackProps) {
-    super({
-      ...props,
-      id: 'MY' + props.id,
-    });
+  constructor(scope: Construct, id: string, stage: MyExpressStage, stackProps?: StackProps) {
+    super(scope, 'My' + id, stage, stackProps);
   }
 }
 
 const expressPipeline = new CdkExpressPipeline();
 const wave1 = new MyExpressWave({ id: 'Wave1' });
-const wave1Stage1 = new MyExpressStage({
-  id: 'Stage1',
-  wave: wave1,
-});
-const stackA = new MyExpressStack({
-  scope: app,
-  id: 'stack-a',
-  stage: wave1Stage1,
-});
+const wave1Stage1 = new MyExpressStage('Stage1', wave1);
+const stackA = new MyExpressStack(app, 'StackA', wave1Stage1);
 expressPipeline.synth([wave1]);
+
+expect(stackA.id).toBe('MyWave1_MyStage1_MyStackA');
 ```
 
 </details>
