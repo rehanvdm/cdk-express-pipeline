@@ -61,10 +61,10 @@ following stack IDs:
 Wave1_Stage1_StackA
 Wave1_Stage1_StackB
 Wave1_Stage1_StackC
-Wave1_Stage2_StackA
+Wave1_Stage2_StackD
 
-Wave2_Stage1_StackA
-Wave2_Stage1_StackB
+Wave2_Stage1_StackE
+Wave2_Stage1_StackF
 ```
 
 It makes targeted deployments easy:
