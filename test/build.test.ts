@@ -78,6 +78,7 @@ describe('CdkExpressPipelineLegacy', () => {
         ],
       },
     ]);
+    app.synth();
 
     // Check that the first stack in each wave depends on each other
     const wave2Stage1StackADeps = wave2Stage1StackA.dependencies.map((dependent) => dependent.stackId);
@@ -191,6 +192,7 @@ describe('CdkExpressPipeline', () => {
     // expressPipeline.waves.push(wave1);
     // expressPipeline.waves.push(wave2);
     expressPipeline.synth(expressPipeline.waves);
+    app.synth();
 
     // Check that the first stack in each wave depends on each other
     const wave2Stage1StackIDeps = wave2Stage1StackH.expressDependencies().map((dependent) => dependent.stackId);
@@ -361,32 +363,6 @@ describe('Test build arguments', () => {
       'Incorrect Stack Dependency. Stack Wave2_Stage1_StackB in [Wave2 & Stage1] ' +
       'can not depend on Wave1_Stage1_StackA in Stage [Wave1 & Stage1]. Stacks can only ' +
       'depend on other stacks within the same [Wave & Stage].');
-  });
-
-  test('Negative - Calling .addDependency on ExpressStack', () => {
-
-    const app = new App();
-    const expressPipeline = new CdkExpressPipeline();
-    const wave1 = expressPipeline.addWave('Wave1');
-    const wave1Stage1 = wave1.addStage('Stage1');
-    const wave1Stage1StackA = new ExpressStack(app, 'StackA', wave1Stage1);
-    const wave1Stage1StackB = new ExpressStack(app, 'StackB', wave1Stage1);
-
-
-    expect(() => wave1Stage1StackB.addDependency(wave1Stage1StackA)).toThrowError(
-      'Use `addExpressDependency` instead of `addDependency` to add to an `ExpressStack` dependency.');
-  });
-
-  test('Negative - Calling .dependency on ExpressStack', () => {
-
-    const app = new App();
-    const expressPipeline = new CdkExpressPipeline();
-    const wave1 = expressPipeline.addWave('Wave1');
-    const wave1Stage1 = wave1.addStage('Stage1');
-    const wave1Stage1StackA = new ExpressStack(app, 'StackA', wave1Stage1);
-
-    expect(() => wave1Stage1StackA.dependencies).toThrowError(
-      'Use `expressDependencies()` instead of `dependencies` to get the dependencies of an `ExpressStack`.');
   });
 
 });

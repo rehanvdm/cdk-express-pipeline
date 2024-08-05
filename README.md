@@ -1,4 +1,7 @@
-# CDK Express Pipelines
+# CDK Express Pipeline
+
+[![npm version](https://badge.fury.io/js/cdk-express-pipeline.svg)](https://badge.fury.io/js/cdk-express-pipeline)
+[![PyPI version](https://badge.fury.io/py/cdk-express-pipeline.svg)](https://badge.fury.io/py/cdk-express-pipeline)
 
 ## Introduction
 

@@ -73,7 +73,8 @@ export class ExpressStack extends Stack implements IExpressStack {
    * @deprecated Use `expressDependencies()` instead of `dependencies` to get the dependencies of an `ExpressStack`.
    */
   get dependencies(): Stack[] {
-    throw new Error('Use `expressDependencies()` instead of `dependencies` to get the dependencies of an `ExpressStack`.');
+    // Can not throw an error here as the CDK Synthesizer will call this method to get the dependencies
+    // throw new Error('Use `expressDependencies()` instead of `dependencies` to get the dependencies of an `ExpressStack`.');
     return super.dependencies; //Redundant but specify to make TS & ESLint happy
   }
 
@@ -84,7 +85,8 @@ export class ExpressStack extends Stack implements IExpressStack {
    * @param reason
    */
   addDependency(target: Stack, reason?: string) {
-    throw new Error('Use `addExpressDependency` instead of `addDependency` to add to an `ExpressStack` dependency.');
+    // Can not throw an error here as the CDK Synthesizer will call this method to get the dependencies
+    // throw new Error('Use `addExpressDependency` instead of `addDependency` to add to an `ExpressStack` dependency.');
     super.addDependency(target, reason); //Redundant but specify to make TS & ESLint happy
   }
 
