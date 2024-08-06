@@ -2,6 +2,7 @@ import { awscdk, javascript } from 'projen';
 import { ArrowParens, TrailingComma } from 'projen/lib/javascript';
 
 const project = new awscdk.AwsCdkConstructLibrary({
+  majorVersion: 1,
   author: 'rehanvdm',
   authorAddress: 'rehan.vdm4+github@gmail.com',
   cdkVersion: '2.133.0',
