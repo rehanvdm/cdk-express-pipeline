@@ -22,8 +22,9 @@ error JSII5004: "cdk-express-pipeline.ExpressStack#dependencies" changes the pro
 "array<cdk-express-pipeline.ExpressStack>" when overriding aws-cdk-lib.Stack. Change it to "array<aws-cdk-lib.Stack>"
 ```
 
-The alternative is to leave `.dependencies` signature as is, override it and throw an error if it's used on the
-instantiated class. The JS Doc marks it as deprecated and suggests to use `.expressDependencies()` instead.
+The alternative is to leave `.dependencies` signature as is and mark it is as deprecated. The JS Doc marks it as
+deprecated and suggests to use `.expressDependencies()` instead. We can not throw an error in this method as it is
+used by the default Synthesizer
 
 The same goes for `.addDependency(...)`, where `.addExpressDependency(...)` should be used in its place.
 

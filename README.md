@@ -3,6 +3,28 @@
 [![npm version](https://badge.fury.io/js/cdk-express-pipeline.svg)](https://badge.fury.io/js/cdk-express-pipeline)
 [![PyPI version](https://badge.fury.io/py/cdk-express-pipeline.svg)](https://badge.fury.io/py/cdk-express-pipeline)
 
+<!-- TOC -->
+
+* [Introduction](#introduction)
+* [Features](#features)
+* [How does it work?](#how-does-it-work)
+* [Deployment Order](#deployment-order)
+* [Selective Deployment](#selective-deployment)
+* [Installation](#installation)
+    * [TS](#ts)
+    * [Python](#python)
+* [Usage](#usage)
+* [Legacy Usage](#legacy-usage)
+* [Builds System Templates/Examples](#builds-system-templatesexamples)
+    * [Local](#local)
+    * [GitHub Workflows](#github-workflows)
+    * [GitLab](#gitlab)
+    * [Any other build system](#any-other-build-system)
+* [Demo Projects](#demo-projects)
+* [Docs](#docs)
+
+<!-- TOC -->
+
 ## Introduction
 
 CDK Express Pipelines is a library that allows you to define your pipelines in CDK native method. It is built on
@@ -14,7 +36,7 @@ that is build system agnostic.
 
 - Works on any system for example your local machine, GitHub, GitLab, etc.
 - Uses the `cdk deploy` command to deploy your stacks
-- Make use of concurrent/parallel Stack deployments
+- It's fast. Make use of concurrent/parallel Stack deployments
 - Stages and Waves are plain classes, not constructs, they do not change nested Construct IDs (like CDK Pipelines)
 - Supports TS and Python CDK
 
@@ -402,3 +424,295 @@ expressPipeline.synth([
 ```
 
 </details>
+
+## Builds System Templates/Examples
+
+### Local
+
+These examples all assumes a project created with the default structure of the CDK CLI
+command `cdk init app --language typescript`.
+
+These example are taken from the demo TS project: https://github.com/rehanvdm/cdk-express-pipeline-demo-ts
+
+**Diff commands**
+
+```bash
+# Diffs all stacks
+cdk diff '**' --profile YOUR_PROFILE
+# Diffs only specific stacks in a Wave
+cdk diff 'Wave1_*' --profile YOUR_PROFILE --exclusively
+# Diffs only specific stacks of a Stage in a Wave
+cdk diff 'Wave1_Stage1_*' --profile YOUR_PROFILE --exclusively
+# Diffs only a specific stack
+cdk diff 'Wave1_Stage1_StackA' --profile YOUR_PROFILE --exclusively
+```
+
+**Deploy commands**
+
+```bash
+# Deploys all stacks in correct order
+cdk deploy '**' --profile YOUR_PROFILE --concurrency 10 --require-approval never
+# Deploys only specific stacks in a Wave in correct order
+cdk deploy 'Wave1_*' --profile YOUR_PROFILE --exclusively --concurrency 10 --require-approval never
+# Deploys only specific stacks of a Stage in a Wave in correct order
+cdk deploy 'Wave1_Stage1_*' --profile YOUR_PROFILE --exclusively --concurrency 10 --require-approval never
+# Deploys only a specific stack
+cdk deploy 'Wave1_Stage1_StackA' --profile YOUR_PROFILE --exclusively --concurrency 10 --require-approval never
+```
+
+### GitHub Workflows
+
+These examples all assumes a project created with the default structure of the CDK CLI
+command `cdk init app --language typescript`.
+
+These example are taken from the demo TS project: https://github.com/rehanvdm/cdk-express-pipeline-demo-ts
+
+<details>
+<summary>.github/workflows/diff.yml</summary>
+
+Does a build and CDK Diff on PR open and push, the `cdk diff` output can be viewed in the action run logs.
+
+```yaml
+name: Diff
+on:
+  pull_request:
+    types: [ opened, synchronize ]
+  workflow_dispatch: { }
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  deploy:
+    name: CDK Diff and Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install ci
+
+      # TODO: Alternatively use an AWS IAM user and set the credentials in GitHub Secrets (less secure than GH OIDC below)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: # TODO: Your role to assume
+          aws-region: # TODO: your region
+
+      - name: CDK diff
+        run: npm run cdk -- diff '**'
+```
+
+Produces the following output in the GitHub Action logs:
+
+![diff.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/action_logs/diff.png)
+
+</details>
+
+<details>
+<summary>.github/workflows/deploy.yml</summary>
+
+Does a build, CDK Diff and Deploy when a push happens on the `main` branch.
+
+```yaml
+name: Deploy
+on:
+  push:
+    branches:
+      - main
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  deploy:
+    name: CDK Diff and Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install ci
+
+      # TODO: Alternatively use an AWS IAM user and set the credentials in GitHub Secrets (less secure than GH OIDC below)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: # TODO: Your role to assume
+          aws-region: # TODO: your region
+
+      - name: CDK diff
+        run: npm run cdk -- diff '**'
+
+      - name: CDK deploy
+        run: npm run cdk -- deploy '**' --require-approval never --concurrency 10
+```
+
+Produces the following output in the GitHub Action logs:
+
+![diff.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/action_logs/deploy.png)
+
+</details>
+
+<details>
+<summary>.github/workflows/deploy-advance.yml</summary>
+
+The `synth` job builds the CDK app and saves the cloud assembly to the `./cloud_assembly_output` directory. The whole
+repo with installed NPM packages and the cloud assembly is then cached. This job of the pipeline does not have access
+to any AWS Secrets, the installing of packages and building is decoupled from the deployment improving security.
+
+The `wave1` and `wave2` jobs fetches the cloud assembly from the cache and then does a CDK Diff and Deploy on only their
+stacks. The `wave1` job targets all the stacks that start with `Wave1_` and the `wave2` job targets all the stacks that
+start with `Wave2_`. It is important to add the `--exclusively` flag to only focus on the specified stacks and not its
+dependencies.
+
+```yaml
+name: Deploy Advance
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: { } # While testing only
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  synth:
+    name: Build and CDK Synth
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install ci
+
+      - name: CDK Synth
+        run: npm run cdk -- synth --output ./cloud_assembly_output
+
+      - name: Cache CDK Assets
+        uses: actions/cache/save@v4
+        with:
+          path: ./
+          key: "cdk-assets-${{ github.sha }}"
+
+  wave1:
+    name: Wave 1
+    needs:
+      - synth
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+      id-token: write
+    steps:
+      - name: Fetch CDK Assets
+        uses: actions/cache/restore@v4
+        with:
+          path: ./
+          key: "cdk-assets-${{ github.sha }}"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role
+          aws-region: eu-west-1
+
+      - name: CDK diff
+        run: npm run cdk -- diff 'Wave1_*' --exclusively --app ./cloud_assembly_output
+
+      - name: CDK deploy
+        run: npm run cdk -- deploy 'Wave1_*' --require-approval never --concurrency 10 --exclusively --app ./cloud_assembly_output
+
+  # Manual approval
+
+  wave2:
+    name: Wave 2
+    needs:
+      - wave1
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+      id-token: write
+    steps:
+      - name: Fetch CDK Assets
+        uses: actions/cache/restore@v4
+        with:
+          path: ./
+          key: "cdk-assets-${{ github.sha }}"
+
+      # TODO: Alternatively use an AWS IAM user and set the credentials in GitHub Secrets (less secure than GH OIDC below)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: # TODO: Your role to assume
+          aws-region: # TODO: your region
+
+      - name: CDK diff
+        run: npm run cdk -- diff 'Wave2_*' --exclusively --app ./cloud_assembly_output
+
+      - name: CDK deploy
+        run: npm run cdk -- deploy 'Wave2_*' --require-approval never --concurrency 10 --exclusively --app ./cloud_assembly_output
+```
+
+Produces the following output in the GitHub Action logs:
+
+![deploy_adv.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/action_logs/deploy_adv.png)
+
+![deploy_adv_1.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/action_logs/deploy_adv_1.png)
+
+</details>
+
+### GitLab
+
+TODO...
+
+### Any other build system
+
+...
+
+## Demo Projects
+
+- [CDK Express Pipeline Demo TS](https://github.com/rehanvdm/cdk-express-pipeline-demo-ts)
+- [CDK Express Pipeline Demo Python](https://github.com/rehanvdm/cdk-express-pipeline-demo-python)
+
+## Docs
+
+- [FAQ](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/FAQ.md)
+- [Projen Sacrifices](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/Projen%20Sacrifices.md)
+- [API](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/API.md)
