@@ -32,6 +32,10 @@ top of the [AWS CDK](https://aws.amazon.com/cdk/) and is an alternative
 to [AWS CDK Pipelines](https://aws.amazon.com/cdk/pipelines/)
 that is build system agnostic.
 
+## Sponsors
+
+[<img src="https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/sponsors/datachef.png" alt="DataChef">](https://links.datachef.co/cdk-express-pipeline)
+
 ## Features
 
 - Works on any system for example your local machine, GitHub, GitLab, etc.
