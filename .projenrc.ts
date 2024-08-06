@@ -50,7 +50,6 @@ const project = new awscdk.AwsCdkConstructLibrary({
       moduleFileExtensions: ['ts', 'tsx', 'js', 'mjs', 'cjs', 'jsx', 'json', 'node'], // https://jestjs.io/docs/configuration#modulefileextensions-arraystring
     },
   },
-  npmProvenance: false, //TODO: Remove when public
 });
 project.package.addEngine('node', '~20.*');
 project.package.addEngine('npm', '~10.*');
