@@ -142,7 +142,7 @@ from cdk_express_pipelines import CdkExpressPipeline
 ## Usage
 
 The `ExpressStack` extends the `cdk.Stack` class and has a very similar signature, only taking an extra `stage`
-parameter. There ara multiple ways to build your pipeline, it involves creating the Pipeline, adding Waves, Stages and
+parameter. There are multiple ways to build your pipeline, it involves creating the Pipeline, adding Waves, Stages and
 Stacks to your Stages and then calling `.synth()` on the Pipeline. See the alternative expand sections for other
 methods.
 
@@ -310,7 +310,7 @@ stick to the CDK `Stack` class.
 
 The following features are not available when using the Legacy classes:
 
-- Enforcing Wave, Stage and Stack names do not include the `seperator` character.
+- Enforcing Wave, Stage and Stack names do not include the `separator` character.
 - Enforcing that a Stack in Stage 1 can not depend on a Stack in Stage 2.
 - Printing stack dependencies within a Stage. Since we do not know what stage a stack belongs to, it's not possible to
   print the dependencies of stacks of only that stage and not others.
@@ -429,7 +429,7 @@ expressPipeline.synth([
 
 ### Local
 
-These examples all assumes a project created with the default structure of the CDK CLI
+These examples all assume a project created with the default structure of the CDK CLI
 command `cdk init app --language typescript`.
 
 These example are taken from the demo TS project: https://github.com/rehanvdm/cdk-express-pipeline-demo-ts
@@ -462,7 +462,7 @@ cdk deploy 'Wave1_Stage1_StackA' --profile YOUR_PROFILE --exclusively --concurre
 
 ### GitHub Workflows
 
-These examples all assumes a project created with the default structure of the CDK CLI
+These examples all assume a project created with the default structure of the CDK CLI
 command `cdk init app --language typescript`.
 
 These example are taken from the demo TS project: https://github.com/rehanvdm/cdk-express-pipeline-demo-ts
