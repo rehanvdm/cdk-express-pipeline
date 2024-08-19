@@ -5,6 +5,9 @@
     "type": "git",
     "url": "https://github.com/rehanvdm/cdk-express-pipeline.git"
   },
+  "bin": {
+    "cdk-express-pipeline": "lib/cli/index.js"
+  },
   "scripts": {
     "build": "npx projen build",
     "bump": "npx projen bump",
@@ -38,15 +41,22 @@
     "organization": false
   },
   "devDependencies": {
+    "@aws-sdk/client-cloudformation": "^3.629.0",
+    "@aws-sdk/client-iam": "^3.629.0",
+    "@aws-sdk/client-s3": "^3.629.0",
+    "@aws-sdk/client-sts": "^3.629.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^18",
     "@typescript-eslint/eslint-plugin": "^7",
     "@typescript-eslint/parser": "^7",
     "aws-cdk-lib": "2.133.0",
+    "chalk": "4",
+    "commander": "^12.1.0",
     "constructs": "10.0.5",
     "eslint": "^8",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.1",
+    "execa": "^5.0.0",
     "husky": "^9.0.11",
     "jest": "^29.7.0",
     "jest-junit": "^15",
@@ -59,7 +69,8 @@
     "standard-version": "^9",
     "ts-jest": "^29.1.5",
     "ts-node": "^10.9.2",
-    "typescript": "~5.3.0"
+    "typescript": "~5.3.0",
+    "yaml": "1.10.2"
   },
   "peerDependencies": {
     "aws-cdk-lib": "^2.133.0",

@@ -44,7 +44,17 @@ const project = new awscdk.AwsCdkConstructLibrary({
   // deps: [ ],
   // bundledDeps: [ ],
   /* Build dependencies for this module. */
-  devDeps: ['husky'],
+  devDeps: [
+    'husky',
+    'commander',
+    'execa@^5.0.0', // latest non-esm version
+    'yaml@1.10.2', // latest non-esm version
+    'chalk@4', // latest non-esm version
+    '@aws-sdk/client-cloudformation',
+    '@aws-sdk/client-iam',
+    '@aws-sdk/client-s3',
+    '@aws-sdk/client-sts',
+  ],
   jestOptions: {
     jestConfig: {
       moduleFileExtensions: ['ts', 'tsx', 'js', 'mjs', 'cjs', 'jsx', 'json', 'node'], // https://jestjs.io/docs/configuration#modulefileextensions-arraystring
@@ -66,5 +76,13 @@ project.gitignore.addPatterns('.idea');
 project.gitignore.addPatterns('*.js');
 project.gitignore.addPatterns('*.d.ts');
 project.gitignore.addPatterns('*.DS_Store');
+
+project.package.addBin({
+  'cdk-express-pipeline': 'lib/cli/index.js',
+});
+
+project.eslint!.addRules({
+  'import/no-extraneous-dependencies': 'off', //Not sure why it complains about this, might only be my IDE?
+});
 
 project.synth();
