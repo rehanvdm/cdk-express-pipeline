@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { deploy } from './deploy';
+import { Logger, LogLevel } from './logger';
 import { getManifestStackArtifacts } from './manifest';
 import { rollBack, saveCurrentCfnTemplates } from './rollback';
 import { synth } from './synth';
@@ -12,9 +13,16 @@ async function main() {
     .command('deploy <pattern> [extraArgs...]')
     .description('Deploy command with pattern and extra arguments')
     .action(async (pattern: string, extraArgs: string[]) => {
+      // const logger = Logger.init(LogLevel.TRACE);
+      // const logger = Logger.init(LogLevel.DEBUG);
+      const logger = Logger.init(LogLevel.DEFAULT);
+
+      logger.debug('pattern: ', pattern);
+      logger.debug('extraArgs: ', extraArgs);
+
       let rawArgs = extraArgs.join(' ');
       if (rawArgs.includes('--all')) {
-        pattern = '"**"';
+        pattern = '**';
       }
 
       const argsOriginal = extractOriginalArgs(pattern, rawArgs);
@@ -33,12 +41,20 @@ async function main() {
         argsOriginal.raw += ' --progress events';
       }
 
-
       let args = await synth(argsOriginal);
+      logger.debug('args: ', args);
+
       const stackArtifacts = getManifestStackArtifacts(args);
+      logger.debug('stackArtifacts: ', stackArtifacts);
+
       const rollbackStackTemplates = await saveCurrentCfnTemplates(args, stackArtifacts);
-      const deployedStackArtifacts = await deploy(args, stackArtifacts);
-      await rollBack(deployedStackArtifacts, rollbackStackTemplates, args);
+      logger.debug('rollbackStackTemplates: ', rollbackStackTemplates);
+
+      const deployedStackArtifacts = await deploy(args, stackArtifacts, rollbackStackTemplates);
+      logger.debug('deployedStackArtifacts: ', deployedStackArtifacts);
+
+      const stacksRolledBackStatus = await rollBack(deployedStackArtifacts, rollbackStackTemplates, args);
+      logger.debug('stacksRolledBackStatus:', JSON.stringify(stacksRolledBackStatus, null, 2));
     });
 
   program.parse(process.argv);

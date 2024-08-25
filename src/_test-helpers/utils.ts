@@ -1,5 +1,11 @@
-import { ManifestArtifactNoId } from '../../src/cli/manifest';
+import { ManifestArtifactNoId } from '../cli/manifest';
 
+/**
+ * The TS Root directory is /src so we can not place pure TS files in ./test/
+ * Not going to fight Projen now, if you are reading this, feel free to change it
+ */
+
+/**  @internal */
 export function getMockStack(stackId: string, stackName: string): { [key: string]: ManifestArtifactNoId } {
   return {
     [stackId]: {
@@ -27,3 +33,4 @@ export function getMockStack(stackId: string, stackName: string): { [key: string
     },
   };
 }
+

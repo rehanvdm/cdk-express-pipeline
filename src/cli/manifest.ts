@@ -106,7 +106,6 @@ export function getManifestStackArtifactProperties(manifestStackArtifact: Manife
     region: manifestStackArtifact.environment.split('/')[3],
     assumeRole: manifestStackArtifact.properties.assumeRoleArn.replace('${AWS::Partition}', 'aws'),
   };
-  console.log('StackArtifactProperties:', ret);
   return ret;
 }
 

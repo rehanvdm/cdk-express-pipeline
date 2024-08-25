@@ -97,3 +97,11 @@ export async function assumeRoleAndGetCredentials(region: string, profile: strin
   };
 }
 
+/**
+ * Returns the PATH env variable prepended by the local node_modules/.bin directory. This is useful for running packages installed locally
+ * before global packages.
+ */
+export function etLocalPackagesPreferredPath() {
+  let pathEnvSeparator = process.platform === 'win32' ? ';' : ':';
+  return process.env.PATH = `${process.cwd()}/mode_modules/.bin${pathEnvSeparator}${process.env.PATH}`;
+}
