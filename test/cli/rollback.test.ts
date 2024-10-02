@@ -18,9 +18,12 @@ import { Logger, LogLevel } from '../../src/cli/logger';
 import { DeploymentStatus, Manifest, ManifestArtifact, ManifestArtifactDeployed } from '../../src/cli/manifest';
 import { contentHash, rollBack, RollbackStack, RollbackStatus, RolledBackStackResult, saveCurrentCfnTemplates } from '../../src/cli/rollback';
 import { extractOriginalArgs, OriginalArgs } from '../../src/cli/utils';
+import { DeploymentOrderWave } from '../../src/utils';
 
+const jestConsole = console;
 const logger = new Logger();
 logger.init(LogLevel.DEBUG);
+
 
 /* https://github.com/swc-project/swc/issues/3843#issuecomment-1058826971 */
 jest.mock('fs', () => {
@@ -368,6 +371,68 @@ describe('rollBack', () => {
     },
   ];
 
+  /* The order in which stacks are deployed, created by synth as a file to .cdk-express-pipeline */
+  const deploymentOrderResult: DeploymentOrderWave[] = [
+    {
+      id: 'Wave1',
+      separator: '_',
+      stages: [
+        {
+          id: 'Stage1',
+          stacks: [
+            {
+              id: STACK_ID_A,
+              stackName: 'StackA',
+              dependencies: [],
+            },
+            {
+              id: STACK_ID_B,
+              stackName: 'StackB',
+              dependencies: [],
+            },
+            {
+              id: STACK_ID_C,
+              stackName: 'StackC',
+              dependencies: [],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'Wave2',
+      separator: '_',
+      stages: [
+        {
+          id: 'Stage1',
+          stacks: [
+            {
+              id: STACK_ID_D,
+              stackName: 'StackD',
+              dependencies: [],
+            },
+            {
+              id: STACK_ID_E,
+              stackName: 'StackE',
+              dependencies: [],
+            },
+            {
+              id: STACK_ID_F,
+              stackName: 'StackF',
+              dependencies: [
+                {
+                  id: STACK_ID_E,
+                  stackName: 'StackE',
+                  dependencies: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ];
+
   /* The manifest of Deployed Stacks passed to rollback */
   const mockManifestArtifactsDeployed: ManifestArtifactDeployed[] = [
     {
@@ -467,7 +532,12 @@ describe('rollBack', () => {
   ];
   let s3PutObjectCommandsExpected: S3PutObjectCommands[] = [];
 
+
   beforeEach(() => {
+    /* Disable Jest's console.log that adds the location of log lines */
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    global.console = require('console');
+
     jest.restoreAllMocks();
 
     jest.spyOn(fs, 'readFileSync').mockImplementation((filePath) => {
@@ -614,9 +684,13 @@ describe('rollBack', () => {
       }
     });
   });
+  afterEach(() => {
+    /* Restore Jest's console */
+    global.console = jestConsole;
+  });
 
   test('deploy', async () => {
-    const rolledBackStackResults = await rollBack(mockManifestArtifactsDeployed, mockRolledBackStacks, args);
+    const rolledBackStackResults = await rollBack(mockManifestArtifactsDeployed, mockRolledBackStacks, args, deploymentOrderResult);
     // TODO: Check cfnUpdateStackTemplateProps
     console.log('rolledBackStackResults', rolledBackStackResults);
 

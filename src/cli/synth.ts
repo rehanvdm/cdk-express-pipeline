@@ -1,10 +1,11 @@
 import * as fs from 'fs';
 import execa = /* eslint-disable @typescript-eslint/no-require-imports */ require('execa');
 import { Logger } from './logger';
-import { etLocalPackagesPreferredPath, OriginalArgs } from './utils';
+import { getLocalPackagesPreferredPath, OriginalArgs } from './utils';
 
-const ASSEMBLY_PATH = '.cdk-express-pipeline/assembly';
-const logger = Logger.getInstance();
+export const ASSEMBLY_PATH = '.cdk-express-pipeline/assembly';
+export const ROLLBACK_PATH = '.cdk-express-pipeline/rollback';
+const logger = new Logger();
 
 
 /**
@@ -20,17 +21,20 @@ export async function synth(argsOriginal: OriginalArgs): Promise<OriginalArgs> {
     if (!fs.existsSync(assemblyPath)) {
       throw new Error(`Assembly at path ${assemblyPath} does not exist`);
     }
-    logger.debug('Assembly exists: ', assemblyPath);
+    logger.debug('Assembly exists:', assemblyPath);
   } else {
     assemblyPath = ASSEMBLY_PATH;
-    logger.debug('Creating assembly: ', assemblyPath);
+    logger.debug('Creating assembly:', assemblyPath);
 
-    // Remove the assembly directory if exists
-    if (fs.existsSync(assemblyPath)) {
-      fs.rmSync(assemblyPath, {
-        recursive: true,
-        force: true,
-      });
+    // Remove the assembly and rollback directory if it exists. Do not remove the complete directory as it will contain a deployment order file.
+    const assemblyDirsToRemove = [ASSEMBLY_PATH, ROLLBACK_PATH];
+    for (const dir of assemblyDirsToRemove) {
+      if (fs.existsSync(dir)) {
+        fs.rmSync(dir, {
+          recursive: true,
+          force: true,
+        });
+      }
     }
 
     const synthArg = `cdk synth "${argsOriginal.pattern}" ${argsOriginal.raw} --output ${assemblyPath}`;
@@ -39,7 +43,7 @@ export async function synth(argsOriginal: OriginalArgs): Promise<OriginalArgs> {
     await execa.command(synthArg, {
       env: {
         ...process.env,
-        PATH: etLocalPackagesPreferredPath(),
+        PATH: getLocalPackagesPreferredPath(),
         FORCE_COLOR: 'true',
       },
       stdout: 'inherit',

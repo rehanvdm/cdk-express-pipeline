@@ -42,6 +42,7 @@ describe('CdkExpressPipelineLegacy', () => {
     wave2Stage1StackB.addDependency(wave2Stage1StackA);
 
     const expressPipeline = new CdkExpressPipelineLegacy();
+    // process.env.CDK_CONTEXT_JSON = JSON.stringify({ 'aws:cdk:bundling-stacks': 'Wave1Stage2*' });
     expressPipeline.synth([
       {
         id: 'Wave1',

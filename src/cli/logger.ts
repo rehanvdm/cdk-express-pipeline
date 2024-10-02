@@ -16,20 +16,9 @@ export class Logger {
   }
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
-  // public static getInstance(): Logger {
-  //   if (!Logger.instance) {
-  //     throw new Error('Logger is not initialized');
-  //   }
-  //   return Logger.instance;
-  // }
-
-  // eslint-disable-next-line @typescript-eslint/member-ordering
   public init(level: LogLevel) {
-    // if (this.instance) {
-    //   throw new Error('Logger is already initialized');
-    // }
 
-    if (Logger.isInitialized && process.env.TESTING_LOCAL_RE_INIT !== 'true') {
+    if (Logger.isInitialized && process.env.NODE_ENV !== 'test') {
       throw new Error('Logger has been initialized, just call the constructor to get an instance');
     }
 
@@ -39,24 +28,35 @@ export class Logger {
   }
 
   public log(message?: any, ...optionalParams: any[]): void {
-    console.log('> ' + message, optionalParams);
+    if (optionalParams.length == 0) {
+      console.log(message);
+    } else {
+      console.log(message, optionalParams);
+    }
   }
 
   public debug(message?: any, ...optionalParams: any[]): void {
     assert.ok(this.level !== undefined);
     if (this.level >= LogLevel.DEBUG) {
-      console.debug('\r\n> ' + message, optionalParams);
+      if (optionalParams.length == 0) {
+        console.debug('\r\n' + message);
+      } else {
+        console.debug('\r\n' + message, optionalParams);
+      }
     }
   }
 
   public error(message?: any, ...optionalParams: any[]): void {
-    console.error('> ' + message, optionalParams);
+    if (optionalParams.length == 0) {
+      console.error('\r\n' + message);
+    } else {
+      console.error('\r\n' + message, optionalParams);
+    }
   }
 
   public getLevel(): LogLevel | undefined {
     return this.level;
   }
-
 }
 
 

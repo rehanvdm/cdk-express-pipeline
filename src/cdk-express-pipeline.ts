@@ -1,10 +1,59 @@
-import { ExpressStack } from './express-stack';
-import { ExpressStage } from './express-stage';
+import * as fs from 'node:fs';
+import * as path from 'path';
 import { ExpressWave } from './express-wave';
+import {
+  DeploymentOrderStack,
+  DeploymentOrderStage,
+  DeploymentOrderWave,
+  getStackPatternToFilter,
+  printStackDependencies,
+  targetIdentifier,
+} from './utils';
 
 export const CDK_EXPRESS_PIPELINE_DEPENDENCY_REASON = 'cdk-express-pipeline wave->stage->stack dependency';
 export const CDK_EXPRESS_PIPELINE_DEFAULT_SEPARATOR = '_';
+export const CDK_EXPRESS_PIPELINE_DEPLOYMENT_ORDER_PATH = '.cdk-express-pipeline';
 
+/**
+ * Print the order of deployment to the console
+ * @param waves
+ * @private
+ */
+export function printWaves(waves: ExpressWave[]) {
+
+  console.log('');
+  console.log('ORDER OF DEPLOYMENT');
+  console.log('🌊 Waves  - Deployed sequentially');
+  console.log('🔲 Stages - Deployed in parallel, all stages within a wave are deployed at the same time');
+  console.log('📄 Stack  - Dependency driven, will be deployed after all its dependent stacks, denoted by ↳ below it, are deployed. ' +
+    'A stack with > matches the CDK pattern provided');
+  console.log('');
+
+  const patternToFilter = getStackPatternToFilter();
+  for (const wave of waves) {
+    const targetWave = targetIdentifier(patternToFilter, wave.id);
+    const waveTargetCharacter = targetWave ? '|' : ' ';
+
+    console.log(`${waveTargetCharacter} 🌊 ${wave.id}`);
+    for (const stage of wave.stages) {
+      const fullStageId = `${wave.id}${wave.separator}${stage.id}`;
+      const targetStage = targetIdentifier(patternToFilter, fullStageId);
+      const stageTargetCharacter = targetStage ? '|  ' : '   ';
+
+      console.log(`${stageTargetCharacter} 🔲 ${stage.id}`);
+      for (const stack of stage.stacks) {
+        const targetStack = targetIdentifier(patternToFilter, stack.id);
+        const stackTargetCharacter = targetStack ? '|    ' : '     ';
+
+        console.log(`${stackTargetCharacter} 📄 ${stack.stackName} (${stack.id})`);
+        for (let dependantStack of stack.expressDependencies()) {
+          printStackDependencies(stack.stage, dependantStack, 2, stackTargetCharacter);
+        }
+      }
+    }
+  }
+  console.log('');
+}
 
 export interface CdkExpressPipelineProps {
   /**
@@ -64,49 +113,41 @@ export class CdkExpressPipeline {
       }
     }
 
-    if (print) {
-      this.printWaves(waves);
+    if (!fs.existsSync(CDK_EXPRESS_PIPELINE_DEPLOYMENT_ORDER_PATH)) {
+      fs.mkdirSync(CDK_EXPRESS_PIPELINE_DEPLOYMENT_ORDER_PATH, { recursive: true });
     }
-  }
-
-  /**
-   * Print the order of deployment to the console
-   * @param waves
-   * @private
-   */
-  private printWaves(waves: ExpressWave[]) {
-
-    function printStackDependencies(stage: ExpressStage, stack: ExpressStack, indentationLevel: number) {
-      if (stack.stage !== stage) {
-        return;
-      }
-      console.log(`${'  '.repeat(indentationLevel)}    ↳ ${stack.stackName}`);
-
-      stack.expressDependencies().forEach(dependantStack => {
-        printStackDependencies(stage, dependantStack, indentationLevel + 1);
+    const deploymentOrder: DeploymentOrderWave[] = waves.map(wave => {
+      const stages: DeploymentOrderStage[] = wave.stages.map(stage => {
+        const stacks: DeploymentOrderStack[] = stage.stacks.map(stack => {
+          const dependencies = stack.expressDependencies().map(dependantStack => {
+            return {
+              id: dependantStack.id,
+              stackName: dependantStack.stackName,
+              dependencies: [],
+            };
+          });
+          return {
+            id: stack.id,
+            stackName: stack.stackName,
+            dependencies,
+          };
+        });
+        return {
+          id: stage.id,
+          stacks,
+        };
       });
-    }
+      return {
+        id: wave.id,
+        separator: wave.separator,
+        stages,
+      };
+    });
+    fs.writeFileSync(path.join(CDK_EXPRESS_PIPELINE_DEPLOYMENT_ORDER_PATH, 'deployment-order.json'), JSON.stringify(deploymentOrder, null, 2));
 
-    console.log('');
-    console.log('ORDER OF DEPLOYMENT');
-    console.log('🌊 Waves  - Deployed sequentially');
-    console.log('🔲 Stages - Deployed in parallel, all stages within a wave are deployed at the same time');
-    console.log('📄 Stack  - Dependency driven, will be deployed after all its dependent stacks, denoted by ↳ below it, is deployed');
-    console.log('');
-
-    for (const wave of waves) {
-      console.log(`🌊 ${wave.id}`);
-      for (const stage of wave.stages) {
-        console.log(`  🔲 ${stage.id}`);
-        for (const stack of stage.stacks) {
-          console.log(`    📄 ${stack.stackName} (${stack.id})`);
-          for (let dependantStack of stack.expressDependencies()) {
-            printStackDependencies(stack.stage, dependantStack, 2);
-          }
-        }
-      }
+    if (print) {
+      printWaves(waves);
     }
-    console.log('');
   }
 }
 

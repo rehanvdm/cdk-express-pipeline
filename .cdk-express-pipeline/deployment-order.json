@@ -1,0 +1,18 @@
+[
+  {
+    "id": "MyWave1",
+    "separator": "_",
+    "stages": [
+      {
+        "id": "MyStage1",
+        "stacks": [
+          {
+            "id": "MyWave1_MyStage1_MyStackA",
+            "stackName": "MyStackA",
+            "dependencies": []
+          }
+        ]
+      }
+    ]
+  }
+]

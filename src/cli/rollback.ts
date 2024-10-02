@@ -16,7 +16,8 @@ import * as yaml from 'yaml';
 import * as yaml_types from 'yaml/types';
 import { Logger } from './logger';
 import { DeploymentStatus, getManifestStackArtifactProperties, ManifestArtifact, ManifestArtifactDeployed } from './manifest';
-import { AssumedRoleCredentials, assumeRoleAndGetCredentials, OriginalArgs } from './utils';
+import { AssumedRoleCredentials, assumeRoleAndGetCredentials, OriginalArgs, printWavesRollbackStatus } from './utils';
+import { DeploymentOrderWave } from '../utils';
 
 const logger = new Logger();
 
@@ -26,6 +27,26 @@ export type RollbackStack = {
   rollbackTemplatePath: string;
   /* YML length not JSON length */
   rollbackTemplateSize: number;
+}
+
+export enum RollbackStatus {
+  ROLLBACK_COMPLETE = 'ROLLBACK_COMPLETE',
+  ROLLBACK_FAILED = 'ROLLBACK_FAILED',
+
+  SKIP_ROLLBACK_CREATE_STACK = 'SKIP_ROLLBACK_CREATE_STACK',
+  SKIP_NOT_DEPLOYED = 'SKIP_NOT_DEPLOYED',
+  SKIP_NO_CHANGES = 'SKIP_NO_CHANGES',
+  SKIP_CFN_ROLLED_BACK = 'SKIP_CFN_ROLLED_BACK',
+}
+
+export type CfnBodyParams = {
+  templateBody?: string;
+  templateUrl?: string;
+}
+
+export type RolledBackStackResult = {
+  stackId: string;
+  status: RollbackStatus;
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(() => resolve(true), ms));
@@ -96,7 +117,6 @@ function colorFromStatusResult(status?: string) {
  * @param stackArtifacts
  */
 export async function saveCurrentCfnTemplates(args: OriginalArgs, stackArtifacts: ManifestArtifact[]) {
-
   const rollbackTemplateDir = './.cdk-express-pipeline/rollback';
   if (!fs.existsSync(rollbackTemplateDir)) {
     fs.rmSync(rollbackTemplateDir, {
@@ -108,16 +128,18 @@ export async function saveCurrentCfnTemplates(args: OriginalArgs, stackArtifacts
 
   let rollbackStacks: RollbackStack[] = [];
   for (const stackArtifact of stackArtifacts) {
-    logger.debug('getManifestStackArtifactProperties: ', stackArtifact);
+    logger.log('Saving stack:', stackArtifact.stackId);
 
     const {
+      stackId,
       stackName,
       region,
       assumeRole,
     } = getManifestStackArtifactProperties(stackArtifact);
+    logger.debug('Stack Properties:', stackId, stackName, region, assumeRole);
 
     const credentials = await assumeRoleAndGetCredentials(region, args.profile, assumeRole);
-    logger.debug('Assumed Role: ', assumeRole);
+    logger.debug('Assumed Role:', assumeRole);
 
     const client = new CloudFormationClient({
       region: region, //TODO: needed? might be different than the stsclient?
@@ -147,7 +169,6 @@ export async function saveCurrentCfnTemplates(args: OriginalArgs, stackArtifacts
   }
   return rollbackStacks;
 }
-
 
 function formatUtcTime(date?: Date, includeUtcIdentifier: boolean = true) {
   if (!date) {
@@ -200,25 +221,6 @@ async function printStackEvents(printFrom: Date, cfnClient: CloudFormationClient
   return lastEventId;
 }
 
-export enum RollbackStatus {
-  ROLLBACK_COMPLETE = 'ROLLBACK_COMPLETE',
-  ROLLBACK_FAILED = 'ROLLBACK_FAILED',
-
-  SKIP_ROLLBACK_CREATE_STACK = 'SKIP_ROLLBACK_CREATE_STACK',
-  SKIP_NOT_DEPLOYED = 'SKIP_NOT_DEPLOYED',
-  SKIP_NO_CHANGES = 'SKIP_NO_CHANGES',
-  SKIP_CFN_ROLLED_BACK = 'SKIP_CFN_ROLLED_BACK',
-}
-
-// export enum DeploymentStatus {
-//   SKIPPED_NO_CHANGES = 'SKIPPED_NO_CHANGES',
-//   FAILED_UPDATE_STACK = 'FAILED_UPDATE',
-//   FAILED_CREATE_STACK = 'FAILED_CREATE_STACK',
-//   SUCCESS_CREATE_STACK = 'SUCCESS_CREATE_STACK',
-//   SUCCESS_UPDATE_STACK = 'SUCCESS_UPDATE_STACK',
-//   NOT_DEPLOYED = 'NOT_DEPLOYED',
-// }
-
 /**
  * Convert the deployment status to rollback status. DeploymentStatus.SUCCESS_UPDATE_STACK is the only status that does not have a direct rollback
  * status, it will either produce an RollbackStatus.SUCCESS_ROLLED_BACK or RollbackStatus.FAILED_ROLLED_BACK
@@ -260,11 +262,6 @@ function translateDeploymentToRollback(status: DeploymentStatus): { status: Roll
         rollback: true,
       };
   }
-}
-
-export type CfnBodyParams = {
-  templateBody?: string;
-  templateUrl?: string;
 }
 
 async function prepareCfnBody(rollbackStack: RollbackStack, cfnClient: CloudFormationClient, region: string, credentials: AssumedRoleCredentials,
@@ -339,19 +336,31 @@ async function updateStack(stackName: string, cfnClient: CloudFormationClient, t
   };
 }
 
-export type RolledBackStackResult = {
-  stackId: string;
-  status: RollbackStatus;
+function pushAndPrintStackResult(rolledBackStackResults: RolledBackStackResult[],
+  deploymentOrder: DeploymentOrderWave[],
+  rolledBackStackResult: RolledBackStackResult,
+) {
+  rolledBackStackResults.push(rolledBackStackResult);
+  printWavesRollbackStatus(deploymentOrder, rolledBackStackResults);
 }
 
-export async function rollBack(deployedStackArtifacts: ManifestArtifactDeployed[], rollbackStackTemplates: RollbackStack[], args: OriginalArgs):
-Promise<RolledBackStackResult[]> {
+export async function rollBack(deployedStackArtifacts: ManifestArtifactDeployed[], rollbackStackTemplates: RollbackStack[], args: OriginalArgs,
+  deploymentOrder: DeploymentOrderWave[]):
+  Promise<RolledBackStackResult[]> {
   const deployedStackArtifactsReversed = deployedStackArtifacts.reverse(); //TODO: Check that in correct reversed order...
 
   const stacksRolledBackStatus: RolledBackStackResult[] = [];
   for (const stackArtifact of deployedStackArtifactsReversed) {
     const stackLogIdentifier = `${stackArtifact.stackId} (${stackArtifact.properties.stackName})`;
-    logger.debug('getManifestStackArtifactProperties: ', stackArtifact);
+    logger.log(`Checking Stack: ${stackLogIdentifier}`);
+
+    const {
+      stackId,
+      stackName,
+      region,
+      assumeRole,
+    } = getManifestStackArtifactProperties(stackArtifact);
+    logger.debug('Stack Properties:', stackId, stackName, region, assumeRole);
 
     const {
       rollback,
@@ -359,9 +368,9 @@ Promise<RolledBackStackResult[]> {
     } = translateDeploymentToRollback(stackArtifact.status);
 
     if (!rollback) {
-      logger.log(`Skip Stack rollback: ${stackLogIdentifier}, skipping rollback..`);
+      logger.log(`Skip Stack Rollback: DeploymentStatus.${stackArtifact.status}`);
 
-      stacksRolledBackStatus.push({
+      pushAndPrintStackResult(stacksRolledBackStatus, deploymentOrder, {
         stackId: stackArtifact.stackId,
         status: status!,
       });
@@ -371,30 +380,30 @@ Promise<RolledBackStackResult[]> {
     const rollbackStack = rollbackStackTemplates.find((stack) => stack.stackId == stackArtifact.stackId);
     assert.ok(rollbackStack);
 
-    const {
-      stackName,
-      region,
-      assumeRole,
-    } = getManifestStackArtifactProperties(stackArtifact);
+
     logger.log(`Stack rolling back: ${stackLogIdentifier}`);
 
     const credentials = await assumeRoleAndGetCredentials(region, args.profile, assumeRole);
-    logger.debug('Assumed Role: ', assumeRole);
+    logger.debug('Assumed Role:', assumeRole);
 
     const cfnClient = new CloudFormationClient({
       region: region, //TODO: needed? might be different than the stsclient?
       credentials,
     });
     const templateArg = await prepareCfnBody(rollbackStack, cfnClient, region, credentials, stackArtifact);
-    logger.debug('Prepared Stack body: ', templateArg);
+    logger.debug('Prepared Stack body:', {
+      'Template Body Present': templateArg.templateBody ? 'Yes' : 'No',
+      'Template URL Present': templateArg.templateUrl ? 'Yes' : 'No',
+    });
 
+    logger.log(`Stack Rollback: Update started for stack ${stackLogIdentifier}`);
     const rollbackResult = await updateStack(stackName, cfnClient, templateArg);
-    logger.debug('Update Stack result: ', rollbackResult);
+    logger.debug('Update Stack result:', rollbackResult);
 
     switch (rollbackResult.status) {
       case 'SKIP_NO_CHANGES':
         logger.log('Stack Rollback: No Changes detected, skipping rollback');
-        stacksRolledBackStatus.push({
+        pushAndPrintStackResult(stacksRolledBackStatus, deploymentOrder, {
           stackId: stackArtifact.stackId,
           status: RollbackStatus.SKIP_NO_CHANGES,
         });
@@ -402,14 +411,14 @@ Promise<RolledBackStackResult[]> {
       case 'UPDATE_FAILED':
         logger.log('Stack Rollback: Update failed for stack, CFN rolled back, skipping rollback. Error');
         logger.error(rollbackResult.error);
-        stacksRolledBackStatus.push({
+        pushAndPrintStackResult(stacksRolledBackStatus, deploymentOrder, {
           stackId: stackArtifact.stackId,
           status: RollbackStatus.ROLLBACK_FAILED,
         });
         break;
 
       case 'UPDATE_STARTED':
-        logger.log('Stack Rollback: Update started for stack, waiting for completion..');
+        logger.log('Stack Rollback: Waiting for completion..');
 
         let currentEventId: string | undefined = undefined;
         let stackInProgress = true;
@@ -429,16 +438,16 @@ Promise<RolledBackStackResult[]> {
         } while (stackInProgress);
 
         if (stackStatus?.toString().endsWith('_FAILED')) {
-          logger.log('Stack Status: ', stackStatus?.toString());
-          logger.log('Stack Rollback Status: ', RollbackStatus.ROLLBACK_FAILED);
-          stacksRolledBackStatus.push({
+          logger.log('Stack Status:', stackStatus?.toString());
+          logger.log('Stack Rollback Status:', RollbackStatus.ROLLBACK_FAILED);
+          pushAndPrintStackResult(stacksRolledBackStatus, deploymentOrder, {
             stackId: stackArtifact.stackId,
             status: RollbackStatus.ROLLBACK_FAILED,
           });
         } else if (stackStatus?.toString().endsWith('_COMPLETE')) {
-          logger.log('Stack Status: ', stackStatus?.toString());
-          logger.log('Stack Rollback Status: ', RollbackStatus.ROLLBACK_COMPLETE);
-          stacksRolledBackStatus.push({
+          logger.log('Stack Status:', stackStatus?.toString());
+          logger.log('Stack Rollback Status:', RollbackStatus.ROLLBACK_COMPLETE);
+          pushAndPrintStackResult(stacksRolledBackStatus, deploymentOrder, {
             stackId: stackArtifact.stackId,
             status: RollbackStatus.ROLLBACK_COMPLETE,
           });

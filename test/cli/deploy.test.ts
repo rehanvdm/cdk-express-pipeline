@@ -6,6 +6,9 @@ import { Logger, LogLevel } from '../../src/cli/logger';
 import { DeploymentStatus, Manifest, ManifestArtifact, ManifestArtifactDeployed } from '../../src/cli/manifest';
 import { RollbackStack } from '../../src/cli/rollback';
 import { extractOriginalArgs, OriginalArgs } from '../../src/cli/utils';
+import { DeploymentOrderWave } from '../../src/utils';
+
+const jestConsole = console;
 
 const logger = new Logger();
 logger.init(LogLevel.DEFAULT);
@@ -20,13 +23,29 @@ jest.mock('fs', () => {
 });
 
 describe('deploy - validate correct processing of cdk deploy', () => {
+
+  beforeEach(() => {
+    /* Disable Jest's console.log that adds the location of log lines */
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    global.console = require('console');
+  });
+  afterEach(() => {
+    /* Restore Jest's console */
+    global.console = jestConsole;
+  });
+
   const rawArgs = '--profile systanics-role-exported --exclusively --require-approval never --concurrency 10';
-  const originalArgs: OriginalArgs = extractOriginalArgs('\'**\'', rawArgs);
+  const originalArgs: OriginalArgs = extractOriginalArgs('**', rawArgs);
+  process.env.CDK_CONTEXT_JSON = JSON.stringify({ 'aws:cdk:bundling-stacks': ['**'] });
+  // /* Just to quickly test if it prints the correct Deployment Order */
+  // const originalArgs: OriginalArgs = extractOriginalArgs('Wave1*', rawArgs);
+  // process.env.CDK_CONTEXT_JSON = JSON.stringify({ 'aws:cdk:bundling-stacks': ['Wave1*'] });
+
   const args = {
     ...originalArgs,
   };
 
-  const expectedCommand = 'cdk deploy \'**\' --profile systanics-role-exported --exclusively --require-approval never --concurrency 10';
+  const expectedCommand = 'cdk deploy "**" --profile systanics-role-exported --exclusively --require-approval never --concurrency 10';
   let execaCommand = '';
 
   const STACK_ID_A = 'Wave1_Stage1_StackA';
@@ -129,6 +148,68 @@ describe('deploy - validate correct processing of cdk deploy', () => {
     },
   ];
 
+  /* The order in which stacks are deployed, created by synth as a file to .cdk-express-pipeline */
+  const deploymentOrderResult: DeploymentOrderWave[] = [
+    {
+      id: 'Wave1',
+      separator: '_',
+      stages: [
+        {
+          id: 'Stage1',
+          stacks: [
+            {
+              id: STACK_ID_A,
+              stackName: 'StackA',
+              dependencies: [],
+            },
+            {
+              id: STACK_ID_B,
+              stackName: 'StackB',
+              dependencies: [],
+            },
+            {
+              id: STACK_ID_C,
+              stackName: 'StackC',
+              dependencies: [],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'Wave2',
+      separator: '_',
+      stages: [
+        {
+          id: 'Stage1',
+          stacks: [
+            {
+              id: STACK_ID_D,
+              stackName: 'StackD',
+              dependencies: [],
+            },
+            {
+              id: STACK_ID_E,
+              stackName: 'StackE',
+              dependencies: [],
+            },
+            {
+              id: STACK_ID_F,
+              stackName: 'StackF',
+              dependencies: [
+                {
+                  id: STACK_ID_E,
+                  stackName: 'StackE',
+                  dependencies: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ];
+
   /* The expected outcome of deploy(...) */
   const mockManifestArtifactsDeployed: ManifestArtifactDeployed[] = [
     {
@@ -192,7 +273,7 @@ describe('deploy - validate correct processing of cdk deploy', () => {
   });
 
   test('deploy', async () => {
-    const manifestDeployed = await deploy(args, mockManifestArtifacts, rollbackStacks);
+    const manifestDeployed = await deploy(args, mockManifestArtifacts, rollbackStacks, deploymentOrderResult);
     expect(execaCommand).toEqual(expectedCommand);
 
     /* Compare one by one as the order of these are not the same */

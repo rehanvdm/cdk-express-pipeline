@@ -1,5 +1,6 @@
 import { Stack } from 'aws-cdk-lib';
 import { CDK_EXPRESS_PIPELINE_DEPENDENCY_REASON } from './cdk-express-pipeline';
+import { getStackPatternToFilter, targetIdentifier } from './utils';
 
 export interface IExpressStageLegacy {
   id: string;
@@ -118,12 +119,15 @@ export class CdkExpressPipelineLegacy {
     console.log('📄 Stack  - Dependency driven');
     console.log('');
 
+    const patternToFilter = getStackPatternToFilter();
+
     for (const wave of waves) {
       console.log(`🌊 ${wave.id}`);
       for (const stage of wave.stages) {
         console.log(`  🔲 ${stage.id}`);
         for (const stack of stage.stacks) {
-          console.log(`    📄 ${stack.stackName}`);
+          const targetCharacter = targetIdentifier(patternToFilter, stack.stackName) ? '|' : ' ';
+          console.log(`   ${targetCharacter} 📄 ${stack.stackName}`);
         }
       }
     }

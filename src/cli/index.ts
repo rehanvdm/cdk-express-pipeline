@@ -1,24 +1,38 @@
 #!/usr/bin/env node
+import * as fs from 'fs';
 import { Command } from 'commander';
 import { deploy } from './deploy';
 import { Logger, LogLevel } from './logger';
 import { getManifestStackArtifacts } from './manifest';
-import { rollBack, saveCurrentCfnTemplates } from './rollback';
+import { rollBack, RollbackStatus, saveCurrentCfnTemplates } from './rollback';
 import { synth } from './synth';
-import { extractOriginalArgs } from './utils';
+import { extractOriginalArgs, printWavesDeployStatus, printWavesRollbackStatus } from './utils';
+import { DeploymentOrderWave } from '../utils';
+
+const logger = new Logger();
+
+
+function getDeploymentOrder(): DeploymentOrderWave[] {
+  if (!fs.existsSync('.cdk-express-pipeline/deployment-order.json')) {
+    throw new Error('Deployment order file at `.cdk-express-pipeline/deployment-order.json` does not exist. Run `synth` first.');
+  }
+  const wavesFile = fs.readFileSync('.cdk-express-pipeline/deployment-order.json', 'utf8');
+  return JSON.parse(wavesFile) as DeploymentOrderWave[];
+}
 
 async function main() {
   const program = new Command();
   program
     .command('deploy <pattern> [extraArgs...]')
     .description('Deploy command with pattern and extra arguments')
-    .action(async (pattern: string, extraArgs: string[]) => {
-      // const logger = Logger.init(LogLevel.TRACE);
-      // const logger = Logger.init(LogLevel.DEBUG);
-      const logger = Logger.init(LogLevel.DEFAULT);
+    .option('--debug')
+    .action(async (pattern: string, extraArgs: string[], opts: { [optName: string]: any }) => {
 
-      logger.debug('pattern: ', pattern);
-      logger.debug('extraArgs: ', extraArgs);
+      if (opts.debug === true) {
+        logger.init(LogLevel.DEBUG);
+      } else {
+        logger.init(LogLevel.DEFAULT);
+      }
 
       let rawArgs = extraArgs.join(' ');
       if (rawArgs.includes('--all')) {
@@ -41,20 +55,36 @@ async function main() {
         argsOriginal.raw += ' --progress events';
       }
 
-      let args = await synth(argsOriginal);
-      logger.debug('args: ', args);
+      logger.log('Synthesizing CDK app');
+      const args = await synth(argsOriginal);
+      const deploymentOrder = getDeploymentOrder();
+      logger.debug('args:', args);
+      logger.debug('deploymentOrder:', deploymentOrder);
 
+      logger.log('Getting stack artifacts from manifest');
       const stackArtifacts = getManifestStackArtifacts(args);
-      logger.debug('stackArtifacts: ', stackArtifacts);
+      logger.debug('stackArtifacts:', stackArtifacts);
 
+      logger.log('Saving CloudFormation templates before deployment');
       const rollbackStackTemplates = await saveCurrentCfnTemplates(args, stackArtifacts);
-      logger.debug('rollbackStackTemplates: ', rollbackStackTemplates);
+      logger.debug('rollbackStackTemplates:', rollbackStackTemplates);
 
-      const deployedStackArtifacts = await deploy(args, stackArtifacts, rollbackStackTemplates);
-      logger.debug('deployedStackArtifacts: ', deployedStackArtifacts);
+      logger.log('Deploying CDK stacks');
+      const deployedStackArtifacts = await deploy(args, stackArtifacts, rollbackStackTemplates, deploymentOrder);
+      logger.debug('deployedStackArtifacts:', deployedStackArtifacts);
+      printWavesDeployStatus(deploymentOrder, deployedStackArtifacts);
 
-      const stacksRolledBackStatus = await rollBack(deployedStackArtifacts, rollbackStackTemplates, args);
-      logger.debug('stacksRolledBackStatus:', JSON.stringify(stacksRolledBackStatus, null, 2));
+      logger.log('Checking for failed stacks and rolling back if necessary');
+      const stacksRolledBackStatus = await rollBack(deployedStackArtifacts, rollbackStackTemplates, args, deploymentOrder);
+      logger.log('Rollback complete');
+      printWavesRollbackStatus(deploymentOrder, stacksRolledBackStatus);
+
+      const failedStacks = stacksRolledBackStatus.filter(result => result.status === RollbackStatus.ROLLBACK_FAILED ||
+        result.status === RollbackStatus.SKIP_CFN_ROLLED_BACK);
+      if (failedStacks) {
+        logger.log('Some stacks failed to rollback. Please check the logs above and manually rollback the stacks that failed.');
+        process.exit(1);
+      }
     });
 
   program.parse(process.argv);

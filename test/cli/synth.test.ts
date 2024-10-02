@@ -1,7 +1,11 @@
 import * as fs from 'fs';
 import execa = /* eslint-disable @typescript-eslint/no-require-imports */ require('execa');
+import { Logger, LogLevel } from '../../src/cli/logger';
 import { synth } from '../../src/cli/synth';
 import { extractOriginalArgs, OriginalArgs } from '../../src/cli/utils';
+
+const logger = new Logger();
+logger.init(LogLevel.DEFAULT);
 
 /* https://github.com/swc-project/swc/issues/3843#issuecomment-1058826971 */
 jest.mock('fs', () => {
@@ -51,7 +55,9 @@ describe('synth - should create assembly if assemblyPath is not provided', () =>
     ...originalArgs,
   };
   const cdkExpressSynthPath = '.cdk-express-pipeline/assembly';
-  const expectedCommand = `cdk synth ** ${rawArgs} --output ${cdkExpressSynthPath}`;
+  const cdkExpressRollbackPath = '.cdk-express-pipeline/rollback';
+  const assemblyDirsToRemove = [cdkExpressSynthPath, cdkExpressRollbackPath];
+  const expectedCommand = `cdk synth "'**'" ${rawArgs} --output ${cdkExpressSynthPath}`;
   let execaCommand = '';
 
   beforeEach(() => {
@@ -59,14 +65,14 @@ describe('synth - should create assembly if assemblyPath is not provided', () =>
 
     execaCommand = '';
     jest.spyOn(fs, 'existsSync').mockImplementation((path) => {
-      if (cdkExpressSynthPath !== path) {
-        throw new Error(`existsSync: Path does not match. Expected: ${args.assemblyPath}, Received: ${path}`);
+      if (!assemblyDirsToRemove.includes(path.toString())) {
+        throw new Error(`existsSync: Path does not match. Expected one of: ${assemblyDirsToRemove}, Received: ${path}`);
       }
       return false; /* To test the branching if rm and mkdir */
     });
     jest.spyOn(fs, 'rmSync').mockImplementation((dir) => {
-      if (cdkExpressSynthPath !== dir) {
-        throw new Error(`rmSync: Path does not match. Expected: ${args.assemblyPath}, Received: ${dir}`);
+      if (!assemblyDirsToRemove.includes(dir.toString())) {
+        throw new Error(`rmSync: Path does not match. Expected one of: ${assemblyDirsToRemove}, Received: ${dir}`);
       }
     });
 
