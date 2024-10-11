@@ -175,9 +175,9 @@ describe('Test build arguments', () => {
     wave1Stage1StackD.addExpressDependency(wave1Stage1StackB);
     wave1Stage1StackE.addExpressDependency(wave1Stage1StackF);
     wave1Stage1StackD.addExpressDependency(wave1Stage1StackF);
-    /* --- Wave 1, Stage 2 --- */
-    const wave1Stage2 = new ExpressStage('Stage2', wave1);
-    new ExpressStack(app, 'StackA', wave1Stage2);
+    // /* --- Wave 1, Stage 2 --- */
+    // const wave1Stage2 = new ExpressStage('Stage2', wave1);
+    // new ExpressStack(app, 'StackA', wave1Stage2);
 
     /* === Wave 2 === */
     const wave2 = new ExpressWave('Wave2');
@@ -304,21 +304,21 @@ describe('Test build arguments', () => {
         expected: '\n' +
           'ORDER OF DEPLOYMENT\n' +
           '🌊 Waves  - Deployed sequentially\n' +
-          '🔲 Stages - Deployed in parallel, all stages within a wave are deployed at the same time\n' +
-          '📄 Stack  - Dependency driven, will be deployed after all its dependent stacks, denoted by ↳ below it, are deployed. A stack with > matches the CDK pattern provided\n' +
+          '🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time\n' +
+          '📦 Stack  - Dependency driven, will be deployed after all its dependent stacks, denoted by ↳ below it, are deployed. A stack with > matches the CDK pattern provided\n' +
           '\n' +
           '| 🌊 Wave1\n' +
-          '|   🔲 Stage1\n' +
-          '|     📄 StackA (Wave1_Stage1_StackA)\n' +
-          '|     📄 StackB (Wave1_Stage1_StackB)\n' +
+          '|   🏗️ Stage1\n' +
+          '|     📦 StackA (Wave1_Stage1_StackA)\n' +
+          '|     📦 StackB (Wave1_Stage1_StackB)\n' +
           '|        ↳ StackA\n' +
-          '|     📄 StackC (Wave1_Stage1_StackC)\n' +
-          '|   🔲 Stage2\n' +
-          '|     📄 StackD (Wave1_Stage2_StackD)\n' +
+          '|     📦 StackC (Wave1_Stage1_StackC)\n' +
+          '|   🏗️ Stage2\n' +
+          '|     📦 StackD (Wave1_Stage2_StackD)\n' +
           '| 🌊 Wave2\n' +
-          '|   🔲 Stage1\n' +
-          '|     📄 StackE (Wave2_Stage1_StackE)\n' +
-          '|     📄 StackF (Wave2_Stage1_StackF)\n' +
+          '|   🏗️ Stage1\n' +
+          '|     📦 StackE (Wave2_Stage1_StackE)\n' +
+          '|     📦 StackF (Wave2_Stage1_StackF)\n' +
           '|        ↳ StackE\n',
       },
       {
@@ -326,21 +326,21 @@ describe('Test build arguments', () => {
         expected: '\n' +
           'ORDER OF DEPLOYMENT\n' +
           '🌊 Waves  - Deployed sequentially\n' +
-          '🔲 Stages - Deployed in parallel, all stages within a wave are deployed at the same time\n' +
-          '📄 Stack  - Dependency driven, will be deployed after all its dependent stacks, denoted by ↳ below it, are deployed. A stack with > matches the CDK pattern provided\n' +
+          '🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time\n' +
+          '📦 Stack  - Dependency driven, will be deployed after all its dependent stacks, denoted by ↳ below it, are deployed. A stack with > matches the CDK pattern provided\n' +
           '\n' +
           '| 🌊 Wave1\n' +
-          '|   🔲 Stage1\n' +
-          '|     📄 StackA (Wave1_Stage1_StackA)\n' +
-          '|     📄 StackB (Wave1_Stage1_StackB)\n' +
+          '|   🏗️ Stage1\n' +
+          '|     📦 StackA (Wave1_Stage1_StackA)\n' +
+          '|     📦 StackB (Wave1_Stage1_StackB)\n' +
           '|        ↳ StackA\n' +
-          '|     📄 StackC (Wave1_Stage1_StackC)\n' +
-          '    🔲 Stage2\n' +
-          '      📄 StackD (Wave1_Stage2_StackD)\n' +
+          '|     📦 StackC (Wave1_Stage1_StackC)\n' +
+          '    🏗️ Stage2\n' +
+          '      📦 StackD (Wave1_Stage2_StackD)\n' +
           '  🌊 Wave2\n' +
-          '    🔲 Stage1\n' +
-          '      📄 StackE (Wave2_Stage1_StackE)\n' +
-          '      📄 StackF (Wave2_Stage1_StackF)\n' +
+          '    🏗️ Stage1\n' +
+          '      📦 StackE (Wave2_Stage1_StackE)\n' +
+          '      📦 StackF (Wave2_Stage1_StackF)\n' +
           '         ↳ StackE\n',
       },
       {
@@ -348,21 +348,21 @@ describe('Test build arguments', () => {
         expected: '\n' +
           'ORDER OF DEPLOYMENT\n' +
           '🌊 Waves  - Deployed sequentially\n' +
-          '🔲 Stages - Deployed in parallel, all stages within a wave are deployed at the same time\n' +
-          '📄 Stack  - Dependency driven, will be deployed after all its dependent stacks, denoted by ↳ below it, are deployed. A stack with > matches the CDK pattern provided\n' +
+          '🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time\n' +
+          '📦 Stack  - Dependency driven, will be deployed after all its dependent stacks, denoted by ↳ below it, are deployed. A stack with > matches the CDK pattern provided\n' +
           '\n' +
           '| 🌊 Wave1\n' +
-          '|   🔲 Stage1\n' +
-          '|     📄 StackA (Wave1_Stage1_StackA)\n' +
-          '|     📄 StackB (Wave1_Stage1_StackB)\n' +
+          '|   🏗️ Stage1\n' +
+          '|     📦 StackA (Wave1_Stage1_StackA)\n' +
+          '|     📦 StackB (Wave1_Stage1_StackB)\n' +
           '|        ↳ StackA\n' +
-          '|     📄 StackC (Wave1_Stage1_StackC)\n' +
-          '    🔲 Stage2\n' +
-          '      📄 StackD (Wave1_Stage2_StackD)\n' +
+          '|     📦 StackC (Wave1_Stage1_StackC)\n' +
+          '    🏗️ Stage2\n' +
+          '      📦 StackD (Wave1_Stage2_StackD)\n' +
           '  🌊 Wave2\n' +
-          '    🔲 Stage1\n' +
-          '      📄 StackE (Wave2_Stage1_StackE)\n' +
-          '      📄 StackF (Wave2_Stage1_StackF)\n' +
+          '    🏗️ Stage1\n' +
+          '      📦 StackE (Wave2_Stage1_StackE)\n' +
+          '      📦 StackF (Wave2_Stage1_StackF)\n' +
           '         ↳ StackE\n',
       },
       {
@@ -370,21 +370,21 @@ describe('Test build arguments', () => {
         expected: '\n' +
           'ORDER OF DEPLOYMENT\n' +
           '🌊 Waves  - Deployed sequentially\n' +
-          '🔲 Stages - Deployed in parallel, all stages within a wave are deployed at the same time\n' +
-          '📄 Stack  - Dependency driven, will be deployed after all its dependent stacks, denoted by ↳ below it, are deployed. A stack with > matches the CDK pattern provided\n' +
+          '🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time\n' +
+          '📦 Stack  - Dependency driven, will be deployed after all its dependent stacks, denoted by ↳ below it, are deployed. A stack with > matches the CDK pattern provided\n' +
           '\n' +
           '  🌊 Wave1\n' +
-          '    🔲 Stage1\n' +
-          '      📄 StackA (Wave1_Stage1_StackA)\n' +
-          '      📄 StackB (Wave1_Stage1_StackB)\n' +
+          '    🏗️ Stage1\n' +
+          '      📦 StackA (Wave1_Stage1_StackA)\n' +
+          '      📦 StackB (Wave1_Stage1_StackB)\n' +
           '         ↳ StackA\n' +
-          '      📄 StackC (Wave1_Stage1_StackC)\n' +
-          '    🔲 Stage2\n' +
-          '      📄 StackD (Wave1_Stage2_StackD)\n' +
+          '      📦 StackC (Wave1_Stage1_StackC)\n' +
+          '    🏗️ Stage2\n' +
+          '      📦 StackD (Wave1_Stage2_StackD)\n' +
           '| 🌊 Wave2\n' +
-          '|   🔲 Stage1\n' +
-          '|     📄 StackE (Wave2_Stage1_StackE)\n' +
-          '|     📄 StackF (Wave2_Stage1_StackF)\n' +
+          '|   🏗️ Stage1\n' +
+          '|     📦 StackE (Wave2_Stage1_StackE)\n' +
+          '|     📦 StackF (Wave2_Stage1_StackF)\n' +
           '|        ↳ StackE\n',
       },
       {
@@ -392,21 +392,21 @@ describe('Test build arguments', () => {
         expected: '\n' +
           'ORDER OF DEPLOYMENT\n' +
           '🌊 Waves  - Deployed sequentially\n' +
-          '🔲 Stages - Deployed in parallel, all stages within a wave are deployed at the same time\n' +
-          '📄 Stack  - Dependency driven, will be deployed after all its dependent stacks, denoted by ↳ below it, are deployed. A stack with > matches the CDK pattern provided\n' +
+          '🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time\n' +
+          '📦 Stack  - Dependency driven, will be deployed after all its dependent stacks, denoted by ↳ below it, are deployed. A stack with > matches the CDK pattern provided\n' +
           '\n' +
           '| 🌊 Wave1\n' +
-          '|   🔲 Stage1\n' +
-          '      📄 StackA (Wave1_Stage1_StackA)\n' +
-          '|     📄 StackB (Wave1_Stage1_StackB)\n' +
+          '|   🏗️ Stage1\n' +
+          '      📦 StackA (Wave1_Stage1_StackA)\n' +
+          '|     📦 StackB (Wave1_Stage1_StackB)\n' +
           '|        ↳ StackA\n' +
-          '      📄 StackC (Wave1_Stage1_StackC)\n' +
-          '    🔲 Stage2\n' +
-          '      📄 StackD (Wave1_Stage2_StackD)\n' +
+          '      📦 StackC (Wave1_Stage1_StackC)\n' +
+          '    🏗️ Stage2\n' +
+          '      📦 StackD (Wave1_Stage2_StackD)\n' +
           '  🌊 Wave2\n' +
-          '    🔲 Stage1\n' +
-          '      📄 StackE (Wave2_Stage1_StackE)\n' +
-          '      📄 StackF (Wave2_Stage1_StackF)\n' +
+          '    🏗️ Stage1\n' +
+          '      📦 StackE (Wave2_Stage1_StackE)\n' +
+          '      📦 StackF (Wave2_Stage1_StackF)\n' +
           '         ↳ StackE\n',
       },
     ];

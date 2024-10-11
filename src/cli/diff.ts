@@ -4,9 +4,9 @@ import { getLocalPackagesPreferredPath } from './utils';
 
 const logger = new Logger();
 
-export async function synth(pattern: string, rawArgs: string): Promise<void> {
-  const synthArg = `cdk synth "${pattern}" ${rawArgs}`;
-  logger.debug('CDK synth command: ', synthArg);
+export async function diff(pattern: string, rawArgs: string): Promise<void> {
+  const synthArg = `cdk diff "${pattern}" ${rawArgs}`;
+  logger.debug('CDK diff command: ', synthArg);
   await execa.command(synthArg, {
     env: {
       ...process.env,

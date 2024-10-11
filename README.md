@@ -202,17 +202,17 @@ The stack deployment order will be printed to the console when running `cdk` com
 ```plaintext
 ORDER OF DEPLOYMENT
 🌊 Waves  - Deployed sequentially
-🔲 Stages - Deployed in parallel, all stages within a wave are deployed at the same time
-📄 Stack  - Dependency driven, will be deployed after all its dependent stacks, denoted by ↳ below it, is deployed
+🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time
+📦 Stack  - Dependency driven, will be deployed after all its dependent stacks, denoted by ↳ below it, is deployed
 
 🌊 Wave1
-  🔲 Stage1
-    📄 StackA (Wave1_Stage1_StackA)
-    📄 StackB (Wave1_Stage1_StackB)
+  🏗️ Stage1
+    📦 StackA (Wave1_Stage1_StackA)
+    📦 StackB (Wave1_Stage1_StackB)
         ↳ StackA
 🌊 Wave2
-  🔲 Stage1
-    📄 StackC (Wave2_Stage1_StackC)
+  🏗️ Stage1
+    📦 StackC (Wave2_Stage1_StackC)
 
 ```
 
@@ -388,16 +388,16 @@ The stack deployment order will be printed to the console when running `cdk` com
 ```plaintext
 ORDER OF DEPLOYMENT
 🌊 Waves  - Deployed sequentially
-🔲 Stages - Deployed in parallel, all stages within a wave are deployed at the same time
-📄 Stack  - Dependency driven
+🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time
+📦 Stack  - Dependency driven
 
 🌊 Wave1
-  🔲 Stage1
-    📄 StackA
-    📄 StackB
+  🏗️ Stage1
+    📦 StackA
+    📦 StackB
 🌊 Wave2
-  🔲 Stage1
-    📄 StackC
+  🏗️ Stage1
+    📦 StackC
 ```
 
 <details>

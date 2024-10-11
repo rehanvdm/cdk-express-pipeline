@@ -1,15 +1,157 @@
 [
   {
-    "id": "MyWave1",
+    "id": "Wave1",
     "separator": "_",
     "stages": [
       {
-        "id": "MyStage1",
+        "id": "Stage1",
         "stacks": [
           {
-            "id": "MyWave1_MyStage1_MyStackA",
-            "stackName": "MyStackA",
+            "id": "Wave1_Stage1_StackA",
+            "stackName": "StackA",
             "dependencies": []
+          },
+          {
+            "id": "Wave1_Stage1_StackB",
+            "stackName": "StackB",
+            "dependencies": [
+              {
+                "id": "Wave1_Stage1_StackA",
+                "stackName": "StackA",
+                "dependencies": []
+              }
+            ]
+          },
+          {
+            "id": "Wave1_Stage1_StackC",
+            "stackName": "StackC",
+            "dependencies": [
+              {
+                "id": "Wave1_Stage1_StackA",
+                "stackName": "StackA",
+                "dependencies": []
+              }
+            ]
+          },
+          {
+            "id": "Wave1_Stage1_StackD",
+            "stackName": "StackD",
+            "dependencies": [
+              {
+                "id": "Wave1_Stage1_StackB",
+                "stackName": "StackB",
+                "dependencies": []
+              },
+              {
+                "id": "Wave1_Stage1_StackF",
+                "stackName": "StackF",
+                "dependencies": []
+              }
+            ]
+          },
+          {
+            "id": "Wave1_Stage1_StackE",
+            "stackName": "StackE",
+            "dependencies": [
+              {
+                "id": "Wave1_Stage1_StackF",
+                "stackName": "StackF",
+                "dependencies": []
+              }
+            ]
+          },
+          {
+            "id": "Wave1_Stage1_StackF",
+            "stackName": "StackF",
+            "dependencies": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "Wave2",
+    "separator": "_",
+    "stages": [
+      {
+        "id": "Stage1",
+        "stacks": [
+          {
+            "id": "Wave2_Stage1_StackH",
+            "stackName": "StackH",
+            "dependencies": [
+              {
+                "id": "Wave1_Stage1_StackA",
+                "stackName": "StackA",
+                "dependencies": []
+              },
+              {
+                "id": "Wave1_Stage1_StackB",
+                "stackName": "StackB",
+                "dependencies": []
+              },
+              {
+                "id": "Wave1_Stage1_StackC",
+                "stackName": "StackC",
+                "dependencies": []
+              },
+              {
+                "id": "Wave1_Stage1_StackD",
+                "stackName": "StackD",
+                "dependencies": []
+              },
+              {
+                "id": "Wave1_Stage1_StackE",
+                "stackName": "StackE",
+                "dependencies": []
+              },
+              {
+                "id": "Wave1_Stage1_StackF",
+                "stackName": "StackF",
+                "dependencies": []
+              }
+            ]
+          },
+          {
+            "id": "Wave2_Stage1_StackI",
+            "stackName": "StackI",
+            "dependencies": [
+              {
+                "id": "Wave2_Stage1_StackH",
+                "stackName": "StackH",
+                "dependencies": []
+              },
+              {
+                "id": "Wave1_Stage1_StackA",
+                "stackName": "StackA",
+                "dependencies": []
+              },
+              {
+                "id": "Wave1_Stage1_StackB",
+                "stackName": "StackB",
+                "dependencies": []
+              },
+              {
+                "id": "Wave1_Stage1_StackC",
+                "stackName": "StackC",
+                "dependencies": []
+              },
+              {
+                "id": "Wave1_Stage1_StackD",
+                "stackName": "StackD",
+                "dependencies": []
+              },
+              {
+                "id": "Wave1_Stage1_StackE",
+                "stackName": "StackE",
+                "dependencies": []
+              },
+              {
+                "id": "Wave1_Stage1_StackF",
+                "stackName": "StackF",
+                "dependencies": []
+              }
+            ]
           }
         ]
       }

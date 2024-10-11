@@ -115,8 +115,8 @@ export class CdkExpressPipelineLegacy {
     console.log('');
     console.log('ORDER OF DEPLOYMENT');
     console.log('🌊 Waves  - Deployed sequentially');
-    console.log('🔲 Stages - Deployed in parallel, all stages within a wave are deployed at the same time');
-    console.log('📄 Stack  - Dependency driven');
+    console.log('🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time');
+    console.log('📦 Stack  - Dependency driven');
     console.log('');
 
     const patternToFilter = getStackPatternToFilter();
@@ -124,10 +124,10 @@ export class CdkExpressPipelineLegacy {
     for (const wave of waves) {
       console.log(`🌊 ${wave.id}`);
       for (const stage of wave.stages) {
-        console.log(`  🔲 ${stage.id}`);
+        console.log(`  🏗️ ${stage.id}`);
         for (const stack of stage.stacks) {
           const targetCharacter = targetIdentifier(patternToFilter, stack.stackName) ? '|' : ' ';
-          console.log(`   ${targetCharacter} 📄 ${stack.stackName}`);
+          console.log(`   ${targetCharacter} 📦 ${stack.stackName}`);
         }
       }
     }

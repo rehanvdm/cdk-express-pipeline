@@ -1,14 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'path';
 import { ExpressWave } from './express-wave';
-import {
-  DeploymentOrderStack,
-  DeploymentOrderStage,
-  DeploymentOrderWave,
-  getStackPatternToFilter,
-  printStackDependencies,
-  targetIdentifier,
-} from './utils';
+import { DeploymentOrderStack, DeploymentOrderStage, DeploymentOrderWave, getStackPatternToFilter, targetIdentifier } from './utils';
 
 export const CDK_EXPRESS_PIPELINE_DEPENDENCY_REASON = 'cdk-express-pipeline wave->stage->stack dependency';
 export const CDK_EXPRESS_PIPELINE_DEFAULT_SEPARATOR = '_';
@@ -24,8 +17,8 @@ export function printWaves(waves: ExpressWave[]) {
   console.log('');
   console.log('ORDER OF DEPLOYMENT');
   console.log('🌊 Waves  - Deployed sequentially');
-  console.log('🔲 Stages - Deployed in parallel, all stages within a wave are deployed at the same time');
-  console.log('📄 Stack  - Dependency driven, will be deployed after all its dependent stacks, denoted by ↳ below it, are deployed. ' +
+  console.log('🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time');
+  console.log('📦 Stack  - Dependency driven, will be deployed after all its dependent stacks, denoted by ↳ below it, are deployed. ' +
     'A stack with > matches the CDK pattern provided');
   console.log('');
 
@@ -40,14 +33,18 @@ export function printWaves(waves: ExpressWave[]) {
       const targetStage = targetIdentifier(patternToFilter, fullStageId);
       const stageTargetCharacter = targetStage ? '|  ' : '   ';
 
-      console.log(`${stageTargetCharacter} 🔲 ${stage.id}`);
+      console.log(`${stageTargetCharacter} 🏗️ ${stage.id}`);
       for (const stack of stage.stacks) {
         const targetStack = targetIdentifier(patternToFilter, stack.id);
         const stackTargetCharacter = targetStack ? '|    ' : '     ';
 
-        console.log(`${stackTargetCharacter} 📄 ${stack.stackName} (${stack.id})`);
-        for (let dependantStack of stack.expressDependencies()) {
-          printStackDependencies(stack.stage, dependantStack, 2, stackTargetCharacter);
+        console.log(`${stackTargetCharacter} 📦 ${stack.stackName} (${stack.id})`);
+
+        const dependantStacks = stack.expressDependencies()
+          .filter(dep => dep.stage === stack.stage)
+          .map((dep) => dep.stackName);
+        if (dependantStacks.length > 0) {
+          console.log(`${stackTargetCharacter}    ↳ ${dependantStacks.join(', ')}`);
         }
       }
     }

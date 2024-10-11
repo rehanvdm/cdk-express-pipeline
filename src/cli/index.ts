@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 import * as fs from 'fs';
 import { Command } from 'commander';
-import { deploy } from './deploy';
+import { deploy, deploySynth } from './deploy';
+import { diff } from './diff';
 import { Logger, LogLevel } from './logger';
 import { getManifestStackArtifacts } from './manifest';
-import { rollBack, RollbackStatus, saveCurrentCfnTemplates } from './rollback';
+import { rollBack, saveCurrentCfnTemplates, translateDeploymentToRollback } from './rollback';
 import { synth } from './synth';
-import { extractOriginalArgs, printWavesDeployStatus, printWavesRollbackStatus } from './utils';
+import { extractOriginalArgs } from './utils';
 import { DeploymentOrderWave } from '../utils';
 
 const logger = new Logger();
@@ -22,10 +23,58 @@ function getDeploymentOrder(): DeploymentOrderWave[] {
 
 async function main() {
   const program = new Command();
+
   program
-    .command('deploy <pattern> [extraArgs...]')
-    .description('Deploy command with pattern and extra arguments')
-    .option('--debug')
+    .command('diff')
+    .description('The standard `cdk diff` command, added for convenience and consistency')
+    .usage(' \'**\' --diff -- --profile OPTIONAL_YOUR_AWS_PROFILE')
+    .argument('<pattern>', 'The CDK pattern to diff')
+    .argument('[extraCdkArgs...]', 'Extra arguments to be passed to the CDK command with `--`, example: `-- --profile YOUR_AWS_PROFILE  --app ./.cdk-express-pipeline/assembly`')
+    .option('--debug', 'Outputs extra debugging messages')
+    .action(async (pattern: string, extraArgs: string[], opts: { [optName: string]: any }) => {
+      if (opts.debug === true) {
+        logger.init(LogLevel.DEBUG);
+      } else {
+        logger.init(LogLevel.DEFAULT);
+      }
+
+      let rawArgs = extraArgs.join(' ');
+      if (rawArgs.includes('--all')) {
+        pattern = '**';
+      }
+
+      await diff(pattern, rawArgs);
+    });
+
+  program
+    .command('synth')
+    .description('The standard `cdk synth` command, added for convenience and consistency')
+    .usage(' \'**\' --synth -- --profile OPTIONAL_YOUR_AWS_PROFILE')
+    .argument('<pattern>', 'The CDK pattern to synth')
+    .argument('[extraCdkArgs...]', 'Extra arguments to be passed to the CDK command with `--`, example: `-- --profile YOUR_AWS_PROFILE --output .cdk-express-pipeline/assembly`')
+    .option('--debug', 'Outputs extra debugging messages')
+    .action(async (pattern: string, extraArgs: string[], opts: { [optName: string]: any }) => {
+      if (opts.debug === true) {
+        logger.init(LogLevel.DEBUG);
+      } else {
+        logger.init(LogLevel.DEFAULT);
+      }
+
+      let rawArgs = extraArgs.join(' ');
+      if (rawArgs.includes('--all')) {
+        pattern = '**';
+      }
+
+      await synth(pattern, rawArgs);
+    });
+
+  program
+    .command('deploy')
+    .description('CDK Deploy command that also rolls back all stacks if a stack fails within the <pattern>')
+    .usage(' \'**\' --debug -- --profile OPTIONAL_YOUR_AWS_PROFILE --exclusively --require-approval never --concurrency 10')
+    .argument('<pattern>', 'The CDK pattern to deploy')
+    .argument('[extraCdkArgs...]', 'Extra arguments to be passed to the CDK command with `--`, example: `-- --profile YOUR_AWS_PROFILE --output .cdk-express-pipeline/assembly`')
+    .option('--debug', 'Outputs extra debugging messages')
     .action(async (pattern: string, extraArgs: string[], opts: { [optName: string]: any }) => {
 
       if (opts.debug === true) {
@@ -55,8 +104,14 @@ async function main() {
         argsOriginal.raw += ' --progress events';
       }
 
-      logger.log('Synthesizing CDK app');
-      const args = await synth(argsOriginal);
+
+      console.log('');
+      console.log('===============================');
+      console.log('========== PREPARING ==========');
+      console.log('===============================');
+      console.log('');
+      logger.log('Checking cloud assembly');
+      const args = await deploySynth(argsOriginal);
       const deploymentOrder = getDeploymentOrder();
       logger.debug('args:', args);
       logger.debug('deploymentOrder:', deploymentOrder);
@@ -65,26 +120,33 @@ async function main() {
       const stackArtifacts = getManifestStackArtifacts(args);
       logger.debug('stackArtifacts:', stackArtifacts);
 
-      logger.log('Saving CloudFormation templates before deployment');
+      logger.log('Saving CloudFormation templates for rollback');
       const rollbackStackTemplates = await saveCurrentCfnTemplates(args, stackArtifacts);
       logger.debug('rollbackStackTemplates:', rollbackStackTemplates);
 
-      logger.log('Deploying CDK stacks');
+      console.log('');
+      console.log('===============================');
+      console.log('========== DEPLOYING ==========');
+      console.log('===============================');
+      console.log('');
       const deployedStackArtifacts = await deploy(args, stackArtifacts, rollbackStackTemplates, deploymentOrder);
       logger.debug('deployedStackArtifacts:', deployedStackArtifacts);
-      printWavesDeployStatus(deploymentOrder, deployedStackArtifacts);
-
-      logger.log('Checking for failed stacks and rolling back if necessary');
-      const stacksRolledBackStatus = await rollBack(deployedStackArtifacts, rollbackStackTemplates, args, deploymentOrder);
-      logger.log('Rollback complete');
-      printWavesRollbackStatus(deploymentOrder, stacksRolledBackStatus);
-
-      const failedStacks = stacksRolledBackStatus.filter(result => result.status === RollbackStatus.ROLLBACK_FAILED ||
-        result.status === RollbackStatus.SKIP_CFN_ROLLED_BACK);
-      if (failedStacks) {
-        logger.log('Some stacks failed to rollback. Please check the logs above and manually rollback the stacks that failed.');
-        process.exit(1);
+      const shouldRollback = deployedStackArtifacts.some((stack) => translateDeploymentToRollback(stack.status).rollback);
+      if (shouldRollback) {
+        console.log('');
+        console.log('==================================');
+        console.log('========== ROLLING BACK ==========');
+        console.log('==================================');
+        console.log('');
+        const { success } = await rollBack(deployedStackArtifacts, rollbackStackTemplates, args, deploymentOrder);
+        logger.debug('Rollback complete');
+        if (!success) {
+          process.exit(1);
+        }
+      } else {
+        logger.log('No stacks need to be rolled back');
       }
+
     });
 
   program.parse(process.argv);

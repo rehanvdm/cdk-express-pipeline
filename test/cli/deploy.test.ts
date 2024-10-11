@@ -1,7 +1,8 @@
+import * as fs from 'fs';
 import { AssumeRoleCommand, STSClient } from '@aws-sdk/client-sts';
 import execa = /* eslint-disable @typescript-eslint/no-require-imports */ require('execa');
 import * as util from '../../src/_test-helpers/utils';
-import { deploy } from '../../src/cli/deploy';
+import { deploy, deploySynth } from '../../src/cli/deploy';
 import { Logger, LogLevel } from '../../src/cli/logger';
 import { DeploymentStatus, Manifest, ManifestArtifact, ManifestArtifactDeployed } from '../../src/cli/manifest';
 import { RollbackStack } from '../../src/cli/rollback';
@@ -20,6 +21,102 @@ jest.mock('fs', () => {
     __esModule: true,
     ...actualModule,
   };
+});
+
+describe('synth - should throw error if assemblyPath is provided but does not exist', () => {
+  const rawArgs = '--profile systanics-role-exported --exclusively --require-approval never --concurrency 10';
+  const originalArgs: OriginalArgs = extractOriginalArgs('\'**\'', rawArgs);
+  const now = (new Date()).getTime();
+  const args = {
+    ...originalArgs,
+    rawArgs: rawArgs + ' --app ./.nope/' + now,
+    assemblyPath: './.nope/' + now,
+  };
+
+  beforeEach(() => {
+    jest.restoreAllMocks();
+
+    jest.spyOn(fs, 'existsSync').mockImplementation((path) => {
+      if (args.assemblyPath !== path) {
+        throw new Error(`existsSync: Path does not match. Expected: ${args.assemblyPath}, Received: ${path}`);
+      }
+      return false; /* To test the branching if rm and mkdir */
+    });
+    jest.spyOn(fs, 'rmSync').mockImplementation((dir) => {
+      if (args.assemblyPath !== dir) {
+        throw new Error(`rmSync: Path does not match. Expected: ${args.assemblyPath}, Received: ${dir}`);
+      }
+    });
+  });
+
+  test('synth', async () => {
+    const promise = deploySynth(args);
+    await expect(() => promise).rejects.toThrow(`Assembly at path ${args.assemblyPath} does not exist`);
+  });
+});
+
+describe('synth - should create assembly if assemblyPath is not provided', () => {
+  const rawArgs = '--profile systanics-role-exported --exclusively --require-approval never --concurrency 10';
+  const originalArgs: OriginalArgs = extractOriginalArgs('\'**\'', rawArgs);
+  const args = {
+    ...originalArgs,
+  };
+  const cdkExpressSynthPath = '.cdk-express-pipeline/assembly';
+  const cdkExpressRollbackPath = '.cdk-express-pipeline/previous-cfn-templates';
+  const assemblyDirsToRemove = [cdkExpressSynthPath, cdkExpressRollbackPath];
+  const expectedCommand = `cdk synth "'**'" ${rawArgs} --output ${cdkExpressSynthPath}`;
+  let execaCommand = '';
+
+  beforeEach(() => {
+    jest.restoreAllMocks();
+
+    execaCommand = '';
+    jest.spyOn(fs, 'existsSync').mockImplementation((path) => {
+      if (!assemblyDirsToRemove.includes(path.toString())) {
+        throw new Error(`existsSync: Path does not match. Expected one of: ${assemblyDirsToRemove}, Received: ${path}`);
+      }
+      return false; /* To test the branching if rm and mkdir */
+    });
+    jest.spyOn(fs, 'rmSync').mockImplementation((dir) => {
+      if (!assemblyDirsToRemove.includes(dir.toString())) {
+        throw new Error(`rmSync: Path does not match. Expected one of: ${assemblyDirsToRemove}, Received: ${dir}`);
+      }
+    });
+
+    jest.spyOn(execa, 'command').mockImplementation((command) => {
+      execaCommand = command;
+      return Promise.resolve({}) as any;
+    });
+  });
+
+  test('synth', async () => {
+    const synthedArgs = await deploySynth(args);
+    expect(args.assemblyPath).toEqual(undefined);
+    expect(synthedArgs.assemblyPath).toEqual(cdkExpressSynthPath);
+    expect(execaCommand).toEqual(expectedCommand);
+  });
+});
+
+describe('synth - use assemblyPath if provided', () => {
+  const appPath = '.test';
+  const rawArgs = `--profile systanics-role-exported --exclusively --require-approval never --concurrency 10 --app ${appPath}`;
+  const originalArgs: OriginalArgs = extractOriginalArgs('\'**\'', rawArgs);
+  const args = {
+    ...originalArgs,
+  };
+
+  beforeEach(() => {
+    jest.restoreAllMocks();
+    jest.spyOn(fs, 'existsSync').mockImplementation(() => {
+      return true;
+    });
+  });
+
+  test('synth', async () => {
+    const synthedArgs = await deploySynth(args);
+    expect(args.assemblyPath).toEqual(appPath);
+    expect(synthedArgs.assemblyPath).toEqual(appPath);
+  });
 });
 
 describe('deploy - validate correct processing of cdk deploy', () => {
@@ -285,5 +382,3 @@ describe('deploy - validate correct processing of cdk deploy', () => {
     }
   });
 });
-
-

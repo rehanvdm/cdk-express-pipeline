@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import {
   CloudFormationClient,
+  DeleteStackCommand,
   DescribeStackEventsCommand,
   DescribeStackEventsCommandOutput,
   DescribeStacksCommand,
@@ -22,7 +23,7 @@ import { DeploymentOrderWave } from '../../src/utils';
 
 const jestConsole = console;
 const logger = new Logger();
-logger.init(LogLevel.DEBUG);
+logger.init(LogLevel.DEFAULT);
 
 
 /* https://github.com/swc-project/swc/issues/3843#issuecomment-1058826971 */
@@ -157,8 +158,8 @@ describe('saveCurrentCfnTemplates', () => {
   /* Created after Synth */
   const args = {
     ...originalArgs,
-    rawArgs: rawArgs + ' --app ./.cdk-express-pipeline/rollback',
-    assemblyPath: './.cdk-express-pipeline/rollback',
+    rawArgs: rawArgs + ' --app .cdk-express-pipeline/previous-cfn-templates',
+    assemblyPath: '.cdk-express-pipeline/previous-cfn-templates',
   };
 
   let files: { [fileName: string]: string } = {};
@@ -280,7 +281,8 @@ describe('rollBack', () => {
     },
     [STACK_ID_B]: {
       deployment: DeploymentStatus.CREATE_STACK_SUCCESS,
-      rollback: RollbackStatus.SKIP_ROLLBACK_CREATE_STACK,
+      rollback: RollbackStatus.ROLLBACK_COMPLETE,
+      // rollback: RollbackStatus.SKIP_ROLLBACK_CREATE_STACK,
     },
     [STACK_ID_C]: {
       deployment: DeploymentStatus.UPDATE_STACK_SUCCESS,
@@ -393,7 +395,16 @@ describe('rollBack', () => {
             {
               id: STACK_ID_C,
               stackName: 'StackC',
-              dependencies: [],
+              dependencies: [{
+                id: STACK_ID_A,
+                stackName: 'StackA',
+                dependencies: [],
+              },
+              {
+                id: STACK_ID_B,
+                stackName: 'StackB',
+                dependencies: [],
+              }],
             },
           ],
         },
@@ -414,7 +425,11 @@ describe('rollBack', () => {
             {
               id: STACK_ID_E,
               stackName: 'StackE',
-              dependencies: [],
+              dependencies: [{
+                id: STACK_ID_D,
+                stackName: 'StackD',
+                dependencies: [],
+              }],
             },
             {
               id: STACK_ID_F,
@@ -690,9 +705,9 @@ describe('rollBack', () => {
   });
 
   test('deploy', async () => {
-    const rolledBackStackResults = await rollBack(mockManifestArtifactsDeployed, mockRolledBackStacks, args, deploymentOrderResult);
+    const { stacksRolledBackStatus } = await rollBack(mockManifestArtifactsDeployed, mockRolledBackStacks, args, deploymentOrderResult);
     // TODO: Check cfnUpdateStackTemplateProps
-    console.log('rolledBackStackResults', rolledBackStackResults);
+    console.log('rolledBackStackResults', stacksRolledBackStatus);
 
     /* Compare S3PutObjectCommands one by one as the order of these might not be the same */
     expect(s3PutObjectCommandsExpected.length).toEqual(mockS3PutObjectCommands.length);
@@ -709,11 +724,331 @@ describe('rollBack', () => {
     }
 
     /* Compare rollback results one by one as the order of these are not the same */
-    expect(rolledBackStackResults.length).toEqual(mockRolledBackStacksResult.length);
+    expect(stacksRolledBackStatus.length).toEqual(mockRolledBackStacksResult.length);
     const stackIds = mockRolledBackStacksResult.map((rolledBack) => rolledBack.stackId);
     for (const stackId of stackIds) {
-      const rolledBackStackResult = rolledBackStackResults.find((artifact) => artifact.stackId === stackId)!;
-      const mockRolledBackStackResult = rolledBackStackResults.find((artifact) => artifact.stackId === stackId);
+      const rolledBackStackResult = stacksRolledBackStatus.find((artifact) => artifact.stackId === stackId)!;
+      const mockRolledBackStackResult = stacksRolledBackStatus.find((artifact) => artifact.stackId === stackId);
+      expect(rolledBackStackResult).toEqual(mockRolledBackStackResult);
+    }
+  }, 30_000);
+});
+
+describe('rollBack - delete new stack that failed', () => {
+  /**
+   * A mock stack template that returns some JSON of a certain length
+   * @param length Length in Bytes
+   */
+  function mockStackTemplateBody(length: number) {
+
+    const jsonStr = (val: string) => `{ Name: ${val} }`;
+
+    const emptyLength = jsonStr('').length;
+    const remainingLength = length - emptyLength;
+    const value = Array.from({ length: remainingLength }, () => 'A').join('');
+    return jsonStr(value);
+  };
+
+
+  const rawArgs = '--profile systanics-role-exported --exclusively --require-approval never --concurrency 10';
+  const originalArgs: OriginalArgs = extractOriginalArgs('\'**\'', rawArgs);
+  const args = {
+    ...originalArgs,
+  };
+
+  const CDK_ASSETS_BUCKET_NAME = 'cdk-hnb659fds-assets-123456789012-eu-west-1';
+
+  const STACK_ID_A = 'Wave1_Stage1_StackA';
+  const STACK_ID_B = 'Wave1_Stage1_StackB';
+
+  const STACK_STATUSES = {
+    [STACK_ID_A]: {
+      deployment: DeploymentStatus.UPDATE_STACK_SUCCESS,
+      rollback: RollbackStatus.ROLLBACK_COMPLETE,
+    },
+    [STACK_ID_B]: {
+      deployment: DeploymentStatus.CREATE_STACK_SUCCESS,
+      rollback: RollbackStatus.ROLLBACK_COMPLETE,
+    },
+  };
+  const STACK_BODIES: { [stackId: string]: string } = {
+    [STACK_ID_A]: mockStackTemplateBody(49_999),
+    [STACK_ID_B]: mockStackTemplateBody(49_999),
+  };
+
+  const mockManifest: Manifest = {
+    version: '1.0',
+    artifacts: {
+      ...util.getMockStack(STACK_ID_A, 'StackA'),
+      ...util.getMockStack(STACK_ID_B, 'StackB'),
+    },
+  };
+
+  /* The CFN Stacks saved before synth */
+  const mockRolledBackStacks: RollbackStack[] = [
+    {
+      stackId: STACK_ID_A,
+      hasRollbackTemplate: true,
+      rollbackTemplatePath: `${args.assemblyPath}/${STACK_ID_A}.template.json`,
+      rollbackTemplateSize: STACK_BODIES[STACK_ID_A].length,
+    },
+    // Create Success, stack does not exist before deploy
+    {
+      stackId: STACK_ID_B,
+      hasRollbackTemplate: false,
+      rollbackTemplatePath: `${args.assemblyPath}/${STACK_ID_B}.template.json`,
+      rollbackTemplateSize: STACK_BODIES[STACK_ID_B].length,
+    },
+  ];
+
+  /* The order in which stacks are deployed, created by synth as a file to .cdk-express-pipeline */
+  const deploymentOrderResult: DeploymentOrderWave[] = [
+    {
+      id: 'Wave1',
+      separator: '_',
+      stages: [
+        {
+          id: 'Stage1',
+          stacks: [
+            {
+              id: STACK_ID_A,
+              stackName: 'StackA',
+              dependencies: [],
+            },
+            {
+              id: STACK_ID_B,
+              stackName: 'StackB',
+              dependencies: [],
+            },
+          ],
+        },
+      ],
+    },
+  ];
+
+  /* The manifest of Deployed Stacks passed to rollback */
+  const mockManifestArtifactsDeployed: ManifestArtifactDeployed[] = [
+    {
+      ...mockManifest.artifacts[STACK_ID_A],
+      stackId: STACK_ID_A,
+      status: STACK_STATUSES[STACK_ID_A].deployment,
+    },
+    {
+      ...mockManifest.artifacts[STACK_ID_B],
+      stackId: STACK_ID_B,
+      status: STACK_STATUSES[STACK_ID_B].deployment,
+    },
+  ];
+
+
+  /* The expected outcome of rollback(...) */
+  const mockRolledBackStacksResult: RolledBackStackResult[] = [
+    {
+      stackId: STACK_ID_A,
+      status: STACK_STATUSES[STACK_ID_A].rollback,
+    },
+    {
+      stackId: STACK_ID_B,
+      status: STACK_STATUSES[STACK_ID_B].rollback,
+    },
+  ];
+
+  /* The expected CFN commands */
+  type CfnUpdateCommands = {
+    StackName: string;
+    TemplateBody?: string;
+    TemplateUrl?: string;
+  };
+  const mockCfnUpdateCommands: CfnUpdateCommands[] = [
+    {
+      StackName: 'StackA',
+      TemplateBody: STACK_BODIES[STACK_ID_A],
+      TemplateUrl: undefined,
+    },
+  ];
+  let cfnUpdateCommandsExpected: CfnUpdateCommands[] = [];
+
+  type CfnDeleteCommands = {
+    StackName: string;
+  };
+  const mockCfnDeleteCommands: CfnUpdateCommands[] = [
+    {
+      StackName: 'StackB',
+    },
+  ];
+  let cfnDeleteCommandsExpected: CfnDeleteCommands[] = [];
+
+  beforeEach(() => {
+    /* Disable Jest's console.log that adds the location of log lines */
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    global.console = require('console');
+
+    jest.restoreAllMocks();
+
+    jest.spyOn(fs, 'readFileSync').mockImplementation((filePath) => {
+      if (filePath.toString().endsWith('.template.json')) {
+        const stackId = filePath.toString().split('/')[1].split('.').shift();
+        return STACK_BODIES[stackId!];
+      }
+      throw new Error('Mock file not found');
+    });
+
+    jest.spyOn(STSClient.prototype, 'send').mockImplementation((command) => {
+      if (command instanceof AssumeRoleCommand) {
+        return Promise.resolve({
+          Credentials: {
+            AccessKeyId: 'mockAccessKeyId',
+            SecretAccessKey: 'mockSecretAccessKey',
+            SessionToken: 'mockSessionToken',
+            Expiration: new Date(),
+          },
+        });
+      }
+      throw new Error('Unrecognized command in Mock STSClient');
+    });
+
+    jest.spyOn(CloudFormationClient.prototype, 'send').mockImplementation((command) => {
+      if (command instanceof UpdateStackCommand) {
+        cfnUpdateCommandsExpected.push({
+          StackName: command.input.StackName!,
+          TemplateBody: command.input.TemplateBody,
+          TemplateUrl: command.input.TemplateURL,
+        });
+        return Promise.resolve();
+      } else if (command instanceof DeleteStackCommand) {
+        cfnDeleteCommandsExpected.push({
+          StackName: command.input.StackName!,
+        });
+        return Promise.resolve();
+      } else if (command instanceof DescribeStackEventsCommand) {
+        const now = new Date();
+        const stackId = mockManifestArtifactsDeployed.find((artifact) => artifact.properties.stackName === command.input.StackName)!.stackId;
+
+        const resp: Promise<DescribeStackEventsCommandOutput> = Promise.resolve({
+          StackEvents: [
+            {
+              StackId: stackId,
+              StackName: command.input.StackName!,
+              EventId: '1',
+              LogicalResourceId: 'MyBucket',
+              PhysicalResourceId: 'MyBucket',
+              ResourceType: 'AWS::S3::Bucket',
+              ResourceStatus: ResourceStatus.CREATE_COMPLETE,
+              Timestamp: new Date(now.getTime() + 5 * 1000),
+            },
+            {
+              StackId: stackId,
+              StackName: command.input.StackName!,
+              EventId: '1',
+              LogicalResourceId: 'MyBucket',
+              PhysicalResourceId: 'MyBucket',
+              ResourceType: 'AWS::S3::Bucket',
+              ResourceStatus: ResourceStatus.CREATE_IN_PROGRESS,
+              Timestamp: now,
+            },
+          ],
+          nextToken: undefined, // TODO: Test paginate
+          $metadata: {},
+        });
+        return resp;
+      } else if (command instanceof DescribeStacksCommand) {
+
+        if (command.input.StackName === 'CDKToolkit') {
+          /* For getting the CDK owned bucket */
+          const resp: Promise<DescribeStacksCommandOutput> = Promise.resolve({
+            Stacks: [
+              {
+                StackId: 'CDKToolkit',
+                StackName: 'CDKToolkit',
+                StackStatus: StackStatus.CREATE_COMPLETE,
+                LastUpdatedTime: new Date(),
+                CreationTime: new Date(),
+                Outputs: [
+                  {
+                    OutputKey: 'BucketName',
+                    OutputValue: CDK_ASSETS_BUCKET_NAME,
+                  },
+                ],
+              },
+            ],
+            NextToken: undefined,
+            $metadata: {},
+          });
+          return resp;
+        } else {
+          /* For getting the stacks in to be deployed */
+          const stackDeployed = mockManifestArtifactsDeployed.find((artifact) => artifact.properties.stackName === command.input.StackName);
+          let cfnStatus: StackStatus;
+          switch (stackDeployed?.status) {
+
+            case DeploymentStatus.CREATE_STACK_SUCCESS:
+              cfnStatus = StackStatus.CREATE_COMPLETE;
+              break;
+            case DeploymentStatus.CREATE_STACK_FAILED:
+              cfnStatus = StackStatus.CREATE_FAILED;
+              break;
+
+            case DeploymentStatus.UPDATE_STACK_SUCCESS:
+              cfnStatus = StackStatus.UPDATE_COMPLETE;
+              break;
+            case DeploymentStatus.UPDATE_STACK_FAILED:
+              cfnStatus = StackStatus.UPDATE_FAILED;
+              break;
+
+            default:
+              throw new Error('Unrecognized status in Mock CloudFormationClient');
+          }
+
+          //TODO: Test pagination by setting StackStatus to `..._IN_PROGRESS`
+          const resp: Promise<DescribeStacksCommandOutput> = Promise.resolve({
+            Stacks: [
+              {
+                StackId: stackDeployed.stackId,
+                StackName: command.input.StackName!,
+                StackStatus: cfnStatus,
+                LastUpdatedTime: new Date(),
+                CreationTime: new Date(),
+              },
+            ],
+            NextToken: undefined,
+            $metadata: {},
+          });
+          return resp;
+        }
+      } else {
+        throw new Error('Unrecognized command in Mock CloudFormationClient');
+      }
+    });
+
+  });
+  afterEach(() => {
+    /* Restore Jest's console */
+    global.console = jestConsole;
+  });
+
+  test('deploy', async () => {
+    const { stacksRolledBackStatus } = await rollBack(mockManifestArtifactsDeployed, mockRolledBackStacks, args, deploymentOrderResult);
+    console.log('rolledBackStackResults', stacksRolledBackStatus);
+
+    /* Compare CfnUpdateCommands one by one as the order of these might not be the same */
+    expect(cfnUpdateCommandsExpected.length).toEqual(mockCfnUpdateCommands.length);
+    for (const mockCfnUpdateCommand of mockCfnUpdateCommands) {
+      const cfnUpdateCommandExpected = cfnUpdateCommandsExpected.find((command) => command.StackName === mockCfnUpdateCommand.StackName);
+      expect(cfnUpdateCommandExpected).toEqual(mockCfnUpdateCommand);
+    }
+    /* Compare CfnDeleteCommands one by one as the order of these might not be the same */
+    expect(cfnDeleteCommandsExpected.length).toEqual(mockCfnDeleteCommands.length);
+    for (const mockCfnDeleteCommand of mockCfnDeleteCommands) {
+      const cfnDeleteCommandExpected = cfnDeleteCommandsExpected.find((command) => command.StackName === mockCfnDeleteCommand.StackName);
+      expect(cfnDeleteCommandExpected).toEqual(mockCfnDeleteCommand);
+    }
+
+    /* Compare rollback results one by one as the order of these are not the same */
+    expect(stacksRolledBackStatus.length).toEqual(mockRolledBackStacksResult.length);
+    const stackIds = mockRolledBackStacksResult.map((rolledBack) => rolledBack.stackId);
+    for (const stackId of stackIds) {
+      const rolledBackStackResult = stacksRolledBackStatus.find((artifact) => artifact.stackId === stackId)!;
+      const mockRolledBackStackResult = stacksRolledBackStatus.find((artifact) => artifact.stackId === stackId);
       expect(rolledBackStackResult).toEqual(mockRolledBackStackResult);
     }
   }, 30_000);

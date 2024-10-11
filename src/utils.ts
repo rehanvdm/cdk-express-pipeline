@@ -1,7 +1,5 @@
 import { DeploymentStatus } from './cli/manifest';
 import { RollbackStatus } from './cli/rollback';
-import { ExpressStack } from './express-stack';
-import { ExpressStage } from './express-stage';
 
 /* ================================= Printing Waves ============================== */
 export function getStackPatternToFilter() {
@@ -30,17 +28,6 @@ export function getStackPatternToFilter() {
  */
 export function targetIdentifier(patternToFilter: string | undefined, identifier: string): boolean {
   return patternToFilter === undefined || patternToFilter.startsWith(identifier) || identifier.startsWith(patternToFilter);
-}
-
-export function printStackDependencies(stage: ExpressStage, stack: ExpressStack, indentationLevel: number, targetCharacter: string) {
-  if (stack.stage !== stage) {
-    return;
-  }
-  console.log(`${targetCharacter} ${' '.repeat(indentationLevel)} ↳ ${stack.stackName}`);
-
-  stack.expressDependencies().forEach(dependantStack => {
-    printStackDependencies(stage, dependantStack, indentationLevel + 1, targetCharacter);
-  });
 }
 
 /* =================================================================================== */

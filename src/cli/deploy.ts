@@ -1,5 +1,5 @@
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-import execa = require('execa');
+import * as fs from 'fs';
+import execa = /* eslint-disable @typescript-eslint/no-require-imports */ require('execa');
 import { Logger } from './logger';
 import { DeploymentStatus, ManifestArtifact, ManifestArtifactDeployed } from './manifest';
 import { RollbackStack } from './rollback';
@@ -7,6 +7,72 @@ import { getLocalPackagesPreferredPath, OriginalArgs, printWavesDeployStatus } f
 import { DeploymentOrderWave } from '../utils';
 
 const logger = new Logger();
+
+export const ASSEMBLY_PATH = '.cdk-express-pipeline/assembly';
+export const ROLLBACK_PATH = '.cdk-express-pipeline/previous-cfn-templates';
+
+
+/**
+ * Synth the CDK app for deployment if needed. Use the assembly path if it exists, otherwise create one and return the path as well as the assembly
+ * argument for other * CDK commands
+ * @param argsOriginal
+ */
+export async function deploySynth(argsOriginal: OriginalArgs): Promise<OriginalArgs> {
+
+  let assemblyPath = argsOriginal.assemblyPath;
+
+  if (assemblyPath) {
+    if (!fs.existsSync(assemblyPath)) {
+      throw new Error(`Assembly at path ${assemblyPath} does not exist`);
+    }
+    logger.log('Assembly exists:', assemblyPath);
+
+    return {
+      ...argsOriginal,
+      raw: argsOriginal.raw,
+      assemblyPath: assemblyPath,
+    };
+  } else {
+    assemblyPath = ASSEMBLY_PATH;
+    logger.log('Creating assembly:', assemblyPath);
+
+    // Remove the assembly and rollback directory if it exists. Do not remove the complete directory as it will contain a deployment order file.
+    const assemblyDirsToRemove = [ASSEMBLY_PATH, ROLLBACK_PATH];
+    for (const dir of assemblyDirsToRemove) {
+      if (fs.existsSync(dir)) {
+        fs.rmSync(dir, {
+          recursive: true,
+          force: true,
+        });
+      }
+    }
+
+    const synthArg = `cdk synth "${argsOriginal.pattern}" ${argsOriginal.raw} --output ${assemblyPath}`;
+    logger.log('CDK synth command: ', synthArg);
+
+    await execa.command(synthArg, {
+      env: {
+        ...process.env,
+        PATH: getLocalPackagesPreferredPath(),
+        FORCE_COLOR: 'true',
+      },
+      stdout: 'inherit',
+      stderr: 'inherit',
+      preferLocal: true, // Strange bug where this only works for this package but not for a client using the library, hence we fix this above with `getLocalPackagesPreferredPath`
+      reject: true,
+      shell: true,
+      all: true,
+    });
+
+    return {
+      ...argsOriginal,
+      raw: argsOriginal.raw + ` --app ${assemblyPath}`,
+      assemblyPath: assemblyPath,
+    };
+  }
+
+
+}
 
 function stripAnsiCodes(str: string): string {
   return str.replace(/\x1B\[\d{1,2}m/g, '');
@@ -58,7 +124,6 @@ function processExecaOutput(completedStacks: ManifestArtifactDeployed[], outputL
   return completedStacks;
 }
 
-
 export async function deploy(args: OriginalArgs, stackArtifacts: ManifestArtifact[], rollbackStacks: RollbackStack[],
   deploymentOrder: DeploymentOrderWave[]) {
 
@@ -90,7 +155,6 @@ export async function deploy(args: OriginalArgs, stackArtifacts: ManifestArtifac
     completedStacks = processExecaOutput(completedStacks, outputLines, stackArtifacts, rollbackStacks, deploymentOrder);
   }
 
-
   const completedStackIds = completedStacks.map((stack) => stack.stackId);
   for (const stackArtifact of stackArtifacts) {
     if (!completedStackIds.includes(stackArtifact.stackId)) {
@@ -98,7 +162,6 @@ export async function deploy(args: OriginalArgs, stackArtifacts: ManifestArtifac
         ...stackArtifact,
         status: DeploymentStatus.NOT_DEPLOYED,
       });
-      printWavesDeployStatus(deploymentOrder, completedStacks);
     }
   }
   return completedStacks;
