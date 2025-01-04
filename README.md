@@ -122,19 +122,19 @@ Benefits of selecting a specific Wave, Stage or Stack over the all `'**'` method
 ### TS
 
 ```bash
-npm install cdk-express-pipelines
+npm install cdk-express-pipeline
 ```
 
 Then import the library in your code:
 
 ```typescript
-import { CdkExpressPipeline } from 'cdk-express-pipelines';
+import { CdkExpressPipeline } from 'cdk-express-pipeline';
 ```
 
 ### Python
 
 ```bash
-pip install cdk-express-pipelines
+pip install cdk-express-pipeline
 ```
 
 Then import the library in your code:
