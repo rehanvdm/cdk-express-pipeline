@@ -109,11 +109,11 @@ export class ExpressStack extends Stack implements IExpressStack {
     (this as any)._stackDependencies[Names.uniqueId(target)] = {
       stack: target,
       reasons: [
-        {
-          source: this,
-          target: target,
-          reason: reason,
-        },
+        // {
+        //   source: this,
+        //   target: target,
+        //   reason: reason,
+        // },
       ],
     };
   }

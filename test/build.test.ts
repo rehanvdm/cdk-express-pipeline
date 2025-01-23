@@ -659,7 +659,7 @@ describe('Adhoc - Test deep stack dependency speed ', () => {
 
     const previousStacks: ExpressStack[] = [];
     let numberOfDeps = 0;
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 100; i++) {
       console.log(`${new Date().toISOString()} - Creating stack ${i}`);
       const stack = new ExpressStack(app, `CdkTestMemoryTsStack${i}`, wave1Stage1);
 
@@ -671,7 +671,7 @@ describe('Adhoc - Test deep stack dependency speed ', () => {
       previousStacks.push(stack);
     }
     app.synth();
-    expressPipeline.synth([wave1]);
+    expressPipeline.synth([wave1], false);
   });
 
 });
