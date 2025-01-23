@@ -62,7 +62,7 @@ Stack properties.
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#cdk-express-pipeline.ExpressStack.toString">toString</a></code> | Returns a string representation of this construct. |
-| <code><a href="#cdk-express-pipeline.ExpressStack.addDependency">addDependency</a></code> | Add a dependency between this stack and another stack. |
+| <code><a href="#cdk-express-pipeline.ExpressStack.addDependency">addDependency</a></code> | Use `addDependency` for dependencies between stacks in an ExpressStage. |
 | <code><a href="#cdk-express-pipeline.ExpressStack.addMetadata">addMetadata</a></code> | Adds an arbitary key-value pair, with information you want to record about the stack. |
 | <code><a href="#cdk-express-pipeline.ExpressStack.addTransform">addTransform</a></code> | Add a Transform to this stack. A Transform is a macro that AWS CloudFormation uses to process your template. |
 | <code><a href="#cdk-express-pipeline.ExpressStack.exportStringListValue">exportStringListValue</a></code> | Create a CloudFormation Export for a string list value. |
@@ -76,7 +76,7 @@ Stack properties.
 | <code><a href="#cdk-express-pipeline.ExpressStack.splitArn">splitArn</a></code> | Splits the provided ARN into its components. |
 | <code><a href="#cdk-express-pipeline.ExpressStack.toJsonString">toJsonString</a></code> | Convert an object, potentially containing tokens, to a JSON string. |
 | <code><a href="#cdk-express-pipeline.ExpressStack.toYamlString">toYamlString</a></code> | Convert an object, potentially containing tokens, to a YAML string. |
-| <code><a href="#cdk-express-pipeline.ExpressStack.addExpressDependency">addExpressDependency</a></code> | Add a dependency between this stack and another ExpressStack. |
+| <code><a href="#cdk-express-pipeline.ExpressStack.addExpressDependency">addExpressDependency</a></code> | Only use to create dependencies between Stacks in Waves and Stages for building the Pipeline, where having cyclic dependencies is not possible. |
 | <code><a href="#cdk-express-pipeline.ExpressStack.expressDependencies">expressDependencies</a></code> | The ExpressStack dependencies of the stack. |
 
 ---
@@ -89,16 +89,16 @@ public toString(): string
 
 Returns a string representation of this construct.
 
-##### ~~`addDependency`~~ <a name="addDependency" id="cdk-express-pipeline.ExpressStack.addDependency"></a>
+##### `addDependency` <a name="addDependency" id="cdk-express-pipeline.ExpressStack.addDependency"></a>
 
 ```typescript
 public addDependency(target: Stack, reason?: string): void
 ```
 
-Add a dependency between this stack and another stack.
+Use `addDependency` for dependencies between stacks in an ExpressStage.
 
-This can be used to define dependencies between any two stacks within an
-app, and also supports nested stacks.
+Otherwise, use `addExpressDependency`
+to construct the Pipeline of stacks between Waves and Stages.
 
 ###### `target`<sup>Required</sup> <a name="target" id="cdk-express-pipeline.ExpressStack.addDependency.parameter.target"></a>
 
@@ -479,9 +479,10 @@ Convert an object, potentially containing tokens, to a YAML string.
 public addExpressDependency(target: ExpressStack, reason?: string): void
 ```
 
-Add a dependency between this stack and another ExpressStack.
+Only use to create dependencies between Stacks in Waves and Stages for building the Pipeline, where having cyclic dependencies is not possible.
 
-This can be used to define dependencies between any two stacks within an
+If the `addExpressDependency` is used outside the Pipeline construction,
+it will not be safe. Use `addDependency` to create stack dependency within the same Stage.
 
 ###### `target`<sup>Required</sup> <a name="target" id="cdk-express-pipeline.ExpressStack.addExpressDependency.parameter.target"></a>
 
@@ -687,9 +688,7 @@ Indicates whether the stack requires bundling or not.
 
 ---
 
-##### ~~`dependencies`~~<sup>Required</sup> <a name="dependencies" id="cdk-express-pipeline.ExpressStack.property.dependencies"></a>
-
-- *Deprecated:* Use `expressDependencies()` instead of `dependencies` to get the dependencies of an `ExpressStack`.
+##### `dependencies`<sup>Required</sup> <a name="dependencies" id="cdk-express-pipeline.ExpressStack.property.dependencies"></a>
 
 ```typescript
 public readonly dependencies: Stack[];

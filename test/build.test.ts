@@ -609,3 +609,70 @@ describe('Readme Examples - CdkExpressPipelineLegacy', () => {
   });
 });
 
+describe('Adhoc - Test deep stack dependency speed ', () => {
+
+  beforeEach(() => {
+    /* Disable Jest's console.log that adds the location of log lines */
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    global.console = require('console');
+  });
+  afterEach(() => {
+    /* Restore Jest's console */
+    global.console = jestConsole;
+  });
+
+  // class StackA extends cdk.Stack {
+  //   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  //     super(scope, id, props);
+  //
+  //     new cdk.aws_sns.Topic(this, 'MyTopicA');
+  //     // ... more resources
+  //   }
+  // }
+  // test('Many stacks - Slow', () => {
+  //   const app = new App();
+  //
+  //   const previousStacks: Stack[] = [];
+  //   let numberOfDeps = 0;
+  //   for (let i = 0; i < 28; i++) {
+  //     console.log(`${new Date().toISOString()} - Creating stack ${i}`);
+  //     const stack = new StackA(app, `CdkTestMemoryTsStack${i}`);
+  //
+  //     for (const previousStack of previousStacks) {
+  //       console.log(`${new Date().toISOString()} - Adding dependency${++numberOfDeps} from stack ${previousStack.stackName} to stack ${stack.stackName}`);
+  //       stack.addDependency(previousStack);
+  //     }
+  //
+  //     previousStacks.push(stack);
+  //   }
+  //   app.synth();
+  // });
+
+
+  test('Many stacks - Fast', () => {
+    const app = new App();
+
+    const expressPipeline = new CdkExpressPipeline();
+    const wave1 = new ExpressWave('Wave1');
+    const wave1Stage1 = new ExpressStage('Stage1', wave1);
+    expressPipeline.synth([wave1]);
+
+    const previousStacks: ExpressStack[] = [];
+    let numberOfDeps = 0;
+    for (let i = 0; i < 100; i++) {
+      console.log(`${new Date().toISOString()} - Creating stack ${i}`);
+      const stack = new ExpressStack(app, `CdkTestMemoryTsStack${i}`, wave1Stage1);
+
+      for (const previousStack of previousStacks) {
+        console.log(`${new Date().toISOString()} - Adding dependency${++numberOfDeps} from stack ${previousStack.stackName} to stack ${stack.stackName}`);
+        stack.addExpressDependency(previousStack);
+      }
+
+      previousStacks.push(stack);
+    }
+    app.synth();
+    expressPipeline.synth([wave1], false);
+    //If it completes in the default timeout of 3 seconds, it has passed
+  });
+
+});

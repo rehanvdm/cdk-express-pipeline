@@ -1,4 +1,4 @@
-import { Stack } from 'aws-cdk-lib';
+import { Names, Stack } from 'aws-cdk-lib';
 import { StackProps } from 'aws-cdk-lib/core/lib/stack';
 import { Construct } from 'constructs';
 import { CDK_EXPRESS_PIPELINE_DEPENDENCY_REASON } from './cdk-express-pipeline';
@@ -68,32 +68,28 @@ export class ExpressStack extends Stack implements IExpressStack {
     this.stage.stacks.push(this);
   }
 
-
   /**
-   * @deprecated Use `expressDependencies()` instead of `dependencies` to get the dependencies of an `ExpressStack`.
-   */
-  get dependencies(): Stack[] {
-    // Can not throw an error here as the CDK Synthesizer will call this method to get the dependencies
-    // throw new Error('Use `expressDependencies()` instead of `dependencies` to get the dependencies of an `ExpressStack`.');
-    return super.dependencies; //Redundant but specify to make TS & ESLint happy
-  }
-
-
-  /**
-   * @deprecated Use `addExpressDependency` instead of `addDependency` to add to an `ExpressStack` dependency.
+   * Use `addDependency` for dependencies between stacks in an ExpressStage. Otherwise, use `addExpressDependency`
+   * to construct the Pipeline of stacks between Waves and Stages.
    * @param target
    * @param reason
    */
   addDependency(target: Stack, reason?: string) {
-    // Can not throw an error here as the CDK Synthesizer will call this method to get the dependencies
-    // throw new Error('Use `addExpressDependency` instead of `addDependency` to add to an `ExpressStack` dependency.');
-    super.addDependency(target, reason); //Redundant but specify to make TS & ESLint happy
+    super.addDependency(target, reason);
   }
 
   expressDependencies(): ExpressStack[] {
     return this.expressStackDependencies;
   }
 
+
+  /**
+   * Only use to create dependencies between Stacks in Waves and Stages for building the Pipeline, where having
+   * cyclic dependencies is not possible. If the `addExpressDependency` is used outside the Pipeline construction,
+   * it will not be safe. Use `addDependency` to create stack dependency within the same Stage.
+   * @param target
+   * @param reason
+   */
   addExpressDependency(target: ExpressStack, reason?: string) {
     if (reason != CDK_EXPRESS_PIPELINE_DEPENDENCY_REASON && target.stage !== this.stage) {
       throw new Error('Incorrect Stack Dependency. ' +
@@ -102,7 +98,26 @@ export class ExpressStack extends Stack implements IExpressStack {
         'Stacks can only depend on other stacks within the same [Wave & Stage].');
     }
     this.expressStackDependencies.push(target);
-    super.addDependency(target, reason);
+
+    /* Similar to `super.addDependency(target, reason);` but it does not do the recursive call to check for cyclic dependencies
+    * The recursion and cyclic dependency can be seen within the CDK Stack private function `stackDependencyReasons`:
+    * - https://github.com/aws/aws-cdk/blob/d3672674b598266b5521d7af2a1e77822fc4a74e/packages/aws-cdk-lib/core/lib/stack.ts#L942
+    *
+    * This is only safe as we know this function is only called to construct the dependency tree for the Pipeline which will not
+    * have cyclic dependencies. If the `addExpressDependency` is used outside of the Pipeline construction, it will not be safe.
+    * */
+    (this as any)._stackDependencies[Names.uniqueId(target)] = {
+      stack: target,
+      reasons: [
+        // {
+        //   source: this,
+        //   target: target,
+        //   reason: reason,
+        // },
+      ],
+    };
   }
+
+
 }
 

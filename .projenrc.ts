@@ -7,9 +7,8 @@ const project = new awscdk.AwsCdkConstructLibrary({
   authorAddress: 'rehan.vdm4+github@gmail.com',
   cdkVersion: '2.133.0',
   defaultReleaseBranch: 'main',
-  // https://github.com/projen/projen/pull/3459/files Not yet in the latest projen template started
-  jsiiVersion: '~5.3.0',
-  typescriptVersion: '~5.3.0',
+  jsiiVersion: '~5.5.0',
+  typescriptVersion: '~5.5.0',
   name: 'cdk-express-pipeline',
   description: 'CDK pipelines provides constructs for Waves, Stages using only native CDK stack dependencies',
   packageManager: javascript.NodePackageManager.NPM,
