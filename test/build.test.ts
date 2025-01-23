@@ -672,6 +672,7 @@ describe('Adhoc - Test deep stack dependency speed ', () => {
     }
     app.synth();
     expressPipeline.synth([wave1], false);
+    //If it completes in the default timeout of 3 seconds, it has passed
   });
 
 });
