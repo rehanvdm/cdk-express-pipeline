@@ -1,6 +1,5 @@
-import { ExpressStack } from './express-stack';
-import { ExpressStage } from './express-stage';
 import { ExpressWave } from './express-wave';
+import { getStackPatternToFilter, targetIdentifier } from './utils';
 
 export const CDK_EXPRESS_PIPELINE_DEPENDENCY_REASON = 'cdk-express-pipeline wave->stage->stack dependency';
 export const CDK_EXPRESS_PIPELINE_DEFAULT_SEPARATOR = '_';
@@ -74,34 +73,39 @@ export class CdkExpressPipeline {
    * @param waves
    * @private
    */
-  private printWaves(waves: ExpressWave[]) {
-
-    function printStackDependencies(stage: ExpressStage, stack: ExpressStack, indentationLevel: number) {
-      if (stack.stage !== stage) {
-        return;
-      }
-      console.log(`${'  '.repeat(indentationLevel)}    ↳ ${stack.stackName}`);
-
-      stack.expressDependencies().forEach(dependantStack => {
-        printStackDependencies(stage, dependantStack, indentationLevel + 1);
-      });
-    }
+  public printWaves(waves: ExpressWave[]) {
 
     console.log('');
     console.log('ORDER OF DEPLOYMENT');
-    console.log('🌊 Waves  - Deployed sequentially');
-    console.log('🔲 Stages - Deployed in parallel, all stages within a wave are deployed at the same time');
-    console.log('📄 Stack  - Dependency driven, will be deployed after all its dependent stacks, denoted by ↳ below it, is deployed');
+    console.log('🌊 Waves  - Deployed sequentially, one after another.');
+    console.log('🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time.');
+    console.log('📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).');
+    console.log('           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.');
     console.log('');
 
+    const patternToFilter = getStackPatternToFilter();
     for (const wave of waves) {
-      console.log(`🌊 ${wave.id}`);
+      const targetWave = targetIdentifier(patternToFilter, wave.id);
+      const waveTargetCharacter = targetWave ? '|' : ' ';
+
+      console.log(`${waveTargetCharacter} 🌊 ${wave.id}`);
       for (const stage of wave.stages) {
-        console.log(`  🔲 ${stage.id}`);
+        const fullStageId = `${wave.id}${wave.separator}${stage.id}`;
+        const targetStage = targetIdentifier(patternToFilter, fullStageId);
+        const stageTargetCharacter = targetStage ? '|  ' : '   ';
+
+        console.log(`${stageTargetCharacter} 🏗️ ${stage.id}`);
         for (const stack of stage.stacks) {
-          console.log(`    📄 ${stack.stackName} (${stack.id})`);
-          for (let dependantStack of stack.expressDependencies()) {
-            printStackDependencies(stack.stage, dependantStack, 2);
+          const targetStack = targetIdentifier(patternToFilter, stack.id);
+          const stackTargetCharacter = targetStack ? '|    ' : '     ';
+
+          console.log(`${stackTargetCharacter} 📦 ${stack.stackName} (${stack.id})`);
+
+          const dependantStacks = stack.expressDependencies()
+            .filter(dep => dep.stage === stack.stage)
+            .map((dep) => dep.stackName);
+          if (dependantStacks.length > 0) {
+            console.log(`${stackTargetCharacter}    ↳ ${dependantStacks.join(', ')}`);
           }
         }
       }
