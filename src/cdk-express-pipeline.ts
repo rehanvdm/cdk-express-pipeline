@@ -79,7 +79,7 @@ export class CdkExpressPipeline {
     console.log('ORDER OF DEPLOYMENT');
     console.log('🌊 Waves  - Deployed sequentially, one after another.');
     console.log('🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time.');
-    console.log('📦 Stacks - Deployed after their dependant stacks within the stage (dependencies shown below them with ↳).');
+    console.log('📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).');
     console.log('           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.');
     console.log('');
 
