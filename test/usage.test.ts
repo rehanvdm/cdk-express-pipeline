@@ -188,7 +188,7 @@ describe('CdkExpressPipelineLegacy', () => {
           'ORDER OF DEPLOYMENT\n' +
           '🌊 Waves  - Deployed sequentially, one after another.\n' +
           '🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time.\n' +
-          '📦 Stacks - Deployed after their dependant stacks within the stage.\n' +
+          '📦 Stacks - Deployed after their dependent stacks within the stage.\n' +
           '           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.\n' +
           '\n' +
           '  🌊 Wave1\n' +
@@ -209,7 +209,7 @@ describe('CdkExpressPipelineLegacy', () => {
           'ORDER OF DEPLOYMENT\n' +
           '🌊 Waves  - Deployed sequentially, one after another.\n' +
           '🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time.\n' +
-          '📦 Stacks - Deployed after their dependant stacks within the stage.\n' +
+          '📦 Stacks - Deployed after their dependent stacks within the stage.\n' +
           '           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.\n' +
           '\n' +
           '  🌊 Wave1\n' +
@@ -413,7 +413,7 @@ describe('CdkExpressPipeline', () => {
           'ORDER OF DEPLOYMENT\n' +
           '🌊 Waves  - Deployed sequentially, one after another.\n' +
           '🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time.\n' +
-          '📦 Stacks - Deployed after their dependant stacks within the stage (dependencies shown below them with ↳).\n' +
+          '📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).\n' +
           '           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.\n' +
           '\n' +
           '| 🌊 Wave1\n' +
@@ -436,7 +436,7 @@ describe('CdkExpressPipeline', () => {
           'ORDER OF DEPLOYMENT\n' +
           '🌊 Waves  - Deployed sequentially, one after another.\n' +
           '🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time.\n' +
-          '📦 Stacks - Deployed after their dependant stacks within the stage (dependencies shown below them with ↳).\n' +
+          '📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).\n' +
           '           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.\n' +
           '\n' +
           '| 🌊 Wave1\n' +
@@ -459,7 +459,7 @@ describe('CdkExpressPipeline', () => {
           'ORDER OF DEPLOYMENT\n' +
           '🌊 Waves  - Deployed sequentially, one after another.\n' +
           '🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time.\n' +
-          '📦 Stacks - Deployed after their dependant stacks within the stage (dependencies shown below them with ↳).\n' +
+          '📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).\n' +
           '           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.\n' +
           '\n' +
           '| 🌊 Wave1\n' +
@@ -482,7 +482,7 @@ describe('CdkExpressPipeline', () => {
           'ORDER OF DEPLOYMENT\n' +
           '🌊 Waves  - Deployed sequentially, one after another.\n' +
           '🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time.\n' +
-          '📦 Stacks - Deployed after their dependant stacks within the stage (dependencies shown below them with ↳).\n' +
+          '📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).\n' +
           '           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.\n' +
           '\n' +
           '  🌊 Wave1\n' +
@@ -505,7 +505,7 @@ describe('CdkExpressPipeline', () => {
           'ORDER OF DEPLOYMENT\n' +
           '🌊 Waves  - Deployed sequentially, one after another.\n' +
           '🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time.\n' +
-          '📦 Stacks - Deployed after their dependant stacks within the stage (dependencies shown below them with ↳).\n' +
+          '📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).\n' +
           '           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.\n' +
           '\n' +
           '| 🌊 Wave1\n' +
