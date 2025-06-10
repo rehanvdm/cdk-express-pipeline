@@ -1074,6 +1074,7 @@ new CdkExpressPipeline(props?: CdkExpressPipelineProps)
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#cdk-express-pipeline.CdkExpressPipeline.addWave">addWave</a></code> | Add a wave to the pipeline. |
+| <code><a href="#cdk-express-pipeline.CdkExpressPipeline.printWaves">printWaves</a></code> | Print the order of deployment to the console. |
 | <code><a href="#cdk-express-pipeline.CdkExpressPipeline.synth">synth</a></code> | Synthesize the pipeline which creates the dependencies between the stacks in the correct order. |
 
 ---
@@ -1091,6 +1092,20 @@ Add a wave to the pipeline.
 - *Type:* string
 
 The wave identifier.
+
+---
+
+##### `printWaves` <a name="printWaves" id="cdk-express-pipeline.CdkExpressPipeline.printWaves"></a>
+
+```typescript
+public printWaves(waves: ExpressWave[]): void
+```
+
+Print the order of deployment to the console.
+
+###### `waves`<sup>Required</sup> <a name="waves" id="cdk-express-pipeline.CdkExpressPipeline.printWaves.parameter.waves"></a>
+
+- *Type:* <a href="#cdk-express-pipeline.ExpressWave">ExpressWave</a>[]
 
 ---
 
