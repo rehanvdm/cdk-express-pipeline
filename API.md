@@ -1185,6 +1185,7 @@ new CdkExpressPipelineLegacy(waves?: IExpressWaveLegacy[])
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#cdk-express-pipeline.CdkExpressPipelineLegacy.addWave">addWave</a></code> | Add a wave to the pipeline. |
+| <code><a href="#cdk-express-pipeline.CdkExpressPipelineLegacy.printWaves">printWaves</a></code> | Print the order of deployment to the console. |
 | <code><a href="#cdk-express-pipeline.CdkExpressPipelineLegacy.synth">synth</a></code> | Synthesize the pipeline which creates the dependencies between the stacks in the correct order. |
 
 ---
@@ -1202,6 +1203,20 @@ Add a wave to the pipeline.
 - *Type:* string
 
 The wave identifier.
+
+---
+
+##### `printWaves` <a name="printWaves" id="cdk-express-pipeline.CdkExpressPipelineLegacy.printWaves"></a>
+
+```typescript
+public printWaves(waves: IExpressWaveLegacy[]): void
+```
+
+Print the order of deployment to the console.
+
+###### `waves`<sup>Required</sup> <a name="waves" id="cdk-express-pipeline.CdkExpressPipelineLegacy.printWaves.parameter.waves"></a>
+
+- *Type:* <a href="#cdk-express-pipeline.IExpressWaveLegacy">IExpressWaveLegacy</a>[]
 
 ---
 
