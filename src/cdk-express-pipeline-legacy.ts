@@ -1,5 +1,6 @@
 import { Stack } from 'aws-cdk-lib';
 import { CDK_EXPRESS_PIPELINE_DEPENDENCY_REASON } from './cdk-express-pipeline';
+import { getStackPatternToFilter, targetIdentifier } from './utils';
 
 export interface IExpressStageLegacy {
   id: string;
@@ -108,22 +109,26 @@ export class CdkExpressPipelineLegacy {
   /**
    * Print the order of deployment to the console
    * @param waves
-   * @private
    */
-  private printWaves(waves: IExpressWaveLegacy[]) {
+  public printWaves(waves: IExpressWaveLegacy[]) {
     console.log('');
     console.log('ORDER OF DEPLOYMENT');
-    console.log('🌊 Waves  - Deployed sequentially');
-    console.log('🔲 Stages - Deployed in parallel, all stages within a wave are deployed at the same time');
-    console.log('📄 Stack  - Dependency driven');
+    console.log('🌊 Waves  - Deployed sequentially, one after another.');
+    console.log('🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time.');
+    console.log('📦 Stacks - Deployed after their dependent stacks within the stage.');
+    console.log('           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.');
     console.log('');
 
+    const patternToFilter = getStackPatternToFilter();
     for (const wave of waves) {
-      console.log(`🌊 ${wave.id}`);
+      console.log(`  🌊 ${wave.id}`);
       for (const stage of wave.stages) {
-        console.log(`  🔲 ${stage.id}`);
+        console.log(`    🏗️ ${stage.id}`);
         for (const stack of stage.stacks) {
-          console.log(`    📄 ${stack.stackName}`);
+          const targetStack = targetIdentifier(patternToFilter, stack.stackName);
+          const stackTargetCharacter = targetStack ? '|    ' : '     ';
+
+          console.log(`${stackTargetCharacter} 📦 ${stack.stackName}`);
         }
       }
     }
