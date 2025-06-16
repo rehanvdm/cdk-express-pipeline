@@ -983,7 +983,7 @@ public readonly separator: string;
 ```
 
 - *Type:* string
-- *Default:* __
+- *Default:* _
 
 Separator between the wave, stage and stack ids that are concatenated to form the stack id.
 
@@ -1082,7 +1082,7 @@ new CdkExpressPipeline(props?: CdkExpressPipelineProps)
 ##### `addWave` <a name="addWave" id="cdk-express-pipeline.CdkExpressPipeline.addWave"></a>
 
 ```typescript
-public addWave(id: string): ExpressWave
+public addWave(id: string, sequentialStages?: boolean): IExpressWave
 ```
 
 Add a wave to the pipeline.
@@ -1095,31 +1095,41 @@ The wave identifier.
 
 ---
 
+###### `sequentialStages`<sup>Optional</sup> <a name="sequentialStages" id="cdk-express-pipeline.CdkExpressPipeline.addWave.parameter.sequentialStages"></a>
+
+- *Type:* boolean
+
+If true, the stages in the wave will be executed sequentially.
+
+Default: false.
+
+---
+
 ##### `printWaves` <a name="printWaves" id="cdk-express-pipeline.CdkExpressPipeline.printWaves"></a>
 
 ```typescript
-public printWaves(waves: ExpressWave[]): void
+public printWaves(waves: IExpressWave[]): void
 ```
 
 Print the order of deployment to the console.
 
 ###### `waves`<sup>Required</sup> <a name="waves" id="cdk-express-pipeline.CdkExpressPipeline.printWaves.parameter.waves"></a>
 
-- *Type:* <a href="#cdk-express-pipeline.ExpressWave">ExpressWave</a>[]
+- *Type:* <a href="#cdk-express-pipeline.IExpressWave">IExpressWave</a>[]
 
 ---
 
 ##### `synth` <a name="synth" id="cdk-express-pipeline.CdkExpressPipeline.synth"></a>
 
 ```typescript
-public synth(waves?: ExpressWave[], print?: boolean): void
+public synth(waves?: IExpressWave[], print?: boolean): void
 ```
 
 Synthesize the pipeline which creates the dependencies between the stacks in the correct order.
 
 ###### `waves`<sup>Optional</sup> <a name="waves" id="cdk-express-pipeline.CdkExpressPipeline.synth.parameter.waves"></a>
 
-- *Type:* <a href="#cdk-express-pipeline.ExpressWave">ExpressWave</a>[]
+- *Type:* <a href="#cdk-express-pipeline.IExpressWave">IExpressWave</a>[]
 
 The waves to synthesize.
 
@@ -1138,17 +1148,17 @@ Whether to print the order of deployment to the console.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#cdk-express-pipeline.CdkExpressPipeline.property.waves">waves</a></code> | <code><a href="#cdk-express-pipeline.ExpressWave">ExpressWave</a>[]</code> | *No description.* |
+| <code><a href="#cdk-express-pipeline.CdkExpressPipeline.property.waves">waves</a></code> | <code><a href="#cdk-express-pipeline.IExpressWave">IExpressWave</a>[]</code> | *No description.* |
 
 ---
 
 ##### `waves`<sup>Required</sup> <a name="waves" id="cdk-express-pipeline.CdkExpressPipeline.property.waves"></a>
 
 ```typescript
-public readonly waves: ExpressWave[];
+public readonly waves: IExpressWave[];
 ```
 
-- *Type:* <a href="#cdk-express-pipeline.ExpressWave">ExpressWave</a>[]
+- *Type:* <a href="#cdk-express-pipeline.IExpressWave">IExpressWave</a>[]
 
 ---
 
@@ -1193,7 +1203,7 @@ new CdkExpressPipelineLegacy(waves?: IExpressWaveLegacy[])
 ##### `addWave` <a name="addWave" id="cdk-express-pipeline.CdkExpressPipelineLegacy.addWave"></a>
 
 ```typescript
-public addWave(id: string): ExpressWaveLegacy
+public addWave(id: string, sequentialStages?: boolean): ExpressWaveLegacy
 ```
 
 Add a wave to the pipeline.
@@ -1203,6 +1213,16 @@ Add a wave to the pipeline.
 - *Type:* string
 
 The wave identifier.
+
+---
+
+###### `sequentialStages`<sup>Optional</sup> <a name="sequentialStages" id="cdk-express-pipeline.CdkExpressPipelineLegacy.addWave.parameter.sequentialStages"></a>
+
+- *Type:* boolean
+
+If true, the stages in the wave will be executed sequentially.
+
+Default: false.
 
 ---
 
@@ -1375,8 +1395,8 @@ new ExpressStageLegacy(id: string, stacks?: Stack[])
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#cdk-express-pipeline.ExpressStageLegacy.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#cdk-express-pipeline.ExpressStageLegacy.Initializer.parameter.stacks">stacks</a></code> | <code>aws-cdk-lib.Stack[]</code> | *No description.* |
+| <code><a href="#cdk-express-pipeline.ExpressStageLegacy.Initializer.parameter.id">id</a></code> | <code>string</code> | The stage identifier. |
+| <code><a href="#cdk-express-pipeline.ExpressStageLegacy.Initializer.parameter.stacks">stacks</a></code> | <code>aws-cdk-lib.Stack[]</code> | The stacks in the stage. |
 
 ---
 
@@ -1384,11 +1404,15 @@ new ExpressStageLegacy(id: string, stacks?: Stack[])
 
 - *Type:* string
 
+The stage identifier.
+
 ---
 
 ##### `stacks`<sup>Optional</sup> <a name="stacks" id="cdk-express-pipeline.ExpressStageLegacy.Initializer.parameter.stacks"></a>
 
 - *Type:* aws-cdk-lib.Stack[]
+
+The stacks in the stage.
 
 ---
 
@@ -1421,8 +1445,8 @@ The stack to add.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#cdk-express-pipeline.ExpressStageLegacy.property.id">id</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#cdk-express-pipeline.ExpressStageLegacy.property.stacks">stacks</a></code> | <code>aws-cdk-lib.Stack[]</code> | *No description.* |
+| <code><a href="#cdk-express-pipeline.ExpressStageLegacy.property.id">id</a></code> | <code>string</code> | The stage identifier. |
+| <code><a href="#cdk-express-pipeline.ExpressStageLegacy.property.stacks">stacks</a></code> | <code>aws-cdk-lib.Stack[]</code> | The stacks in the stage. |
 
 ---
 
@@ -1434,6 +1458,8 @@ public readonly id: string;
 
 - *Type:* string
 
+The stage identifier.
+
 ---
 
 ##### `stacks`<sup>Required</sup> <a name="stacks" id="cdk-express-pipeline.ExpressStageLegacy.property.stacks"></a>
@@ -1443,6 +1469,8 @@ public readonly stacks: Stack[];
 ```
 
 - *Type:* aws-cdk-lib.Stack[]
+
+The stacks in the stage.
 
 ---
 
@@ -1458,13 +1486,14 @@ A CDK Express Pipeline Wave that contains ExpressStages.
 ```typescript
 import { ExpressWave } from 'cdk-express-pipeline'
 
-new ExpressWave(id: string, separator?: string)
+new ExpressWave(id: string, separator?: string, sequentialStages?: boolean)
 ```
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#cdk-express-pipeline.ExpressWave.Initializer.parameter.id">id</a></code> | <code>string</code> | The wave identifier. |
 | <code><a href="#cdk-express-pipeline.ExpressWave.Initializer.parameter.separator">separator</a></code> | <code>string</code> | Separator between the wave, stage and stack ids that are concatenated to form the stack id. |
+| <code><a href="#cdk-express-pipeline.ExpressWave.Initializer.parameter.sequentialStages">sequentialStages</a></code> | <code>boolean</code> | If true, the stages in the wave will be executed sequentially. |
 
 ---
 
@@ -1483,6 +1512,16 @@ The wave identifier.
 Separator between the wave, stage and stack ids that are concatenated to form the stack id.
 
 Default: '_'.
+
+---
+
+##### `sequentialStages`<sup>Optional</sup> <a name="sequentialStages" id="cdk-express-pipeline.ExpressWave.Initializer.parameter.sequentialStages"></a>
+
+- *Type:* boolean
+
+If true, the stages in the wave will be executed sequentially.
+
+Default: false.
 
 ---
 
@@ -1516,6 +1555,7 @@ Add an ExpressStage to the wave.
 | <code><a href="#cdk-express-pipeline.ExpressWave.property.id">id</a></code> | <code>string</code> | The wave identifier. |
 | <code><a href="#cdk-express-pipeline.ExpressWave.property.separator">separator</a></code> | <code>string</code> | Separator between the wave, stage and stack ids that are concatenated to form the final stack id. |
 | <code><a href="#cdk-express-pipeline.ExpressWave.property.stages">stages</a></code> | <code><a href="#cdk-express-pipeline.ExpressStage">ExpressStage</a>[]</code> | The ExpressStages in the wave. |
+| <code><a href="#cdk-express-pipeline.ExpressWave.property.sequentialStages">sequentialStages</a></code> | <code>boolean</code> | If true, the stages in the wave will be executed sequentially. |
 
 ---
 
@@ -1555,25 +1595,37 @@ The ExpressStages in the wave.
 
 ---
 
+##### `sequentialStages`<sup>Optional</sup> <a name="sequentialStages" id="cdk-express-pipeline.ExpressWave.property.sequentialStages"></a>
+
+```typescript
+public readonly sequentialStages: boolean;
+```
+
+- *Type:* boolean
+
+If true, the stages in the wave will be executed sequentially.
+
+---
+
 
 ### ExpressWaveLegacy <a name="ExpressWaveLegacy" id="cdk-express-pipeline.ExpressWaveLegacy"></a>
 
 - *Implements:* <a href="#cdk-express-pipeline.IExpressWaveLegacy">IExpressWaveLegacy</a>
 
-A wave that holds stages.
+A CDK Express Pipeline Legacy Wave that contains Legacy Stages.
 
 #### Initializers <a name="Initializers" id="cdk-express-pipeline.ExpressWaveLegacy.Initializer"></a>
 
 ```typescript
 import { ExpressWaveLegacy } from 'cdk-express-pipeline'
 
-new ExpressWaveLegacy(id: string, stages?: IExpressStageLegacy[])
+new ExpressWaveLegacy(id: string, sequentialStages?: boolean)
 ```
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#cdk-express-pipeline.ExpressWaveLegacy.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#cdk-express-pipeline.ExpressWaveLegacy.Initializer.parameter.stages">stages</a></code> | <code><a href="#cdk-express-pipeline.IExpressStageLegacy">IExpressStageLegacy</a>[]</code> | *No description.* |
+| <code><a href="#cdk-express-pipeline.ExpressWaveLegacy.Initializer.parameter.id">id</a></code> | <code>string</code> | The wave identifier. |
+| <code><a href="#cdk-express-pipeline.ExpressWaveLegacy.Initializer.parameter.sequentialStages">sequentialStages</a></code> | <code>boolean</code> | If true, the stages in the wave will be executed sequentially. |
 
 ---
 
@@ -1581,11 +1633,17 @@ new ExpressWaveLegacy(id: string, stages?: IExpressStageLegacy[])
 
 - *Type:* string
 
+The wave identifier.
+
 ---
 
-##### `stages`<sup>Optional</sup> <a name="stages" id="cdk-express-pipeline.ExpressWaveLegacy.Initializer.parameter.stages"></a>
+##### `sequentialStages`<sup>Optional</sup> <a name="sequentialStages" id="cdk-express-pipeline.ExpressWaveLegacy.Initializer.parameter.sequentialStages"></a>
 
-- *Type:* <a href="#cdk-express-pipeline.IExpressStageLegacy">IExpressStageLegacy</a>[]
+- *Type:* boolean
+
+If true, the stages in the wave will be executed sequentially.
+
+Default: false.
 
 ---
 
@@ -1618,8 +1676,9 @@ The stage identifier.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#cdk-express-pipeline.ExpressWaveLegacy.property.id">id</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#cdk-express-pipeline.ExpressWaveLegacy.property.stages">stages</a></code> | <code><a href="#cdk-express-pipeline.IExpressStageLegacy">IExpressStageLegacy</a>[]</code> | *No description.* |
+| <code><a href="#cdk-express-pipeline.ExpressWaveLegacy.property.id">id</a></code> | <code>string</code> | The wave identifier. |
+| <code><a href="#cdk-express-pipeline.ExpressWaveLegacy.property.stages">stages</a></code> | <code><a href="#cdk-express-pipeline.IExpressStageLegacy">IExpressStageLegacy</a>[]</code> | The ExpressStages in the wave. |
+| <code><a href="#cdk-express-pipeline.ExpressWaveLegacy.property.sequentialStages">sequentialStages</a></code> | <code>boolean</code> | If true, the stages in the wave will be executed sequentially. |
 
 ---
 
@@ -1631,6 +1690,8 @@ public readonly id: string;
 
 - *Type:* string
 
+The wave identifier.
+
 ---
 
 ##### `stages`<sup>Required</sup> <a name="stages" id="cdk-express-pipeline.ExpressWaveLegacy.property.stages"></a>
@@ -1640,6 +1701,20 @@ public readonly stages: IExpressStageLegacy[];
 ```
 
 - *Type:* <a href="#cdk-express-pipeline.IExpressStageLegacy">IExpressStageLegacy</a>[]
+
+The ExpressStages in the wave.
+
+---
+
+##### `sequentialStages`<sup>Optional</sup> <a name="sequentialStages" id="cdk-express-pipeline.ExpressWaveLegacy.property.sequentialStages"></a>
+
+```typescript
+public readonly sequentialStages: boolean;
+```
+
+- *Type:* boolean
+
+If true, the stages in the wave will be executed sequentially.
 
 ---
 
@@ -1786,8 +1861,8 @@ The wave that the stage belongs to.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#cdk-express-pipeline.IExpressStageLegacy.property.id">id</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#cdk-express-pipeline.IExpressStageLegacy.property.stacks">stacks</a></code> | <code>aws-cdk-lib.Stack[]</code> | *No description.* |
+| <code><a href="#cdk-express-pipeline.IExpressStageLegacy.property.id">id</a></code> | <code>string</code> | The stage identifier. |
+| <code><a href="#cdk-express-pipeline.IExpressStageLegacy.property.stacks">stacks</a></code> | <code>aws-cdk-lib.Stack[]</code> | The stacks in the stage. |
 
 ---
 
@@ -1799,6 +1874,8 @@ public readonly id: string;
 
 - *Type:* string
 
+The stage identifier.
+
 ---
 
 ##### `stacks`<sup>Required</sup> <a name="stacks" id="cdk-express-pipeline.IExpressStageLegacy.property.stacks"></a>
@@ -1808,6 +1885,8 @@ public readonly stacks: Stack[];
 ```
 
 - *Type:* aws-cdk-lib.Stack[]
+
+The stacks in the stage.
 
 ---
 
@@ -1846,6 +1925,7 @@ The ExpressStage identifier.
 | <code><a href="#cdk-express-pipeline.IExpressWave.property.id">id</a></code> | <code>string</code> | The wave identifier. |
 | <code><a href="#cdk-express-pipeline.IExpressWave.property.separator">separator</a></code> | <code>string</code> | Separator between the wave, stage and stack ids that are concatenated to form the final stack id. |
 | <code><a href="#cdk-express-pipeline.IExpressWave.property.stages">stages</a></code> | <code><a href="#cdk-express-pipeline.ExpressStage">ExpressStage</a>[]</code> | The ExpressStages in the wave. |
+| <code><a href="#cdk-express-pipeline.IExpressWave.property.sequentialStages">sequentialStages</a></code> | <code>boolean</code> | If true, the stages in the wave will be executed sequentially. |
 
 ---
 
@@ -1885,6 +1965,19 @@ The ExpressStages in the wave.
 
 ---
 
+##### `sequentialStages`<sup>Optional</sup> <a name="sequentialStages" id="cdk-express-pipeline.IExpressWave.property.sequentialStages"></a>
+
+```typescript
+public readonly sequentialStages: boolean;
+```
+
+- *Type:* boolean
+- *Default:* false
+
+If true, the stages in the wave will be executed sequentially.
+
+---
+
 ### IExpressWaveLegacy <a name="IExpressWaveLegacy" id="cdk-express-pipeline.IExpressWaveLegacy"></a>
 
 - *Implemented By:* <a href="#cdk-express-pipeline.ExpressWaveLegacy">ExpressWaveLegacy</a>, <a href="#cdk-express-pipeline.IExpressWaveLegacy">IExpressWaveLegacy</a>
@@ -1894,8 +1987,9 @@ The ExpressStages in the wave.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#cdk-express-pipeline.IExpressWaveLegacy.property.id">id</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#cdk-express-pipeline.IExpressWaveLegacy.property.stages">stages</a></code> | <code><a href="#cdk-express-pipeline.IExpressStageLegacy">IExpressStageLegacy</a>[]</code> | *No description.* |
+| <code><a href="#cdk-express-pipeline.IExpressWaveLegacy.property.id">id</a></code> | <code>string</code> | The wave identifier. |
+| <code><a href="#cdk-express-pipeline.IExpressWaveLegacy.property.stages">stages</a></code> | <code><a href="#cdk-express-pipeline.IExpressStageLegacy">IExpressStageLegacy</a>[]</code> | The ExpressStages in the wave. |
+| <code><a href="#cdk-express-pipeline.IExpressWaveLegacy.property.sequentialStages">sequentialStages</a></code> | <code>boolean</code> | If true, the stages in the wave will be executed sequentially. |
 
 ---
 
@@ -1907,6 +2001,8 @@ public readonly id: string;
 
 - *Type:* string
 
+The wave identifier.
+
 ---
 
 ##### `stages`<sup>Required</sup> <a name="stages" id="cdk-express-pipeline.IExpressWaveLegacy.property.stages"></a>
@@ -1916,6 +2012,21 @@ public readonly stages: IExpressStageLegacy[];
 ```
 
 - *Type:* <a href="#cdk-express-pipeline.IExpressStageLegacy">IExpressStageLegacy</a>[]
+
+The ExpressStages in the wave.
+
+---
+
+##### `sequentialStages`<sup>Optional</sup> <a name="sequentialStages" id="cdk-express-pipeline.IExpressWaveLegacy.property.sequentialStages"></a>
+
+```typescript
+public readonly sequentialStages: boolean;
+```
+
+- *Type:* boolean
+- *Default:* false
+
+If true, the stages in the wave will be executed sequentially.
 
 ---
 

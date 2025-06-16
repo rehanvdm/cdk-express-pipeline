@@ -6,20 +6,14 @@
 <!-- TOC -->
 
 * [Introduction](#introduction)
-* [Features](#features)
 * [How does it work?](#how-does-it-work)
 * [Deployment Order](#deployment-order)
-* [Selective Deployment](#selective-deployment)
 * [Installation](#installation)
-    * [TS](#ts)
-    * [Python](#python)
 * [Usage](#usage)
-* [Legacy Usage](#legacy-usage)
+* [Options](#options)
+* [Selective Deployment](#selective-deployment)
 * [Builds System Templates/Examples](#builds-system-templatesexamples)
-    * [Local](#local)
-    * [GitHub Workflows](#github-workflows)
-    * [GitLab](#gitlab)
-    * [Any other build system](#any-other-build-system)
+* [Legacy Usage](#legacy-usage)
 * [Demo Projects](#demo-projects)
 * [Docs](#docs)
 
@@ -32,18 +26,18 @@ top of the [AWS CDK](https://aws.amazon.com/cdk/) and is an alternative
 to [AWS CDK Pipelines](https://aws.amazon.com/cdk/pipelines/)
 that is build system agnostic.
 
-## Sponsors
-
-[<img src="https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/sponsors/datachef.png" alt="DataChef">](https://links.datachef.co/cdk-express-pipeline)
-
-## Features
-
+Features:
 - Works on any system for example your local machine, GitHub, GitLab, etc.
 - Uses the `cdk deploy` command to deploy your stacks
 - It's fast. Make use of concurrent/parallel Stack deployments
 - Stages and Waves are plain classes, not constructs, they do not change nested Construct IDs (like CDK Pipelines)
 - Supports TS and Python CDK
 
+Resources:
+- [CDK Express Pipeline Tutorial](https://rehanvdm.com/blog/cdk-express-pipeline-tutorial)
+- [Migrate from CDK Pipelines to CDK Express Pipeline](https://rehanvdm.com/blog/migrate-from-cdk-pipelines-to-cdk-express-pipeline)
+- [Exploring CI/CD with AWS CDK Express Pipeline: Faster and Efficient Deployments](https://www.youtube.com/watch?v=pma4zP7mhMU)
+  (YouTube channel [CI and CD on Amazon Web Services (AWS)](https://www.youtube.com/watch?v=pma4zP7mhMU))
 ## How does it work?
 
 This library makes use of the fact that the CDK CLI computes the dependency graph of your stacks and deploys them in
@@ -56,7 +50,7 @@ order.
 The Wave, Stage and Stack order is as follows:
 
 - Waves are deployed sequentially, one after the other.
-- Stages within a Wave are deployed in parallel.
+- Stages within a Wave are deployed in parallel by default, unless configured to be sequential. 
 - Stacks within a Stage are deployed in order of stack dependencies within a Stage.
 
 For example, the following definition of Waves, Stages and Stacks as in CDK Express Pipelines:
@@ -84,38 +78,6 @@ while still adhering to the dependency graph. Stacks will be deployed in the fol
 ![order_5.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/order_5.png)
 
 </details>
-
-## Selective Deployment
-
-Leverages a consistent and predictable naming convention for Stack IDs. A Stack ID consists of the Wave, Stage and
-original Stack ID. This enables us to target Waves, Stages or individual stacks for deployment. For example, given the
-following stack IDs:
-
-```
-Wave1_Stage1_StackA
-Wave1_Stage1_StackB
-Wave1_Stage1_StackC
-Wave1_Stage2_StackD
-
-Wave2_Stage1_StackE
-Wave2_Stage1_StackF
-```
-
-It makes targeted deployments easy:
-
-- Deploy Wave1: `cdk deploy 'Wave1_*'` deploys all stacks in `Wave1`
-- Deploy Wave1 Stage1: `cdk deploy 'Wave1_Stage1_*'` deploys all stacks in `Wave1_Stage1`
-- Deploy Wave1 Stage1 StackA: `cdk deploy 'Wave1_Stage1_StackA'` deploys only `Wave1_Stage1_StackA`
-
-> [!IMPORTANT]
-> When targeting specific stacks be sure to pass the `--exclusively` flag to the `cdk deploy` command to only deploy
-> the specified stacks and not its dependencies.
-
-Benefits of selecting a specific Wave, Stage or Stack over the all `'**'` method:
-
-- While developing, you can speed up deployments from your local machine by deploying only what you are working on.
-- When deploying with a CI/CD system, you can have additional logic between them. For example, you can place a
-  manual approval step between `Wave1` and `Wave2`.
 
 ## Installation
 
@@ -201,18 +163,19 @@ The stack deployment order will be printed to the console when running `cdk` com
 
 ```plaintext
 ORDER OF DEPLOYMENT
-🌊 Waves  - Deployed sequentially
-🔲 Stages - Deployed in parallel, all stages within a wave are deployed at the same time
-📄 Stack  - Dependency driven, will be deployed after all its dependent stacks, denoted by ↳ below it, is deployed
+🌊 Waves  - Deployed sequentially.
+🏗️ Stages - Deployed in parallel by default, unless the wave is marked `[Seq 🏗️]` for sequential stage execution.
+📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).
+           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.
 
 🌊 Wave1
-  🔲 Stage1
-    📄 StackA (Wave1_Stage1_StackA)
-    📄 StackB (Wave1_Stage1_StackB)
+  🏗️ Stage1
+    📦 StackA (Wave1_Stage1_StackA)
+    📦 StackB (Wave1_Stage1_StackB)
         ↳ StackA
 🌊 Wave2
-  🔲 Stage1
-    📄 StackC (Wave2_Stage1_StackC)
+  🏗️ Stage1
+    📦 StackC (Wave2_Stage1_StackC)
 
 ```
 
@@ -304,130 +267,69 @@ expect(stackA.id).toBe('MyWave1_MyStage1_MyStackA');
 
 </details>
 
-## Legacy Usage
+## Options
 
-The `CdkExpressPipelineLegacy` class can be used when you do not want/can not use the `ExpressStack` class and have to
-stick to the CDK `Stack` class.
-
-> [!WARNING]
-> Always use non-legacy classes for greenfield projects. Only use the Legacy classes if you have no other choice.
-
-The following features are not available when using the Legacy classes:
-
-- Enforcing Wave, Stage and Stack names do not include the `separator` character.
-- Enforcing that a Stack in Stage 1 can not depend on a Stack in Stage 2.
-- Printing stack dependencies within a Stage. Since we do not know what stage a stack belongs to, it's not possible to
-  print the dependencies of stacks of only that stage and not others.
-- If a consistent naming convention has not been followed for Stacks, it might not be possible to target all stacks in a
-  stage or a wave. Deployment will have to always target all stacks with `"**"`.
-- Stack ids are not changed and have to be unique across all stacks in the CDK app, whereas with the non-legacy
-  classes, stack ids only have to be unique within a Wave.
-
-**Stack Definition:**
+### Separator
+By default, the library uses an underscore (`_`) as the separator between Wave, Stage and Stack IDs. Not available in
+the Legacy classes. This can be customized by passing a different separator to the `CdkExpressPipeline` constructor:
 
 ```typescript
-class StackA extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
-
-    new cdk.aws_sns.Topic(this, 'MyTopicA');
-    // ... more resources
-  }
-}
-
-class StackB extends cdk.Stack {
-  // ... similar to StackA
-}
-
-class StackC extends cdk.Stack {
-
-}
+const expressPipeline = new CdkExpressPipeline({
+  separator: '-', // Now stack IDs will be like: Wave1-Stage1-StackA
+});
 ```
 
-**1️⃣ Pipeline Definition:**
+### Sequential Stages
+By default, stages within a wave are deployed in parallel. You can configure a wave to deploy its stages sequentially
+by setting the `sequentialStages` option:
 
 ```typescript
-const app = new App();
-const expressPipeline = new CdkExpressPipelineLegacy();
-
-/* === Wave 1 === */
-/* --- Wave 1, Stage 1--- */
-const stackA = new StackA(app, 'StackA');
-const stackB = new StackB(app, 'StackB');
-stackB.addDependency(stackA);
-
-// === Wave 2 ===
-/* --- Wave 2, Stage 1--- */
-const stackC = new StackC(app, 'StackC');
-
-expressPipeline.synth([
-  {
-    id: 'Wave1',
-    stages: [{
-      id: 'Stage1',
-      stacks: [
-        stackA,
-        stackB,
-      ],
-    }],
-  },
-  {
-    id: 'Wave2',
-    stages: [{
-      id: 'Stage1',
-      stacks: [
-        stackC,
-      ],
-    }],
-  },
-]);
+const wave1 = expressPipeline.addWave('Wave1', {
+  sequentialStages: true, // Stages in this wave will be deployed one after another
+});
 ```
 
-The stack deployment order will be printed to the console when running `cdk` commands:
+When stages are configured to be sequential, they will be marked with `[Seq 🏗️]` in the deployment order output:
 
 ```plaintext
-ORDER OF DEPLOYMENT
-🌊 Waves  - Deployed sequentially
-🔲 Stages - Deployed in parallel, all stages within a wave are deployed at the same time
-📄 Stack  - Dependency driven
-
-🌊 Wave1
-  🔲 Stage1
-    📄 StackA
-    📄 StackB
-🌊 Wave2
-  🔲 Stage1
-    📄 StackC
+🌊 Wave1 [Seq 🏗️]
+  🏗️ Stage1
+    📦 StackA (Wave1_Stage1_StackA)
+  🏗️ Stage2
+    📦 StackB (Wave1_Stage2_StackB)
 ```
 
-<details>
-<summary><b>2️⃣ Pipeline Definition Alternative - method builder:</b></summary>
+## Selective Deployment
 
-```typescript
-const app = new App();
-const expressPipeline = new CdkExpressPipelineLegacy();
+Leverages a consistent and predictable naming convention for Stack IDs. A Stack ID consists of the Wave, Stage and
+original Stack ID. This enables us to target Waves, Stages or individual stacks for deployment. For example, given the
+following stack IDs:
 
-/* === Wave 1 === */
-const wave1 = expressPipeline.addWave('Wave1');
-/* --- Wave 1, Stage 1--- */
-const wave1Stage1 = wave1.addStage('Stage1');
-const stackA = wave1Stage1.addStack(new StackA(app, 'StackA'));
-const stackB = wave1Stage1.addStack(new StackB(app, 'StackB'));
-stackB.addDependency(stackA);
+```
+Wave1_Stage1_StackA
+Wave1_Stage1_StackB
+Wave1_Stage1_StackC
+Wave1_Stage2_StackD
 
-// === Wave 2 ===
-const wave2 = expressPipeline.addWave('Wave2');
-/* --- Wave 2, Stage 1--- */
-const wave2Stage1 = wave2.addStage('Stage1');
-wave2Stage1.addStack(new StackC(app, 'StackC'));
-
-expressPipeline.synth([
-  wave1,
-  wave2,
-]);
+Wave2_Stage1_StackE
+Wave2_Stage1_StackF
 ```
 
-</details>
+It makes targeted deployments easy:
+
+- Deploy Wave1: `cdk deploy 'Wave1_*'` deploys all stacks in `Wave1`
+- Deploy Wave1 Stage1: `cdk deploy 'Wave1_Stage1_*'` deploys all stacks in `Wave1_Stage1`
+- Deploy Wave1 Stage1 StackA: `cdk deploy 'Wave1_Stage1_StackA'` deploys only `Wave1_Stage1_StackA`
+
+> [!IMPORTANT]
+> When targeting specific stacks be sure to pass the `--exclusively` flag to the `cdk deploy` command to only deploy
+> the specified stacks and not its dependencies.
+
+Benefits of selecting a specific Wave, Stage or Stack over the all `'**'` method:
+
+- While developing, you can speed up deployments from your local machine by deploying only what you are working on.
+- When deploying with a CI/CD system, you can have additional logic between them. For example, you can place a
+  manual approval step between `Wave1` and `Wave2`.
 
 ## Builds System Templates/Examples
 
@@ -709,6 +611,132 @@ TODO...
 ### Any other build system
 
 ...
+
+## Legacy Usage
+
+The `CdkExpressPipelineLegacy` class can be used when you do not want/can not use the `ExpressStack` class and have to
+stick to the CDK `Stack` class.
+
+> [!WARNING]
+> Always use non-legacy classes for greenfield projects. Only use the Legacy classes if you have no other choice.
+
+The following features are not available when using the Legacy classes:
+
+- Enforcing Wave, Stage and Stack names do not include the `separator` character.
+- Enforcing that a Stack in Stage 1 can not depend on a Stack in Stage 2.
+- Printing stack dependencies within a Stage. Since we do not know what stage a stack belongs to, it's not possible to
+  print the dependencies of stacks of only that stage and not others.
+- If a consistent naming convention has not been followed for Stacks, it might not be possible to target all stacks in a
+  stage or a wave. Deployment will have to always target all stacks with `"**"`.
+- Stack ids are not changed and have to be unique across all stacks in the CDK app, whereas with the non-legacy
+  classes, stack ids only have to be unique within a Wave.
+
+**Stack Definition:**
+
+```typescript
+class StackA extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    new cdk.aws_sns.Topic(this, 'MyTopicA');
+    // ... more resources
+  }
+}
+
+class StackB extends cdk.Stack {
+  // ... similar to StackA
+}
+
+class StackC extends cdk.Stack {
+
+}
+```
+
+**1️⃣ Pipeline Definition:**
+
+```typescript
+const app = new App();
+const expressPipeline = new CdkExpressPipelineLegacy();
+
+/* === Wave 1 === */
+/* --- Wave 1, Stage 1--- */
+const stackA = new StackA(app, 'StackA');
+const stackB = new StackB(app, 'StackB');
+stackB.addDependency(stackA);
+
+// === Wave 2 ===
+/* --- Wave 2, Stage 1--- */
+const stackC = new StackC(app, 'StackC');
+
+expressPipeline.synth([
+  {
+    id: 'Wave1',
+    stages: [{
+      id: 'Stage1',
+      stacks: [
+        stackA,
+        stackB,
+      ],
+    }],
+  },
+  {
+    id: 'Wave2',
+    stages: [{
+      id: 'Stage1',
+      stacks: [
+        stackC,
+      ],
+    }],
+  },
+]);
+```
+
+The stack deployment order will be printed to the console when running `cdk` commands:
+
+```plaintext
+ORDER OF DEPLOYMENT
+🌊 Waves  - Deployed sequentially.
+🏗️ Stages - Deployed in parallel by default, unless the wave is marked `[Seq 🏗️]` for sequential stage execution.
+📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).
+           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.
+
+🌊 Wave1
+  🏗️ Stage1
+    📦 StackA
+    📦 StackB
+🌊 Wave2
+  🏗️ Stage1
+    📦 StackC
+```
+
+<details>
+<summary><b>2️⃣ Pipeline Definition Alternative - method builder:</b></summary>
+
+```typescript
+const app = new App();
+const expressPipeline = new CdkExpressPipelineLegacy();
+
+/* === Wave 1 === */
+const wave1 = expressPipeline.addWave('Wave1');
+/* --- Wave 1, Stage 1--- */
+const wave1Stage1 = wave1.addStage('Stage1');
+const stackA = wave1Stage1.addStack(new StackA(app, 'StackA'));
+const stackB = wave1Stage1.addStack(new StackB(app, 'StackB'));
+stackB.addDependency(stackA);
+
+// === Wave 2 ===
+const wave2 = expressPipeline.addWave('Wave2');
+/* --- Wave 2, Stage 1--- */
+const wave2Stage1 = wave2.addStage('Stage1');
+wave2Stage1.addStack(new StackC(app, 'StackC'));
+
+expressPipeline.synth([
+  wave1,
+  wave2,
+]);
+```
+
+</details>
 
 ## Demo Projects
 
