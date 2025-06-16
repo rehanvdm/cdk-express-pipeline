@@ -3,7 +3,14 @@ import { CDK_EXPRESS_PIPELINE_DEPENDENCY_REASON } from './cdk-express-pipeline';
 import { getStackPatternToFilter, targetIdentifier } from './utils';
 
 export interface IExpressStageLegacy {
+  /**
+   * The stage identifier
+   */
   id: string;
+
+  /**
+   * The stacks in the stage
+   */
   stacks: Stack[];
 }
 
@@ -30,20 +37,39 @@ export class ExpressStageLegacy implements IExpressStageLegacy {
 }
 
 export interface IExpressWaveLegacy {
+  /**
+   * The wave identifier
+   */
   id: string;
+
+  /**
+   * The ExpressStages in the wave
+   */
   stages: IExpressStageLegacy[];
+
+  /**
+   * If true, the stages in the wave will be executed sequentially
+   * @default false
+   */
+  sequentialStages?: boolean;
 }
 
 /**
- * A wave that holds stages
+ * A CDK Express Pipeline Legacy Wave that contains Legacy Stages
  */
 export class ExpressWaveLegacy implements IExpressWaveLegacy {
   public id: string;
-  public stages: IExpressStageLegacy[];
+  public stages: IExpressStageLegacy[] = [];
+  public sequentialStages?: boolean = false;
 
-  constructor(id: string, stages: IExpressStageLegacy[] = []) {
+  /**
+   * Constructs a new instance of the ExpressWaveLegacy class
+   * @param id
+   * @param sequentialStages If true, the stages in the wave will be executed sequentially. Default: false.
+   */
+  constructor(id: string, sequentialStages: boolean = false) {
     this.id = id;
-    this.stages = stages;
+    this.sequentialStages = sequentialStages;
   }
 
   /**
@@ -72,9 +98,10 @@ export class CdkExpressPipelineLegacy {
 
   /** Add a wave to the pipeline
    * @param id The wave identifier
+   * @param sequentialStages If true, the stages in the wave will be executed sequentially. Default: false.
    */
-  public addWave(id: string): ExpressWaveLegacy {
-    const wave = new ExpressWaveLegacy(id);
+  public addWave(id: string, sequentialStages: boolean = false): ExpressWaveLegacy {
+    const wave = new ExpressWaveLegacy(id, sequentialStages);
     this.waves.push(wave);
     return wave;
   }
@@ -88,12 +115,25 @@ export class CdkExpressPipelineLegacy {
       waves = this.waves;
     }
 
-    for (let i = 1; i < waves.length; i++) {
-      for (const stage of waves[i].stages) {
+    for (let w = 1; w < waves.length; w++) {
+      for (let s = 0; s < waves[w].stages.length; s++) {
         // All the stacks in this stage needs to depend on all the stacks in the previous stage
-        for (const dependantStage of waves[i - 1].stages) {
-          for (const stageStack of stage.stacks) {
+        for (const dependantStage of waves[w - 1].stages) {
+          for (const stageStack of waves[w].stages[s].stacks) {
             for (const dependantStack of dependantStage.stacks) {
+              stageStack.addDependency(dependantStack, CDK_EXPRESS_PIPELINE_DEPENDENCY_REASON);
+            }
+          }
+        }
+      }
+    }
+
+    for (let w = 0; w < waves.length; w++) {
+      if (waves[w].sequentialStages) {
+        // If the wave has sequential stages, all stacks in this stage need to depend on all stacks in the previous stage
+        for (let s = 1; s < waves[w].stages.length; s++) {
+          for (const dependantStack of waves[w].stages[s - 1].stacks) {
+            for (const stageStack of waves[w].stages[s].stacks) {
               stageStack.addDependency(dependantStack, CDK_EXPRESS_PIPELINE_DEPENDENCY_REASON);
             }
           }
@@ -113,17 +153,17 @@ export class CdkExpressPipelineLegacy {
   public printWaves(waves: IExpressWaveLegacy[]) {
     console.log('');
     console.log('ORDER OF DEPLOYMENT');
-    console.log('🌊 Waves  - Deployed sequentially, one after another.');
-    console.log('🏗️ Stages - Deployed in parallel, all stages within a wave are deployed at the same time.');
+    console.log('🌊 Waves  - Deployed sequentially.');
+    console.log('🏗 Stages - Deployed in parallel by default, unless the wave is marked `[Seq 🏗]` for sequential stage execution.');
     console.log('📦 Stacks - Deployed after their dependent stacks within the stage.');
     console.log('           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.');
     console.log('');
 
     const patternToFilter = getStackPatternToFilter();
     for (const wave of waves) {
-      console.log(`  🌊 ${wave.id}`);
+      console.log(`  🌊 ${wave.id}${wave.sequentialStages ? ' [Seq 🏗]' : ''}`);
       for (const stage of wave.stages) {
-        console.log(`    🏗️ ${stage.id}`);
+        console.log(`    🏗 ${stage.id}`);
         for (const stack of stage.stacks) {
           const targetStack = targetIdentifier(patternToFilter, stack.stackName);
           const stackTargetCharacter = targetStack ? '|    ' : '     ';
