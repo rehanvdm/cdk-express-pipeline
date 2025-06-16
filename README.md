@@ -55,11 +55,11 @@ The Wave, Stage and Stack order is as follows:
 
 For example, the following definition of Waves, Stages and Stacks as in CDK Express Pipelines:
 
-![order.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/order.png)
+![order.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/order-25smaller.png)
 
 Will create a dependency graph as follows:
 
-![img.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/order_dependencies.png)
+![img.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/order_dependencies-25smaller.png)
 
 When used with `cdk deploy '**' --concurrency 10`, it will deploy all stacks in parallel, 10 at a time, where possible
 while still adhering to the dependency graph. Stacks will be deployed in the following order:
