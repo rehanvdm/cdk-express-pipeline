@@ -31,8 +31,8 @@ describe('CdkExpressPipelineLegacy', () => {
 
     /* === Wave 1 === */
     /* --- Wave 1, Stage 1--- */
-    const wave1Stage1StackA = new cdk.Stack(app, 'Wave1Stage1StackA', { stackName: 'StackA' });
-    const wave1Stage1StackB = new cdk.Stack(app, 'Wave1Stage1StackB', { stackName: 'StackA' });
+    const wave1Stage1StackA = new cdk.Stack(app, 'Wave1Stage1StackA');
+    const wave1Stage1StackB = new cdk.Stack(app, 'Wave1Stage1StackB');
     const wave1Stage1StackC = new cdk.Stack(app, 'Wave1Stage1StackC');
     const wave1Stage1StackD = new cdk.Stack(app, 'Wave1Stage1StackD');
     const wave1Stage1StackE = new cdk.Stack(app, 'Wave1Stage1StackE');
