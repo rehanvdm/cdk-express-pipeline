@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import * as cdk from 'aws-cdk-lib';
 import { App, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
@@ -106,9 +108,9 @@ describe('CdkExpressPipelineLegacy', () => {
     wave1Stage2.addStack(new cdk.Stack(app, 'Wave1Stage2StackC'));
 
 
-    /* === Wave 2, Stage 1 === */
+    /* === Wave 2 === */
     const wave2 = expressPipeline.addWave('Wave2');
-    /* --- Wave 2, Stage 1--- */
+    /* --- Wave 2, Stage 1 === */
     const wave2Stage1 = wave2.addStage('Stage1');
     wave2Stage1.addStack(new cdk.Stack(app, 'Wave2Stage1StackD'));
 
@@ -190,51 +192,16 @@ describe('CdkExpressPipelineLegacy', () => {
     const testArray = [
       {
         pattern: '**',
-        expected: '\n' +
-          'ORDER OF DEPLOYMENT\n' +
-          '🌊 Waves  - Deployed sequentially.\n' +
-          '🏗 Stages - Deployed in parallel by default, unless the wave is marked `[Seq 🏗]` for sequential stage execution.\n' +
-          '📦 Stacks - Deployed after their dependent stacks within the stage.\n' +
-          '           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.\n' +
-          '\n' +
-          '  🌊 Wave1\n' +
-          '    🏗 Stage1\n' +
-          '|     📦 Wave1Stage1StackA\n' +
-          '|     📦 Wave1Stage1StackB\n' +
-          '|     📦 Wave1Stage1StackC\n' +
-          '    🏗 Stage2\n' +
-          '|     📦 Wave1Stage2StackD\n' +
-          '  🌊 Wave2\n' +
-          '    🏗 Stage1\n' +
-          '|     📦 Wave2Stage1StackE\n' +
-          '|     📦 Wave2Stage1StackF\n',
+        testName: 'all stacks (**)',
       },
       {
         pattern: 'Wave1Stage1*',
-        expected: '\n' +
-          'ORDER OF DEPLOYMENT\n' +
-          '🌊 Waves  - Deployed sequentially.\n' +
-          '🏗 Stages - Deployed in parallel by default, unless the wave is marked `[Seq 🏗]` for sequential stage execution.\n' +
-          '📦 Stacks - Deployed after their dependent stacks within the stage.\n' +
-          '           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.\n' +
-          '\n' +
-          '  🌊 Wave1\n' +
-          '    🏗 Stage1\n' +
-          '|     📦 Wave1Stage1StackA\n' +
-          '|     📦 Wave1Stage1StackB\n' +
-          '|     📦 Wave1Stage1StackC\n' +
-          '    🏗 Stage2\n' +
-          '      📦 Wave1Stage2StackD\n' +
-          '  🌊 Wave2\n' +
-          '    🏗 Stage1\n' +
-          '      📦 Wave2Stage1StackE\n' +
-          '      📦 Wave2Stage1StackF\n',
+        testName: 'Wave1Stage1* pattern',
       },
     ];
 
-    test.each(testArray)('Testing Legacy Pipeline: %s', ({
+    test.each(testArray)('Testing Legacy Pipeline: $testName', ({
       pattern,
-      expected,
     }) => {
       let consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
       process.env.CDK_CONTEXT_JSON = JSON.stringify({ 'aws:cdk:bundling-stacks': [pattern] });
@@ -245,7 +212,7 @@ describe('CdkExpressPipelineLegacy', () => {
       const actual = consoleLogSpy.mock.calls.join('\n');
       consoleLogSpy.mockRestore();
 
-      expect(actual).toBe(expected);
+      expect(actual).toMatchSnapshot();
     });
   });
 
@@ -497,124 +464,28 @@ describe('CdkExpressPipeline', () => {
     const testArray = [
       {
         pattern: '**',
-        expected: '\n' +
-          'ORDER OF DEPLOYMENT\n' +
-          '🌊 Waves  - Deployed sequentially.\n' +
-          '🏗 Stages - Deployed in parallel by default, unless the wave is marked `[Seq 🏗]` for sequential stage execution.\n' +
-          '📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).\n' +
-          '           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.\n' +
-          '\n' +
-          '| 🌊 Wave1\n' +
-          '|   🏗 Stage1\n' +
-          '|     📦 StackA (Wave1_Stage1_StackA)\n' +
-          '|     📦 StackB (Wave1_Stage1_StackB)\n' +
-          '|        ↳ StackA\n' +
-          '|     📦 StackC (Wave1_Stage1_StackC)\n' +
-          '|   🏗 Stage2\n' +
-          '|     📦 StackD (Wave1_Stage2_StackD)\n' +
-          '| 🌊 Wave2\n' +
-          '|   🏗 Stage1\n' +
-          '|     📦 StackE (Wave2_Stage1_StackE)\n' +
-          '|     📦 StackF (Wave2_Stage1_StackF)\n' +
-          '|        ↳ StackE\n',
+        testName: 'all stacks (**)',
       },
       {
         pattern: 'Wave1_Stage1_*',
-        expected: '\n' +
-          'ORDER OF DEPLOYMENT\n' +
-          '🌊 Waves  - Deployed sequentially.\n' +
-          '🏗 Stages - Deployed in parallel by default, unless the wave is marked `[Seq 🏗]` for sequential stage execution.\n' +
-          '📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).\n' +
-          '           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.\n' +
-          '\n' +
-          '| 🌊 Wave1\n' +
-          '|   🏗 Stage1\n' +
-          '|     📦 StackA (Wave1_Stage1_StackA)\n' +
-          '|     📦 StackB (Wave1_Stage1_StackB)\n' +
-          '|        ↳ StackA\n' +
-          '|     📦 StackC (Wave1_Stage1_StackC)\n' +
-          '    🏗 Stage2\n' +
-          '      📦 StackD (Wave1_Stage2_StackD)\n' +
-          '  🌊 Wave2\n' +
-          '    🏗 Stage1\n' +
-          '      📦 StackE (Wave2_Stage1_StackE)\n' +
-          '      📦 StackF (Wave2_Stage1_StackF)\n' +
-          '         ↳ StackE\n',
+        testName: 'Wave1_Stage1_* pattern',
       },
       {
         pattern: 'Wave1_Stage1*',
-        expected: '\n' +
-          'ORDER OF DEPLOYMENT\n' +
-          '🌊 Waves  - Deployed sequentially.\n' +
-          '🏗 Stages - Deployed in parallel by default, unless the wave is marked `[Seq 🏗]` for sequential stage execution.\n' +
-          '📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).\n' +
-          '           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.\n' +
-          '\n' +
-          '| 🌊 Wave1\n' +
-          '|   🏗 Stage1\n' +
-          '|     📦 StackA (Wave1_Stage1_StackA)\n' +
-          '|     📦 StackB (Wave1_Stage1_StackB)\n' +
-          '|        ↳ StackA\n' +
-          '|     📦 StackC (Wave1_Stage1_StackC)\n' +
-          '    🏗 Stage2\n' +
-          '      📦 StackD (Wave1_Stage2_StackD)\n' +
-          '  🌊 Wave2\n' +
-          '    🏗 Stage1\n' +
-          '      📦 StackE (Wave2_Stage1_StackE)\n' +
-          '      📦 StackF (Wave2_Stage1_StackF)\n' +
-          '         ↳ StackE\n',
+        testName: 'Wave1_Stage1* pattern',
       },
       {
         pattern: 'Wave2_*',
-        expected: '\n' +
-          'ORDER OF DEPLOYMENT\n' +
-          '🌊 Waves  - Deployed sequentially.\n' +
-          '🏗 Stages - Deployed in parallel by default, unless the wave is marked `[Seq 🏗]` for sequential stage execution.\n' +
-          '📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).\n' +
-          '           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.\n' +
-          '\n' +
-          '  🌊 Wave1\n' +
-          '    🏗 Stage1\n' +
-          '      📦 StackA (Wave1_Stage1_StackA)\n' +
-          '      📦 StackB (Wave1_Stage1_StackB)\n' +
-          '         ↳ StackA\n' +
-          '      📦 StackC (Wave1_Stage1_StackC)\n' +
-          '    🏗 Stage2\n' +
-          '      📦 StackD (Wave1_Stage2_StackD)\n' +
-          '| 🌊 Wave2\n' +
-          '|   🏗 Stage1\n' +
-          '|     📦 StackE (Wave2_Stage1_StackE)\n' +
-          '|     📦 StackF (Wave2_Stage1_StackF)\n' +
-          '|        ↳ StackE\n',
+        testName: 'Wave2_* pattern',
       },
       {
         pattern: 'Wave1_Stage1_StackB',
-        expected: '\n' +
-          'ORDER OF DEPLOYMENT\n' +
-          '🌊 Waves  - Deployed sequentially.\n' +
-          '🏗 Stages - Deployed in parallel by default, unless the wave is marked `[Seq 🏗]` for sequential stage execution.\n' +
-          '📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).\n' +
-          '           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.\n' +
-          '\n' +
-          '| 🌊 Wave1\n' +
-          '|   🏗 Stage1\n' +
-          '      📦 StackA (Wave1_Stage1_StackA)\n' +
-          '|     📦 StackB (Wave1_Stage1_StackB)\n' +
-          '|        ↳ StackA\n' +
-          '      📦 StackC (Wave1_Stage1_StackC)\n' +
-          '    🏗 Stage2\n' +
-          '      📦 StackD (Wave1_Stage2_StackD)\n' +
-          '  🌊 Wave2\n' +
-          '    🏗 Stage1\n' +
-          '      📦 StackE (Wave2_Stage1_StackE)\n' +
-          '      📦 StackF (Wave2_Stage1_StackF)\n' +
-          '         ↳ StackE\n',
+        testName: 'Wave1_Stage1_StackB pattern',
       },
     ];
 
-    test.each(testArray)('Testing: %s', ({
+    test.each(testArray)('Testing: $testName', ({
       pattern,
-      expected,
     }) => {
       let consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
       process.env.CDK_CONTEXT_JSON = JSON.stringify({ 'aws:cdk:bundling-stacks': [pattern] });
@@ -625,7 +496,7 @@ describe('CdkExpressPipeline', () => {
       const actual = consoleLogSpy.mock.calls.join('\n');
       consoleLogSpy.mockRestore();
 
-      expect(actual).toBe(expected);
+      expect(actual).toMatchSnapshot();
     });
   });
 
@@ -687,6 +558,62 @@ describe('CdkExpressPipeline', () => {
     // Check that Wave 2 Stage 2 Stack I has a dependency on Wave 2 Stage 1 Stack H
     const wave2Stage2StackIDeps = wave2Stage2StackI.expressDependencies().map((dependent) => dependent.stackId);
     expect(wave2Stage2StackIDeps).toContain(wave2Stage1StackH.stackId);
+  });
+
+  test('Mermaid diagram generation', () => {
+    const app = new App();
+
+    /* === Wave 1 === */
+    const wave1 = new ExpressWave('Wave1');
+    /* --- Wave 1, Stage 1--- */
+    const wave1Stage1 = new ExpressStage('Stage1', wave1);
+    const wave1Stage1StackA = new ExpressStack(app, 'StackA', wave1Stage1);
+    const wave1Stage1StackB = new ExpressStack(app, 'StackB', wave1Stage1);
+    const wave1Stage1StackC = new ExpressStack(app, 'StackC', wave1Stage1);
+    const wave1Stage1StackD = new ExpressStack(app, 'StackD', wave1Stage1);
+    const wave1Stage1StackE = new ExpressStack(app, 'StackE', wave1Stage1);
+    const wave1Stage1StackF = new ExpressStack(app, 'StackF', wave1Stage1);
+    wave1Stage1StackB.addExpressDependency(wave1Stage1StackA);
+    wave1Stage1StackC.addExpressDependency(wave1Stage1StackA);
+    wave1Stage1StackD.addExpressDependency(wave1Stage1StackB);
+    wave1Stage1StackE.addExpressDependency(wave1Stage1StackF);
+    wave1Stage1StackD.addExpressDependency(wave1Stage1StackF);
+    /* --- Wave 1, Stage 2 --- */
+    const wave1Stage2 = new ExpressStage('Stage2', wave1);
+    new ExpressStack(app, 'StackA', wave1Stage2);
+    const wave1Stage2StackB = new ExpressStack(app, 'StackB', wave1Stage2);
+    const wave1Stage2StackC = new ExpressStack(app, 'StackC', wave1Stage2);
+    wave1Stage2StackC.addExpressDependency(wave1Stage2StackB);
+
+    /* === Wave 2 === */
+    const wave2 = new ExpressWave('Wave2');
+    /* === Wave 2, Stage 1 === */
+    const wave2Stage1 = new ExpressStage('Stage1', wave2);
+    new ExpressStack(app, 'StackH', wave2Stage1);
+    new ExpressStack(app, 'StackI', wave2Stage1);
+
+    const wave2Stage2 = new ExpressStage('Stage2', wave2);
+    new ExpressStack(app, 'StackJ', wave2Stage2);
+    new ExpressStack(app, 'StackK', wave2Stage2);
+
+    /* === Wave 3 === */
+    const wave3 = new ExpressWave('Wave3', CDK_EXPRESS_PIPELINE_DEFAULT_SEPARATOR, true);
+    /* === Wave 3, Stage 1 === */
+    const wave3Stage1 = new ExpressStage('Stage1', wave3);
+    new ExpressStack(app, 'StackL', wave3Stage1);
+    new ExpressStack(app, 'StackM', wave3Stage1);
+
+    const wave3Stage2 = new ExpressStage('Stage2', wave3);
+    new ExpressStack(app, 'StackN', wave3Stage2);
+    new ExpressStack(app, 'StackO', wave3Stage2);
+
+    const expressPipeline = new CdkExpressPipeline({
+      waves: [wave1, wave2, wave3],
+    });
+    expressPipeline.printWaves(expressPipeline.waves);
+    const mermaidOutput = expressPipeline.generateMermaidDiagram(expressPipeline.waves);
+    fs.writeFileSync( path.join(process.cwd(), 'deployment-order.md'), mermaidOutput);
+    expect(mermaidOutput).toMatchSnapshot();
   });
 
 });

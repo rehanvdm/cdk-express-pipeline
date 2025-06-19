@@ -1,0 +1,221 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CdkExpressPipeline Correct Stack Highlight for deployment Testing: Wave1_Stage1* pattern 1`] = `
+"
+ORDER OF DEPLOYMENT
+🌊 Waves  - Deployed sequentially.
+🏗 Stages - Deployed in parallel by default, unless the wave is marked \`[Seq 🏗]\` for sequential stage execution.
+📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).
+           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.
+           - Stack deployment order within the stage is shown in square brackets (ex: [1])
+
+| 🌊 Wave1
+|   🏗 Stage1
+|     📦 StackA (Wave1_Stage1_StackA) [1]
+|     📦 StackB (Wave1_Stage1_StackB) [2]
+|        ↳ StackA
+|     📦 StackC (Wave1_Stage1_StackC) [1]
+    🏗 Stage2
+      📦 StackD (Wave1_Stage2_StackD) [1]
+  🌊 Wave2
+    🏗 Stage1
+      📦 StackE (Wave2_Stage1_StackE) [1]
+      📦 StackF (Wave2_Stage1_StackF) [2]
+         ↳ StackE
+"
+`;
+
+exports[`CdkExpressPipeline Correct Stack Highlight for deployment Testing: Wave1_Stage1_* pattern 1`] = `
+"
+ORDER OF DEPLOYMENT
+🌊 Waves  - Deployed sequentially.
+🏗 Stages - Deployed in parallel by default, unless the wave is marked \`[Seq 🏗]\` for sequential stage execution.
+📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).
+           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.
+           - Stack deployment order within the stage is shown in square brackets (ex: [1])
+
+| 🌊 Wave1
+|   🏗 Stage1
+|     📦 StackA (Wave1_Stage1_StackA) [1]
+|     📦 StackB (Wave1_Stage1_StackB) [2]
+|        ↳ StackA
+|     📦 StackC (Wave1_Stage1_StackC) [1]
+    🏗 Stage2
+      📦 StackD (Wave1_Stage2_StackD) [1]
+  🌊 Wave2
+    🏗 Stage1
+      📦 StackE (Wave2_Stage1_StackE) [1]
+      📦 StackF (Wave2_Stage1_StackF) [2]
+         ↳ StackE
+"
+`;
+
+exports[`CdkExpressPipeline Correct Stack Highlight for deployment Testing: Wave1_Stage1_StackB pattern 1`] = `
+"
+ORDER OF DEPLOYMENT
+🌊 Waves  - Deployed sequentially.
+🏗 Stages - Deployed in parallel by default, unless the wave is marked \`[Seq 🏗]\` for sequential stage execution.
+📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).
+           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.
+           - Stack deployment order within the stage is shown in square brackets (ex: [1])
+
+| 🌊 Wave1
+|   🏗 Stage1
+      📦 StackA (Wave1_Stage1_StackA) [1]
+|     📦 StackB (Wave1_Stage1_StackB) [2]
+|        ↳ StackA
+      📦 StackC (Wave1_Stage1_StackC) [1]
+    🏗 Stage2
+      📦 StackD (Wave1_Stage2_StackD) [1]
+  🌊 Wave2
+    🏗 Stage1
+      📦 StackE (Wave2_Stage1_StackE) [1]
+      📦 StackF (Wave2_Stage1_StackF) [2]
+         ↳ StackE
+"
+`;
+
+exports[`CdkExpressPipeline Correct Stack Highlight for deployment Testing: Wave2_* pattern 1`] = `
+"
+ORDER OF DEPLOYMENT
+🌊 Waves  - Deployed sequentially.
+🏗 Stages - Deployed in parallel by default, unless the wave is marked \`[Seq 🏗]\` for sequential stage execution.
+📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).
+           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.
+           - Stack deployment order within the stage is shown in square brackets (ex: [1])
+
+  🌊 Wave1
+    🏗 Stage1
+      📦 StackA (Wave1_Stage1_StackA) [1]
+      📦 StackB (Wave1_Stage1_StackB) [2]
+         ↳ StackA
+      📦 StackC (Wave1_Stage1_StackC) [1]
+    🏗 Stage2
+      📦 StackD (Wave1_Stage2_StackD) [1]
+| 🌊 Wave2
+|   🏗 Stage1
+|     📦 StackE (Wave2_Stage1_StackE) [1]
+|     📦 StackF (Wave2_Stage1_StackF) [2]
+|        ↳ StackE
+"
+`;
+
+exports[`CdkExpressPipeline Correct Stack Highlight for deployment Testing: all stacks (**) 1`] = `
+"
+ORDER OF DEPLOYMENT
+🌊 Waves  - Deployed sequentially.
+🏗 Stages - Deployed in parallel by default, unless the wave is marked \`[Seq 🏗]\` for sequential stage execution.
+📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).
+           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.
+           - Stack deployment order within the stage is shown in square brackets (ex: [1])
+
+| 🌊 Wave1
+|   🏗 Stage1
+|     📦 StackA (Wave1_Stage1_StackA) [1]
+|     📦 StackB (Wave1_Stage1_StackB) [2]
+|        ↳ StackA
+|     📦 StackC (Wave1_Stage1_StackC) [1]
+|   🏗 Stage2
+|     📦 StackD (Wave1_Stage2_StackD) [1]
+| 🌊 Wave2
+|   🏗 Stage1
+|     📦 StackE (Wave2_Stage1_StackE) [1]
+|     📦 StackF (Wave2_Stage1_StackF) [2]
+|        ↳ StackE
+"
+`;
+
+exports[`CdkExpressPipeline Mermaid diagram generation 1`] = `
+"\`\`\`mermaid
+graph TD
+    subgraph Wave0["🌊 Wave1"]
+        subgraph Wave0Stage0["🏗 Stage1"]
+            StackWave1_Stage1_StackA["📦 StackA [1]"]
+            StackWave1_Stage1_StackB["📦 StackB [2]"]
+            StackWave1_Stage1_StackC["📦 StackC [2]"]
+            StackWave1_Stage1_StackD["📦 StackD [3]"]
+            StackWave1_Stage1_StackE["📦 StackE [2]"]
+            StackWave1_Stage1_StackF["📦 StackF [1]"]
+        end
+        subgraph Wave0Stage1["🏗 Stage2"]
+            StackWave1_Stage2_StackA["📦 StackA [1]"]
+            StackWave1_Stage2_StackB["📦 StackB [1]"]
+            StackWave1_Stage2_StackC["📦 StackC [2]"]
+        end
+    end
+    StackWave1_Stage1_StackA --> StackWave1_Stage1_StackB
+    StackWave1_Stage1_StackA --> StackWave1_Stage1_StackC
+    StackWave1_Stage1_StackB --> StackWave1_Stage1_StackD
+    StackWave1_Stage1_StackF --> StackWave1_Stage1_StackD
+    StackWave1_Stage1_StackF --> StackWave1_Stage1_StackE
+    StackWave1_Stage2_StackB --> StackWave1_Stage2_StackC
+    subgraph Wave1["🌊 Wave2"]
+        subgraph Wave1Stage0["🏗 Stage1"]
+            StackWave2_Stage1_StackH["📦 StackH [1]"]
+            StackWave2_Stage1_StackI["📦 StackI [1]"]
+        end
+        subgraph Wave1Stage1["🏗 Stage2"]
+            StackWave2_Stage2_StackJ["📦 StackJ [1]"]
+            StackWave2_Stage2_StackK["📦 StackK [1]"]
+        end
+    end
+    subgraph Wave2["🌊 Wave3"]
+        subgraph Wave2Stage0["🏗 Stage1"]
+            StackWave3_Stage1_StackL["📦 StackL [1]"]
+            StackWave3_Stage1_StackM["📦 StackM [1]"]
+        end
+        subgraph Wave2Stage1["🏗 Stage2"]
+            StackWave3_Stage2_StackN["📦 StackN [1]"]
+            StackWave3_Stage2_StackO["📦 StackO [1]"]
+        end
+        Wave2Stage0 --> Wave2Stage1
+    end
+    Wave0 --> Wave1
+    Wave1 --> Wave2
+\`\`\`
+"
+`;
+
+exports[`CdkExpressPipelineLegacy Correct Stack Highlight for deployment Testing Legacy Pipeline: Wave1Stage1* pattern 1`] = `
+"
+ORDER OF DEPLOYMENT
+🌊 Waves  - Deployed sequentially.
+🏗 Stages - Deployed in parallel by default, unless the wave is marked \`[Seq 🏗]\` for sequential stage execution.
+📦 Stacks - Deployed after their dependent stacks within the stage.
+           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.
+
+  🌊 Wave1
+    🏗 Stage1
+|     📦 Wave1Stage1StackA
+|     📦 Wave1Stage1StackB
+|     📦 Wave1Stage1StackC
+    🏗 Stage2
+      📦 Wave1Stage2StackD
+  🌊 Wave2
+    🏗 Stage1
+      📦 Wave2Stage1StackE
+      📦 Wave2Stage1StackF
+"
+`;
+
+exports[`CdkExpressPipelineLegacy Correct Stack Highlight for deployment Testing Legacy Pipeline: all stacks (**) 1`] = `
+"
+ORDER OF DEPLOYMENT
+🌊 Waves  - Deployed sequentially.
+🏗 Stages - Deployed in parallel by default, unless the wave is marked \`[Seq 🏗]\` for sequential stage execution.
+📦 Stacks - Deployed after their dependent stacks within the stage.
+           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.
+
+  🌊 Wave1
+    🏗 Stage1
+|     📦 Wave1Stage1StackA
+|     📦 Wave1Stage1StackB
+|     📦 Wave1Stage1StackC
+    🏗 Stage2
+|     📦 Wave1Stage2StackD
+  🌊 Wave2
+    🏗 Stage1
+|     📦 Wave2Stage1StackE
+|     📦 Wave2Stage1StackF
+"
+`;

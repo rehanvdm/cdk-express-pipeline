@@ -1043,6 +1043,51 @@ Separator between the wave, stage and stack ids that are concatenated to form th
 
 ---
 
+### MermaidDiagramOutput <a name="MermaidDiagramOutput" id="cdk-express-pipeline.MermaidDiagramOutput"></a>
+
+#### Initializer <a name="Initializer" id="cdk-express-pipeline.MermaidDiagramOutput.Initializer"></a>
+
+```typescript
+import { MermaidDiagramOutput } from 'cdk-express-pipeline'
+
+const mermaidDiagramOutput: MermaidDiagramOutput = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-express-pipeline.MermaidDiagramOutput.property.fileName">fileName</a></code> | <code>string</code> | Must end in `.md`. If not provided, defaults to cdk-express-pipeline-deployment-order.md. |
+| <code><a href="#cdk-express-pipeline.MermaidDiagramOutput.property.path">path</a></code> | <code>string</code> | The path where the Mermaid diagram will be saved. |
+
+---
+
+##### `fileName`<sup>Optional</sup> <a name="fileName" id="cdk-express-pipeline.MermaidDiagramOutput.property.fileName"></a>
+
+```typescript
+public readonly fileName: string;
+```
+
+- *Type:* string
+
+Must end in `.md`. If not provided, defaults to cdk-express-pipeline-deployment-order.md.
+
+---
+
+##### `path`<sup>Optional</sup> <a name="path" id="cdk-express-pipeline.MermaidDiagramOutput.property.path"></a>
+
+```typescript
+public readonly path: string;
+```
+
+- *Type:* string
+
+The path where the Mermaid diagram will be saved.
+
+If not provided defaults to root
+
+---
+
 ## Classes <a name="Classes" id="Classes"></a>
 
 ### CdkExpressPipeline <a name="CdkExpressPipeline" id="cdk-express-pipeline.CdkExpressPipeline"></a>
@@ -1074,6 +1119,7 @@ new CdkExpressPipeline(props?: CdkExpressPipelineProps)
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#cdk-express-pipeline.CdkExpressPipeline.addWave">addWave</a></code> | Add a wave to the pipeline. |
+| <code><a href="#cdk-express-pipeline.CdkExpressPipeline.generateMermaidDiagram">generateMermaidDiagram</a></code> | Generate a Mermaid diagram showing the deployment order. |
 | <code><a href="#cdk-express-pipeline.CdkExpressPipeline.printWaves">printWaves</a></code> | Print the order of deployment to the console. |
 | <code><a href="#cdk-express-pipeline.CdkExpressPipeline.synth">synth</a></code> | Synthesize the pipeline which creates the dependencies between the stacks in the correct order. |
 
@@ -1105,6 +1151,22 @@ Default: false.
 
 ---
 
+##### `generateMermaidDiagram` <a name="generateMermaidDiagram" id="cdk-express-pipeline.CdkExpressPipeline.generateMermaidDiagram"></a>
+
+```typescript
+public generateMermaidDiagram(waves: IExpressWave[]): string
+```
+
+Generate a Mermaid diagram showing the deployment order.
+
+###### `waves`<sup>Required</sup> <a name="waves" id="cdk-express-pipeline.CdkExpressPipeline.generateMermaidDiagram.parameter.waves"></a>
+
+- *Type:* <a href="#cdk-express-pipeline.IExpressWave">IExpressWave</a>[]
+
+The waves to include in the diagram.
+
+---
+
 ##### `printWaves` <a name="printWaves" id="cdk-express-pipeline.CdkExpressPipeline.printWaves"></a>
 
 ```typescript
@@ -1122,7 +1184,7 @@ Print the order of deployment to the console.
 ##### `synth` <a name="synth" id="cdk-express-pipeline.CdkExpressPipeline.synth"></a>
 
 ```typescript
-public synth(waves?: IExpressWave[], print?: boolean): void
+public synth(waves?: IExpressWave[], print?: boolean, saveMermaidDiagram?: MermaidDiagramOutput): void
 ```
 
 Synthesize the pipeline which creates the dependencies between the stacks in the correct order.
@@ -1140,6 +1202,14 @@ The waves to synthesize.
 - *Type:* boolean
 
 Whether to print the order of deployment to the console.
+
+---
+
+###### `saveMermaidDiagram`<sup>Optional</sup> <a name="saveMermaidDiagram" id="cdk-express-pipeline.CdkExpressPipeline.synth.parameter.saveMermaidDiagram"></a>
+
+- *Type:* <a href="#cdk-express-pipeline.MermaidDiagramOutput">MermaidDiagramOutput</a>
+
+If provided, saves a Mermaid diagram of the deployment order to the specified path.
 
 ---
 
