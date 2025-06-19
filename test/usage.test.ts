@@ -31,8 +31,8 @@ describe('CdkExpressPipelineLegacy', () => {
 
     /* === Wave 1 === */
     /* --- Wave 1, Stage 1--- */
-    const wave1Stage1StackA = new cdk.Stack(app, 'Wave1Stage1StackA');
-    const wave1Stage1StackB = new cdk.Stack(app, 'Wave1Stage1StackB');
+    const wave1Stage1StackA = new cdk.Stack(app, 'Wave1Stage1StackA', { stackName: 'StackA' });
+    const wave1Stage1StackB = new cdk.Stack(app, 'Wave1Stage1StackB', { stackName: 'StackA' });
     const wave1Stage1StackC = new cdk.Stack(app, 'Wave1Stage1StackC');
     const wave1Stage1StackD = new cdk.Stack(app, 'Wave1Stage1StackD');
     const wave1Stage1StackE = new cdk.Stack(app, 'Wave1Stage1StackE');
@@ -295,6 +295,119 @@ describe('CdkExpressPipelineLegacy', () => {
     // Check that Wave 2 Stage 2 Stack I has a dependency on Wave 2 Stage 1 Stack H
     const wave2Stage2StackIDeps = wave2Stage2StackI.dependencies.map((dependent) => dependent.stackId);
     expect(wave2Stage2StackIDeps).toContain(wave2Stage1StackH.stackId);
+  });
+
+  test('Mermaid diagram generation', () => {
+    const app = new App();
+
+    /* === Wave 1 === */
+    /* --- Wave 1, Stage 1--- */
+    const wave1Stage1StackA = new cdk.Stack(app, 'Wave1Stage1StackA');
+    const wave1Stage1StackB = new cdk.Stack(app, 'Wave1Stage1StackB');
+    const wave1Stage1StackC = new cdk.Stack(app, 'Wave1Stage1StackC');
+    const wave1Stage1StackD = new cdk.Stack(app, 'Wave1Stage1StackD');
+    const wave1Stage1StackE = new cdk.Stack(app, 'Wave1Stage1StackE');
+    const wave1Stage1StackF = new cdk.Stack(app, 'Wave1Stage1StackF');
+    wave1Stage1StackB.addDependency(wave1Stage1StackA);
+    wave1Stage1StackC.addDependency(wave1Stage1StackA);
+    wave1Stage1StackD.addDependency(wave1Stage1StackB);
+    wave1Stage1StackE.addDependency(wave1Stage1StackF);
+    wave1Stage1StackD.addDependency(wave1Stage1StackF);
+    /* --- Wave 1, Stage 2 --- */
+    const wave1Stage2StackA = new cdk.Stack(app, 'Wave1Stage2StackA');
+    const wave1Stage2StackB = new cdk.Stack(app, 'Wave1Stage2StackB');
+    const wave1Stage2StackC = new cdk.Stack(app, 'Wave1Stage2StackC');
+    wave1Stage2StackC.addDependency(wave1Stage2StackB);
+
+    /* === Wave 2 === */
+    /* === Wave 2, Stage 1 === */
+    const wave2Stage1StackH = new cdk.Stack(app, 'Wave2Stage1StackH');
+    const wave2Stage1StackI = new cdk.Stack(app, 'Wave2Stage1StackI');
+
+    /* === Wave 2, Stage 2 === */
+    const wave2Stage2StackJ = new cdk.Stack(app, 'Wave2Stage2StackJ');
+    const wave2Stage2StackK = new cdk.Stack(app, 'Wave2Stage2StackK');
+
+    /* === Wave 3 === */
+    /* === Wave 3, Stage 1 === */
+    const wave3Stage1StackL = new cdk.Stack(app, 'Wave3Stage1StackL');
+    const wave3Stage1StackM = new cdk.Stack(app, 'Wave3Stage1StackM');
+
+    /* === Wave 3, Stage 2 === */
+    const wave3Stage2StackN = new cdk.Stack(app, 'Wave3Stage2StackN');
+    const wave3Stage2StackO = new cdk.Stack(app, 'Wave3Stage2StackO');
+
+    const waves = [
+      {
+        id: 'Wave1',
+        stages: [
+          {
+            id: 'Stage1',
+            stacks: [
+              wave1Stage1StackA,
+              wave1Stage1StackB,
+              wave1Stage1StackC,
+              wave1Stage1StackD,
+              wave1Stage1StackE,
+              wave1Stage1StackF,
+            ],
+          },
+          {
+            id: 'Stage2',
+            stacks: [
+              wave1Stage2StackA,
+              wave1Stage2StackB,
+              wave1Stage2StackC,
+            ],
+          },
+        ],
+      },
+      {
+        id: 'Wave2',
+        stages: [
+          {
+            id: 'Stage1',
+            stacks: [
+              wave2Stage1StackH,
+              wave2Stage1StackI,
+            ],
+          },
+          {
+            id: 'Stage2',
+            stacks: [
+              wave2Stage2StackJ,
+              wave2Stage2StackK,
+            ],
+          },
+        ],
+      },
+      {
+        id: 'Wave3',
+        sequentialStages: true,
+        stages: [
+          {
+            id: 'Stage1',
+            stacks: [
+              wave3Stage1StackL,
+              wave3Stage1StackM,
+            ],
+          },
+          {
+            id: 'Stage2',
+            stacks: [
+              wave3Stage2StackN,
+              wave3Stage2StackO,
+            ],
+          },
+        ],
+      },
+    ];
+
+    const expressPipeline = new CdkExpressPipelineLegacy();
+    expressPipeline.printWaves(waves);
+    const mermaidOutput = expressPipeline.generateMermaidDiagram(waves);
+    fs.writeFileSync(path.join(process.cwd(), 'pipeline-deployment-order.md'), mermaidOutput);
+    expect(mermaidOutput).toMatchSnapshot();
   });
 
 });
@@ -612,7 +725,7 @@ describe('CdkExpressPipeline', () => {
     });
     expressPipeline.printWaves(expressPipeline.waves);
     const mermaidOutput = expressPipeline.generateMermaidDiagram(expressPipeline.waves);
-    fs.writeFileSync( path.join(process.cwd(), 'deployment-order.md'), mermaidOutput);
+    fs.writeFileSync( path.join(process.cwd(), 'pipeline-deployment-order.md'), mermaidOutput);
     expect(mermaidOutput).toMatchSnapshot();
   });
 

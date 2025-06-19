@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { ExpressStack } from './express-stack';
 import { ExpressWave, IExpressWave } from './express-wave';
+import { MermaidDiagramOutput } from './shared';
 import { getStackPatternToFilter, targetIdentifier } from './utils';
 
 export const CDK_EXPRESS_PIPELINE_DEPENDENCY_REASON = 'cdk-express-pipeline wave->stage->stack dependency';
@@ -16,18 +17,6 @@ export interface CdkExpressPipelineProps {
   /** Separator between the wave, stage and stack ids that are concatenated to form the stack id
    * @default _ */
   readonly separator?: string;
-}
-
-export interface MermaidDiagramOutput {
-  /**
-   * The path where the Mermaid diagram will be saved. If not provided defaults to root
-   * */
-  readonly path?: string;
-
-  /**
-   * Must end in `.md`. If not provided, defaults to cdk-express-pipeline-deployment-order.md
-   * */
-  readonly fileName?: string;
 }
 
 /**

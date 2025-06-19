@@ -1265,6 +1265,7 @@ new CdkExpressPipelineLegacy(waves?: IExpressWaveLegacy[])
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#cdk-express-pipeline.CdkExpressPipelineLegacy.addWave">addWave</a></code> | Add a wave to the pipeline. |
+| <code><a href="#cdk-express-pipeline.CdkExpressPipelineLegacy.generateMermaidDiagram">generateMermaidDiagram</a></code> | Generate a Mermaid diagram showing the deployment order. |
 | <code><a href="#cdk-express-pipeline.CdkExpressPipelineLegacy.printWaves">printWaves</a></code> | Print the order of deployment to the console. |
 | <code><a href="#cdk-express-pipeline.CdkExpressPipelineLegacy.synth">synth</a></code> | Synthesize the pipeline which creates the dependencies between the stacks in the correct order. |
 
@@ -1296,6 +1297,22 @@ Default: false.
 
 ---
 
+##### `generateMermaidDiagram` <a name="generateMermaidDiagram" id="cdk-express-pipeline.CdkExpressPipelineLegacy.generateMermaidDiagram"></a>
+
+```typescript
+public generateMermaidDiagram(waves: IExpressWaveLegacy[]): string
+```
+
+Generate a Mermaid diagram showing the deployment order.
+
+###### `waves`<sup>Required</sup> <a name="waves" id="cdk-express-pipeline.CdkExpressPipelineLegacy.generateMermaidDiagram.parameter.waves"></a>
+
+- *Type:* <a href="#cdk-express-pipeline.IExpressWaveLegacy">IExpressWaveLegacy</a>[]
+
+The waves to include in the diagram.
+
+---
+
 ##### `printWaves` <a name="printWaves" id="cdk-express-pipeline.CdkExpressPipelineLegacy.printWaves"></a>
 
 ```typescript
@@ -1313,7 +1330,7 @@ Print the order of deployment to the console.
 ##### `synth` <a name="synth" id="cdk-express-pipeline.CdkExpressPipelineLegacy.synth"></a>
 
 ```typescript
-public synth(waves?: IExpressWaveLegacy[], print?: boolean): void
+public synth(waves?: IExpressWaveLegacy[], print?: boolean, saveMermaidDiagram?: MermaidDiagramOutput): void
 ```
 
 Synthesize the pipeline which creates the dependencies between the stacks in the correct order.
@@ -1331,6 +1348,14 @@ The waves to synthesize.
 - *Type:* boolean
 
 Whether to print the order of deployment to the console.
+
+---
+
+###### `saveMermaidDiagram`<sup>Optional</sup> <a name="saveMermaidDiagram" id="cdk-express-pipeline.CdkExpressPipelineLegacy.synth.parameter.saveMermaidDiagram"></a>
+
+- *Type:* <a href="#cdk-express-pipeline.MermaidDiagramOutput">MermaidDiagramOutput</a>
+
+If provided, saves a Mermaid diagram of the deployment order to the specified path.
 
 ---
 
