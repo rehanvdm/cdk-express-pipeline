@@ -227,43 +227,43 @@ exports[`CdkExpressPipelineLegacy Mermaid diagram generation 1`] = `
 graph TD
     subgraph Wave0["🌊 Wave1"]
         subgraph Wave0Stage0["🏗 Stage1"]
-            Stack__Token_AWS__StackId_135__["📦 Wave1Stage1StackA [1]"]
-            Stack__Token_AWS__StackId_136__["📦 Wave1Stage1StackB [2]"]
-            Stack__Token_AWS__StackId_137__["📦 Wave1Stage1StackC [2]"]
-            Stack__Token_AWS__StackId_138__["📦 Wave1Stage1StackD [3]"]
-            Stack__Token_AWS__StackId_140__["📦 Wave1Stage1StackE [2]"]
-            Stack__Token_AWS__StackId_139__["📦 Wave1Stage1StackF [1]"]
+            Stack__Token_AWS__StackId_132__["📦 Wave1Stage1StackA [1]"]
+            Stack__Token_AWS__StackId_133__["📦 Wave1Stage1StackB [2]"]
+            Stack__Token_AWS__StackId_134__["📦 Wave1Stage1StackC [2]"]
+            Stack__Token_AWS__StackId_135__["📦 Wave1Stage1StackD [3]"]
+            Stack__Token_AWS__StackId_137__["📦 Wave1Stage1StackE [2]"]
+            Stack__Token_AWS__StackId_136__["📦 Wave1Stage1StackF [1]"]
         end
         subgraph Wave0Stage1["🏗 Stage2"]
-            Stack__Token_AWS__StackId_141__["📦 Wave1Stage2StackA [1]"]
-            Stack__Token_AWS__StackId_142__["📦 Wave1Stage2StackB [1]"]
-            Stack__Token_AWS__StackId_143__["📦 Wave1Stage2StackC [2]"]
+            Stack__Token_AWS__StackId_138__["📦 Wave1Stage2StackA [1]"]
+            Stack__Token_AWS__StackId_139__["📦 Wave1Stage2StackB [1]"]
+            Stack__Token_AWS__StackId_140__["📦 Wave1Stage2StackC [2]"]
         end
     end
-    Stack__Token_AWS__StackId_135__ --> Stack__Token_AWS__StackId_136__
-    Stack__Token_AWS__StackId_135__ --> Stack__Token_AWS__StackId_137__
-    Stack__Token_AWS__StackId_136__ --> Stack__Token_AWS__StackId_138__
-    Stack__Token_AWS__StackId_139__ --> Stack__Token_AWS__StackId_138__
+    Stack__Token_AWS__StackId_132__ --> Stack__Token_AWS__StackId_133__
+    Stack__Token_AWS__StackId_132__ --> Stack__Token_AWS__StackId_134__
+    Stack__Token_AWS__StackId_133__ --> Stack__Token_AWS__StackId_135__
+    Stack__Token_AWS__StackId_136__ --> Stack__Token_AWS__StackId_135__
+    Stack__Token_AWS__StackId_136__ --> Stack__Token_AWS__StackId_137__
     Stack__Token_AWS__StackId_139__ --> Stack__Token_AWS__StackId_140__
-    Stack__Token_AWS__StackId_142__ --> Stack__Token_AWS__StackId_143__
     subgraph Wave1["🌊 Wave2"]
         subgraph Wave1Stage0["🏗 Stage1"]
-            Stack__Token_AWS__StackId_144__["📦 Wave2Stage1StackH [1]"]
-            Stack__Token_AWS__StackId_145__["📦 Wave2Stage1StackI [1]"]
+            Stack__Token_AWS__StackId_141__["📦 Wave2Stage1StackH [1]"]
+            Stack__Token_AWS__StackId_142__["📦 Wave2Stage1StackI [1]"]
         end
         subgraph Wave1Stage1["🏗 Stage2"]
-            Stack__Token_AWS__StackId_146__["📦 Wave2Stage2StackJ [1]"]
-            Stack__Token_AWS__StackId_147__["📦 Wave2Stage2StackK [1]"]
+            Stack__Token_AWS__StackId_143__["📦 Wave2Stage2StackJ [1]"]
+            Stack__Token_AWS__StackId_144__["📦 Wave2Stage2StackK [1]"]
         end
     end
     subgraph Wave2["🌊 Wave3"]
         subgraph Wave2Stage0["🏗 Stage1"]
-            Stack__Token_AWS__StackId_148__["📦 Wave3Stage1StackL [1]"]
-            Stack__Token_AWS__StackId_149__["📦 Wave3Stage1StackM [1]"]
+            Stack__Token_AWS__StackId_145__["📦 Wave3Stage1StackL [1]"]
+            Stack__Token_AWS__StackId_146__["📦 Wave3Stage1StackM [1]"]
         end
         subgraph Wave2Stage1["🏗 Stage2"]
-            Stack__Token_AWS__StackId_150__["📦 Wave3Stage2StackN [1]"]
-            Stack__Token_AWS__StackId_151__["📦 Wave3Stage2StackO [1]"]
+            Stack__Token_AWS__StackId_147__["📦 Wave3Stage2StackN [1]"]
+            Stack__Token_AWS__StackId_148__["📦 Wave3Stage2StackO [1]"]
         end
         Wave2Stage0 --> Wave2Stage1
     end
