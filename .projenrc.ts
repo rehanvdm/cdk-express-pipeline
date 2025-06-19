@@ -65,5 +65,6 @@ project.gitignore.addPatterns('.idea');
 project.gitignore.addPatterns('*.js');
 project.gitignore.addPatterns('*.d.ts');
 project.gitignore.addPatterns('*.DS_Store');
+project.gitignore.addPatterns('pipeline-deployment-order.md');
 
 project.synth();

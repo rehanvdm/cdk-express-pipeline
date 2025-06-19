@@ -52,4 +52,5 @@ tsconfig.json
 *.js
 *.d.ts
 *.DS_Store
+pipeline-deployment-order.md
 !/.projenrc.ts
