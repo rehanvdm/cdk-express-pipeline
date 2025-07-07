@@ -957,6 +957,51 @@ The stage that the stack belongs to.
 
 ## Structs <a name="Structs" id="Structs"></a>
 
+### BuildWorkflowPathConfig <a name="BuildWorkflowPathConfig" id="cdk-express-pipeline.BuildWorkflowPathConfig"></a>
+
+#### Initializer <a name="Initializer" id="cdk-express-pipeline.BuildWorkflowPathConfig.Initializer"></a>
+
+```typescript
+import { BuildWorkflowPathConfig } from 'cdk-express-pipeline'
+
+const buildWorkflowPathConfig: BuildWorkflowPathConfig = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-express-pipeline.BuildWorkflowPathConfig.property.type">type</a></code> | <code>string</code> | The type of workflow to use. |
+| <code><a href="#cdk-express-pipeline.BuildWorkflowPathConfig.property.workflow">workflow</a></code> | <code><a href="#cdk-express-pipeline.WorkflowLocation">WorkflowLocation</a></code> | Only required if type is 'workflow'. |
+
+---
+
+##### `type`<sup>Required</sup> <a name="type" id="cdk-express-pipeline.BuildWorkflowPathConfig.property.type"></a>
+
+```typescript
+public readonly type: string;
+```
+
+- *Type:* string
+
+The type of workflow to use.
+
+---
+
+##### `workflow`<sup>Optional</sup> <a name="workflow" id="cdk-express-pipeline.BuildWorkflowPathConfig.property.workflow"></a>
+
+```typescript
+public readonly workflow: WorkflowLocation;
+```
+
+- *Type:* <a href="#cdk-express-pipeline.WorkflowLocation">WorkflowLocation</a>
+
+Only required if type is 'workflow'.
+
+Specify the workflow or reusable action to use for building
+
+---
+
 ### CdkExpressPipelineProps <a name="CdkExpressPipelineProps" id="cdk-express-pipeline.CdkExpressPipelineProps"></a>
 
 #### Initializer <a name="Initializer" id="cdk-express-pipeline.CdkExpressPipelineProps.Initializer"></a>
@@ -1001,6 +1046,102 @@ The waves in the pipeline.
 
 ---
 
+### DiffWorkflowConfig <a name="DiffWorkflowConfig" id="cdk-express-pipeline.DiffWorkflowConfig"></a>
+
+#### Initializer <a name="Initializer" id="cdk-express-pipeline.DiffWorkflowConfig.Initializer"></a>
+
+```typescript
+import { DiffWorkflowConfig } from 'cdk-express-pipeline'
+
+const diffWorkflowConfig: DiffWorkflowConfig = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-express-pipeline.DiffWorkflowConfig.property.assumeRegion">assumeRegion</a></code> | <code>string</code> | AWS region to assume for the diff operation. |
+| <code><a href="#cdk-express-pipeline.DiffWorkflowConfig.property.assumeRoleArn">assumeRoleArn</a></code> | <code>string</code> | ARN of the role to assume for the diff operation. |
+| <code><a href="#cdk-express-pipeline.DiffWorkflowConfig.property.commands">commands</a></code> | <code>{[ key: string ]: string}[]</code> | Commands to run for synthesis. |
+| <code><a href="#cdk-express-pipeline.DiffWorkflowConfig.property.on">on</a></code> | <code><a href="#cdk-express-pipeline.WorkflowTriggers">WorkflowTriggers</a></code> | Configuration for pull request triggers. |
+| <code><a href="#cdk-express-pipeline.DiffWorkflowConfig.property.stackSelector">stackSelector</a></code> | <code>string</code> | Selector for the stack type. |
+| <code><a href="#cdk-express-pipeline.DiffWorkflowConfig.property.writeAsComment">writeAsComment</a></code> | <code>boolean</code> | Whether to write the diff as a comment. |
+
+---
+
+##### `assumeRegion`<sup>Required</sup> <a name="assumeRegion" id="cdk-express-pipeline.DiffWorkflowConfig.property.assumeRegion"></a>
+
+```typescript
+public readonly assumeRegion: string;
+```
+
+- *Type:* string
+
+AWS region to assume for the diff operation.
+
+---
+
+##### `assumeRoleArn`<sup>Required</sup> <a name="assumeRoleArn" id="cdk-express-pipeline.DiffWorkflowConfig.property.assumeRoleArn"></a>
+
+```typescript
+public readonly assumeRoleArn: string;
+```
+
+- *Type:* string
+
+ARN of the role to assume for the diff operation.
+
+---
+
+##### `commands`<sup>Required</sup> <a name="commands" id="cdk-express-pipeline.DiffWorkflowConfig.property.commands"></a>
+
+```typescript
+public readonly commands: {[ key: string ]: string}[];
+```
+
+- *Type:* {[ key: string ]: string}[]
+
+Commands to run for synthesis.
+
+---
+
+##### `on`<sup>Required</sup> <a name="on" id="cdk-express-pipeline.DiffWorkflowConfig.property.on"></a>
+
+```typescript
+public readonly on: WorkflowTriggers;
+```
+
+- *Type:* <a href="#cdk-express-pipeline.WorkflowTriggers">WorkflowTriggers</a>
+
+Configuration for pull request triggers.
+
+---
+
+##### `stackSelector`<sup>Required</sup> <a name="stackSelector" id="cdk-express-pipeline.DiffWorkflowConfig.property.stackSelector"></a>
+
+```typescript
+public readonly stackSelector: string;
+```
+
+- *Type:* string
+
+Selector for the stack type.
+
+---
+
+##### `writeAsComment`<sup>Optional</sup> <a name="writeAsComment" id="cdk-express-pipeline.DiffWorkflowConfig.property.writeAsComment"></a>
+
+```typescript
+public readonly writeAsComment: boolean;
+```
+
+- *Type:* boolean
+- *Default:* true
+
+Whether to write the diff as a comment.
+
+---
+
 ### ExpressWaveProps <a name="ExpressWaveProps" id="cdk-express-pipeline.ExpressWaveProps"></a>
 
 #### Initializer <a name="Initializer" id="cdk-express-pipeline.ExpressWaveProps.Initializer"></a>
@@ -1040,6 +1181,102 @@ public readonly separator: string;
 - *Default:* `_`
 
 Separator between the wave, stage and stack ids that are concatenated to form the stack id.
+
+---
+
+### GitHubWorkflowConfig <a name="GitHubWorkflowConfig" id="cdk-express-pipeline.GitHubWorkflowConfig"></a>
+
+#### Initializer <a name="Initializer" id="cdk-express-pipeline.GitHubWorkflowConfig.Initializer"></a>
+
+```typescript
+import { GitHubWorkflowConfig } from 'cdk-express-pipeline'
+
+const gitHubWorkflowConfig: GitHubWorkflowConfig = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-express-pipeline.GitHubWorkflowConfig.property.diff">diff</a></code> | <code><a href="#cdk-express-pipeline.DiffWorkflowConfig">DiffWorkflowConfig</a></code> | Configuration for the diff workflow. |
+| <code><a href="#cdk-express-pipeline.GitHubWorkflowConfig.property.synth">synth</a></code> | <code><a href="#cdk-express-pipeline.SynthWorkflowConfig">SynthWorkflowConfig</a></code> | Configuration for the synth workflow. |
+| <code><a href="#cdk-express-pipeline.GitHubWorkflowConfig.property.workingDir">workingDir</a></code> | <code>string</code> | The working directory for the GitHub workflow. |
+
+---
+
+##### `diff`<sup>Required</sup> <a name="diff" id="cdk-express-pipeline.GitHubWorkflowConfig.property.diff"></a>
+
+```typescript
+public readonly diff: DiffWorkflowConfig;
+```
+
+- *Type:* <a href="#cdk-express-pipeline.DiffWorkflowConfig">DiffWorkflowConfig</a>
+
+Configuration for the diff workflow.
+
+---
+
+##### `synth`<sup>Required</sup> <a name="synth" id="cdk-express-pipeline.GitHubWorkflowConfig.property.synth"></a>
+
+```typescript
+public readonly synth: SynthWorkflowConfig;
+```
+
+- *Type:* <a href="#cdk-express-pipeline.SynthWorkflowConfig">SynthWorkflowConfig</a>
+
+Configuration for the synth workflow.
+
+---
+
+##### `workingDir`<sup>Optional</sup> <a name="workingDir" id="cdk-express-pipeline.GitHubWorkflowConfig.property.workingDir"></a>
+
+```typescript
+public readonly workingDir: string;
+```
+
+- *Type:* string
+- *Default:* "."
+
+The working directory for the GitHub workflow.
+
+---
+
+### GithubWorkflowFile <a name="GithubWorkflowFile" id="cdk-express-pipeline.GithubWorkflowFile"></a>
+
+#### Initializer <a name="Initializer" id="cdk-express-pipeline.GithubWorkflowFile.Initializer"></a>
+
+```typescript
+import { GithubWorkflowFile } from 'cdk-express-pipeline'
+
+const githubWorkflowFile: GithubWorkflowFile = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-express-pipeline.GithubWorkflowFile.property.content">content</a></code> | <code><a href="#cdk-express-pipeline.GithubWorkflow">GithubWorkflow</a></code> | *No description.* |
+| <code><a href="#cdk-express-pipeline.GithubWorkflowFile.property.fileName">fileName</a></code> | <code>string</code> | *No description.* |
+
+---
+
+##### `content`<sup>Required</sup> <a name="content" id="cdk-express-pipeline.GithubWorkflowFile.property.content"></a>
+
+```typescript
+public readonly content: GithubWorkflow;
+```
+
+- *Type:* <a href="#cdk-express-pipeline.GithubWorkflow">GithubWorkflow</a>
+
+---
+
+##### `fileName`<sup>Required</sup> <a name="fileName" id="cdk-express-pipeline.GithubWorkflowFile.property.fileName"></a>
+
+```typescript
+public readonly fileName: string;
+```
+
+- *Type:* string
 
 ---
 
@@ -1088,6 +1325,196 @@ If not provided defaults to root
 
 ---
 
+### Patch <a name="Patch" id="cdk-express-pipeline.Patch"></a>
+
+#### Initializer <a name="Initializer" id="cdk-express-pipeline.Patch.Initializer"></a>
+
+```typescript
+import { Patch } from 'cdk-express-pipeline'
+
+const patch: Patch = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-express-pipeline.Patch.property.op">op</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#cdk-express-pipeline.Patch.property.path">path</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#cdk-express-pipeline.Patch.property.from">from</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#cdk-express-pipeline.Patch.property.value">value</a></code> | <code>any</code> | *No description.* |
+
+---
+
+##### `op`<sup>Required</sup> <a name="op" id="cdk-express-pipeline.Patch.property.op"></a>
+
+```typescript
+public readonly op: string;
+```
+
+- *Type:* string
+
+---
+
+##### `path`<sup>Required</sup> <a name="path" id="cdk-express-pipeline.Patch.property.path"></a>
+
+```typescript
+public readonly path: string;
+```
+
+- *Type:* string
+
+---
+
+##### `from`<sup>Optional</sup> <a name="from" id="cdk-express-pipeline.Patch.property.from"></a>
+
+```typescript
+public readonly from: string;
+```
+
+- *Type:* string
+
+---
+
+##### `value`<sup>Optional</sup> <a name="value" id="cdk-express-pipeline.Patch.property.value"></a>
+
+```typescript
+public readonly value: any;
+```
+
+- *Type:* any
+
+---
+
+### SynthWorkflowConfig <a name="SynthWorkflowConfig" id="cdk-express-pipeline.SynthWorkflowConfig"></a>
+
+#### Initializer <a name="Initializer" id="cdk-express-pipeline.SynthWorkflowConfig.Initializer"></a>
+
+```typescript
+import { SynthWorkflowConfig } from 'cdk-express-pipeline'
+
+const synthWorkflowConfig: SynthWorkflowConfig = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-express-pipeline.SynthWorkflowConfig.property.buildConfig">buildConfig</a></code> | <code><a href="#cdk-express-pipeline.BuildWorkflowPathConfig">BuildWorkflowPathConfig</a></code> | Configuration for the build workflow path. |
+| <code><a href="#cdk-express-pipeline.SynthWorkflowConfig.property.commands">commands</a></code> | <code>{[ key: string ]: string}[]</code> | Commands to run for synthesis. |
+
+---
+
+##### `buildConfig`<sup>Required</sup> <a name="buildConfig" id="cdk-express-pipeline.SynthWorkflowConfig.property.buildConfig"></a>
+
+```typescript
+public readonly buildConfig: BuildWorkflowPathConfig;
+```
+
+- *Type:* <a href="#cdk-express-pipeline.BuildWorkflowPathConfig">BuildWorkflowPathConfig</a>
+
+Configuration for the build workflow path.
+
+---
+
+##### `commands`<sup>Required</sup> <a name="commands" id="cdk-express-pipeline.SynthWorkflowConfig.property.commands"></a>
+
+```typescript
+public readonly commands: {[ key: string ]: string}[];
+```
+
+- *Type:* {[ key: string ]: string}[]
+
+Commands to run for synthesis.
+
+---
+
+### WorkflowLocation <a name="WorkflowLocation" id="cdk-express-pipeline.WorkflowLocation"></a>
+
+#### Initializer <a name="Initializer" id="cdk-express-pipeline.WorkflowLocation.Initializer"></a>
+
+```typescript
+import { WorkflowLocation } from 'cdk-express-pipeline'
+
+const workflowLocation: WorkflowLocation = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-express-pipeline.WorkflowLocation.property.path">path</a></code> | <code>string</code> | The path of the workflow to call before synthesis. |
+
+---
+
+##### `path`<sup>Required</sup> <a name="path" id="cdk-express-pipeline.WorkflowLocation.property.path"></a>
+
+```typescript
+public readonly path: string;
+```
+
+- *Type:* string
+
+The path of the workflow to call before synthesis.
+
+---
+
+### WorkflowTriggers <a name="WorkflowTriggers" id="cdk-express-pipeline.WorkflowTriggers"></a>
+
+#### Initializer <a name="Initializer" id="cdk-express-pipeline.WorkflowTriggers.Initializer"></a>
+
+```typescript
+import { WorkflowTriggers } from 'cdk-express-pipeline'
+
+const workflowTriggers: WorkflowTriggers = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-express-pipeline.WorkflowTriggers.property.pullRequest">pullRequest</a></code> | <code><a href="#cdk-express-pipeline.WorkflowTriggersPullRequests">WorkflowTriggersPullRequests</a></code> | *No description.* |
+
+---
+
+##### `pullRequest`<sup>Optional</sup> <a name="pullRequest" id="cdk-express-pipeline.WorkflowTriggers.property.pullRequest"></a>
+
+```typescript
+public readonly pullRequest: WorkflowTriggersPullRequests;
+```
+
+- *Type:* <a href="#cdk-express-pipeline.WorkflowTriggersPullRequests">WorkflowTriggersPullRequests</a>
+
+---
+
+### WorkflowTriggersPullRequests <a name="WorkflowTriggersPullRequests" id="cdk-express-pipeline.WorkflowTriggersPullRequests"></a>
+
+#### Initializer <a name="Initializer" id="cdk-express-pipeline.WorkflowTriggersPullRequests.Initializer"></a>
+
+```typescript
+import { WorkflowTriggersPullRequests } from 'cdk-express-pipeline'
+
+const workflowTriggersPullRequests: WorkflowTriggersPullRequests = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-express-pipeline.WorkflowTriggersPullRequests.property.branches">branches</a></code> | <code>string[]</code> | *No description.* |
+
+---
+
+##### `branches`<sup>Optional</sup> <a name="branches" id="cdk-express-pipeline.WorkflowTriggersPullRequests.property.branches"></a>
+
+```typescript
+public readonly branches: string[];
+```
+
+- *Type:* string[]
+
+---
+
 ## Classes <a name="Classes" id="Classes"></a>
 
 ### CdkExpressPipeline <a name="CdkExpressPipeline" id="cdk-express-pipeline.CdkExpressPipeline"></a>
@@ -1119,6 +1546,7 @@ new CdkExpressPipeline(props?: CdkExpressPipelineProps)
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#cdk-express-pipeline.CdkExpressPipeline.addWave">addWave</a></code> | Add a wave to the pipeline. |
+| <code><a href="#cdk-express-pipeline.CdkExpressPipeline.generateGitHubWorkflows">generateGitHubWorkflows</a></code> | *No description.* |
 | <code><a href="#cdk-express-pipeline.CdkExpressPipeline.generateMermaidDiagram">generateMermaidDiagram</a></code> | Generate a Mermaid diagram showing the deployment order. |
 | <code><a href="#cdk-express-pipeline.CdkExpressPipeline.printWaves">printWaves</a></code> | Print the order of deployment to the console. |
 | <code><a href="#cdk-express-pipeline.CdkExpressPipeline.synth">synth</a></code> | Synthesize the pipeline which creates the dependencies between the stacks in the correct order. |
@@ -1148,6 +1576,24 @@ The wave identifier.
 If true, the stages in the wave will be executed sequentially.
 
 Default: false.
+
+---
+
+##### `generateGitHubWorkflows` <a name="generateGitHubWorkflows" id="cdk-express-pipeline.CdkExpressPipeline.generateGitHubWorkflows"></a>
+
+```typescript
+public generateGitHubWorkflows(gitHubWorkflowConfig: GitHubWorkflowConfig, saveToFiles: boolean): GithubWorkflowFile[]
+```
+
+###### `gitHubWorkflowConfig`<sup>Required</sup> <a name="gitHubWorkflowConfig" id="cdk-express-pipeline.CdkExpressPipeline.generateGitHubWorkflows.parameter.gitHubWorkflowConfig"></a>
+
+- *Type:* <a href="#cdk-express-pipeline.GitHubWorkflowConfig">GitHubWorkflowConfig</a>
+
+---
+
+###### `saveToFiles`<sup>Required</sup> <a name="saveToFiles" id="cdk-express-pipeline.CdkExpressPipeline.generateGitHubWorkflows.parameter.saveToFiles"></a>
+
+- *Type:* boolean
 
 ---
 
@@ -1812,6 +2258,330 @@ public readonly sequentialStages: boolean;
 If true, the stages in the wave will be executed sequentially.
 
 ---
+
+
+### GithubWorkflow <a name="GithubWorkflow" id="cdk-express-pipeline.GithubWorkflow"></a>
+
+#### Initializers <a name="Initializers" id="cdk-express-pipeline.GithubWorkflow.Initializer"></a>
+
+```typescript
+import { GithubWorkflow } from 'cdk-express-pipeline'
+
+new GithubWorkflow(json: object)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-express-pipeline.GithubWorkflow.Initializer.parameter.json">json</a></code> | <code>object</code> | *No description.* |
+
+---
+
+##### `json`<sup>Required</sup> <a name="json" id="cdk-express-pipeline.GithubWorkflow.Initializer.parameter.json"></a>
+
+- *Type:* object
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#cdk-express-pipeline.GithubWorkflow.patch">patch</a></code> | Applies a set of JSON-Patch (RFC-6902) operations to this object and returns the result. |
+
+---
+
+##### `patch` <a name="patch" id="cdk-express-pipeline.GithubWorkflow.patch"></a>
+
+```typescript
+public patch(ops: ...Patch[]): GithubWorkflow
+```
+
+Applies a set of JSON-Patch (RFC-6902) operations to this object and returns the result.
+
+###### `ops`<sup>Required</sup> <a name="ops" id="cdk-express-pipeline.GithubWorkflow.patch.parameter.ops"></a>
+
+- *Type:* ...<a href="#cdk-express-pipeline.Patch">Patch</a>[]
+
+The operations to apply.
+
+---
+
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-express-pipeline.GithubWorkflow.property.json">json</a></code> | <code>object</code> | *No description.* |
+
+---
+
+##### `json`<sup>Required</sup> <a name="json" id="cdk-express-pipeline.GithubWorkflow.property.json"></a>
+
+```typescript
+public readonly json: object;
+```
+
+- *Type:* object
+
+---
+
+
+### JsonPatch <a name="JsonPatch" id="cdk-express-pipeline.JsonPatch"></a>
+
+Utility for applying RFC-6902 JSON-Patch to a document.
+
+Use the the `JsonPatch.apply(doc, ...ops)` function to apply a set of
+operations to a JSON document and return the result.
+
+Operations can be created using the factory methods `JsonPatch.add()`,
+`JsonPatch.remove()`, etc.
+
+const output = JsonPatch.apply(input,
+  JsonPatch.replace('/world/hi/there', 'goodbye'),
+  JsonPatch.add('/world/foo/', 'boom'),
+  JsonPatch.remove('/hello'),
+);
+
+#### Initializers <a name="Initializers" id="cdk-express-pipeline.JsonPatch.Initializer"></a>
+
+```typescript
+import { JsonPatch } from 'cdk-express-pipeline'
+
+new JsonPatch()
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#cdk-express-pipeline.JsonPatch.patch">patch</a></code> | Applies a set of JSON-Patch (RFC-6902) operations to `document` and returns the result. |
+
+---
+
+##### `patch` <a name="patch" id="cdk-express-pipeline.JsonPatch.patch"></a>
+
+```typescript
+public patch(document: any, ops: ...Patch[]): any
+```
+
+Applies a set of JSON-Patch (RFC-6902) operations to `document` and returns the result.
+
+###### `document`<sup>Required</sup> <a name="document" id="cdk-express-pipeline.JsonPatch.patch.parameter.document"></a>
+
+- *Type:* any
+
+The document to patch.
+
+---
+
+###### `ops`<sup>Required</sup> <a name="ops" id="cdk-express-pipeline.JsonPatch.patch.parameter.ops"></a>
+
+- *Type:* ...<a href="#cdk-express-pipeline.Patch">Patch</a>[]
+
+The operations to apply.
+
+---
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#cdk-express-pipeline.JsonPatch.add">add</a></code> | Adds a value to an object or inserts it into an array. |
+| <code><a href="#cdk-express-pipeline.JsonPatch.copy">copy</a></code> | Copies a value from one location to another within the JSON document. |
+| <code><a href="#cdk-express-pipeline.JsonPatch.move">move</a></code> | Moves a value from one location to the other. |
+| <code><a href="#cdk-express-pipeline.JsonPatch.remove">remove</a></code> | Removes a value from an object or array. |
+| <code><a href="#cdk-express-pipeline.JsonPatch.replace">replace</a></code> | Replaces a value. |
+| <code><a href="#cdk-express-pipeline.JsonPatch.test">test</a></code> | Tests that the specified value is set in the document. |
+
+---
+
+##### `add` <a name="add" id="cdk-express-pipeline.JsonPatch.add"></a>
+
+```typescript
+import { JsonPatch } from 'cdk-express-pipeline'
+
+JsonPatch.add(path: string, value: any)
+```
+
+Adds a value to an object or inserts it into an array.
+
+In the case of an
+array, the value is inserted before the given index. The - character can be
+used instead of an index to insert at the end of an array.
+
+*Example*
+
+```typescript
+JsonPatch.add('/biscuits/1', { "name": "Ginger Nut" })
+```
+
+
+###### `path`<sup>Required</sup> <a name="path" id="cdk-express-pipeline.JsonPatch.add.parameter.path"></a>
+
+- *Type:* string
+
+---
+
+###### `value`<sup>Required</sup> <a name="value" id="cdk-express-pipeline.JsonPatch.add.parameter.value"></a>
+
+- *Type:* any
+
+---
+
+##### `copy` <a name="copy" id="cdk-express-pipeline.JsonPatch.copy"></a>
+
+```typescript
+import { JsonPatch } from 'cdk-express-pipeline'
+
+JsonPatch.copy(from: string, path: string)
+```
+
+Copies a value from one location to another within the JSON document.
+
+Both
+from and path are JSON Pointers.
+
+*Example*
+
+```typescript
+JsonPatch.copy('/biscuits/0', '/best_biscuit')
+```
+
+
+###### `from`<sup>Required</sup> <a name="from" id="cdk-express-pipeline.JsonPatch.copy.parameter.from"></a>
+
+- *Type:* string
+
+---
+
+###### `path`<sup>Required</sup> <a name="path" id="cdk-express-pipeline.JsonPatch.copy.parameter.path"></a>
+
+- *Type:* string
+
+---
+
+##### `move` <a name="move" id="cdk-express-pipeline.JsonPatch.move"></a>
+
+```typescript
+import { JsonPatch } from 'cdk-express-pipeline'
+
+JsonPatch.move(from: string, path: string)
+```
+
+Moves a value from one location to the other.
+
+Both from and path are JSON Pointers.
+
+*Example*
+
+```typescript
+JsonPatch.move('/biscuits', '/cookies')
+```
+
+
+###### `from`<sup>Required</sup> <a name="from" id="cdk-express-pipeline.JsonPatch.move.parameter.from"></a>
+
+- *Type:* string
+
+---
+
+###### `path`<sup>Required</sup> <a name="path" id="cdk-express-pipeline.JsonPatch.move.parameter.path"></a>
+
+- *Type:* string
+
+---
+
+##### `remove` <a name="remove" id="cdk-express-pipeline.JsonPatch.remove"></a>
+
+```typescript
+import { JsonPatch } from 'cdk-express-pipeline'
+
+JsonPatch.remove(path: string)
+```
+
+Removes a value from an object or array.
+
+*Example*
+
+```typescript
+JsonPatch.remove('/biscuits/0')
+```
+
+
+###### `path`<sup>Required</sup> <a name="path" id="cdk-express-pipeline.JsonPatch.remove.parameter.path"></a>
+
+- *Type:* string
+
+---
+
+##### `replace` <a name="replace" id="cdk-express-pipeline.JsonPatch.replace"></a>
+
+```typescript
+import { JsonPatch } from 'cdk-express-pipeline'
+
+JsonPatch.replace(path: string, value: any)
+```
+
+Replaces a value.
+
+Equivalent to a “remove” followed by an “add”.
+
+*Example*
+
+```typescript
+JsonPatch.replace('/biscuits/0/name', 'Chocolate Digestive')
+```
+
+
+###### `path`<sup>Required</sup> <a name="path" id="cdk-express-pipeline.JsonPatch.replace.parameter.path"></a>
+
+- *Type:* string
+
+---
+
+###### `value`<sup>Required</sup> <a name="value" id="cdk-express-pipeline.JsonPatch.replace.parameter.value"></a>
+
+- *Type:* any
+
+---
+
+##### `test` <a name="test" id="cdk-express-pipeline.JsonPatch.test"></a>
+
+```typescript
+import { JsonPatch } from 'cdk-express-pipeline'
+
+JsonPatch.test(path: string, value: any)
+```
+
+Tests that the specified value is set in the document.
+
+If the test fails,
+then the patch as a whole should not apply.
+
+*Example*
+
+```typescript
+JsonPatch.test('/best_biscuit/name', 'Choco Leibniz')
+```
+
+
+###### `path`<sup>Required</sup> <a name="path" id="cdk-express-pipeline.JsonPatch.test.parameter.path"></a>
+
+- *Type:* string
+
+---
+
+###### `value`<sup>Required</sup> <a name="value" id="cdk-express-pipeline.JsonPatch.test.parameter.value"></a>
+
+- *Type:* any
+
+---
+
 
 
 ## Protocols <a name="Protocols" id="Protocols"></a>

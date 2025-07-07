@@ -41,9 +41,9 @@ const project = new awscdk.AwsCdkConstructLibrary({
     module: 'cdk_express_pipeline',
   },
   // deps: [ ],
-  // bundledDeps: [ ],
+  bundledDeps: ['yaml', 'fast-json-patch'],
   /* Build dependencies for this module. */
-  devDeps: ['husky'],
+  devDeps: ['husky', '@types/fast-json-patch'],
   jestOptions: {
     jestConfig: {
       moduleFileExtensions: ['ts', 'tsx', 'js', 'mjs', 'cjs', 'jsx', 'json', 'node'], // https://jestjs.io/docs/configuration#modulefileextensions-arraystring
