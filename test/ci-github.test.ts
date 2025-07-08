@@ -38,14 +38,8 @@ describe('CDK Express Pipeline CI Configuration', () => {
             { prod: '' },
           ],
         },
-        diff: {
-          on: {},
-          stackSelector: 'wave',
-          writeAsComment: true,
-          assumeRoleArn: '',
-          assumeRegion: '',
-          commands: [],
-        },
+        diff: [],
+        deploy: [],
       };
     }
 
@@ -87,16 +81,17 @@ describe('CDK Express Pipeline CI Configuration', () => {
           commands: [
           ],
         },
-        diff: {
+        diff: [{
           on: {},
           stackSelector: stackSelector,
           writeAsComment: true,
           assumeRoleArn: '',
           assumeRegion: '',
           commands: [
-            { dev: 'npm run cdk diff {stackSelector} --app=cdk.out/dev' },
+            { dev: 'npm run cdk -- diff {stackSelector} --app=cdk.out/dev' },
           ],
-        },
+        }],
+        deploy: [],
       };
     }
 
@@ -142,7 +137,7 @@ describe('CDK Express Pipeline CI Configuration', () => {
           { prod: "npm run cdk -- synth '**' -c env=prod --output=cdk.out/prod" },
         ],
       },
-      diff: {
+      diff: [{
         on: {
           pullRequest: {
             branches: ['main'],
@@ -153,10 +148,38 @@ describe('CDK Express Pipeline CI Configuration', () => {
         assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
         assumeRegion: 'us-east-1',
         commands: [
-          { dev: 'npm run cdk diff {stackSelector} --app=cdk.out/dev' },
-          { prod: 'npm run cdk diff {stackSelector} --app=cdk.out/prod' },
+          { dev: 'npm run cdk -- diff {stackSelector} --app=cdk.out/dev' },
+          { prod: 'npm run cdk -- diff {stackSelector} --app=cdk.out/prod' },
+        ],
+      }],
+      deploy: [{
+        id: 'dev',
+        on: {
+          pullRequest: {
+            branches: ['main'],
+          },
+        },
+        stackSelector: 'wave',
+        assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
+        assumeRegion: 'us-east-1',
+        commands: [
+          { dev: 'npm run cdk -- deploy {stackSelector} --app=cdk.out/dev --concurrency 10 --require-approval never --exclusively' },
         ],
       },
+      {
+        id: 'prod',
+        on: {
+          pullRequest: {
+            branches: ['production'],
+          },
+        },
+        stackSelector: 'wave',
+        assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
+        assumeRegion: 'us-east-1',
+        commands: [
+          { prod: 'npm run cdk -- deploy {stackSelector} --app=cdk.out/prod --concurrency 10 --require-approval never --exclusively' },
+        ],
+      }],
     };
 
     const resp = createGitHubWorkflows(ghConfig, pipeline.waves);
@@ -193,21 +216,49 @@ describe('CDK Express Pipeline CI Configuration', () => {
           { prod: "npm run cdk -- synth '**' -c env=prod --output=cdk.out/prod" },
         ],
       },
-      diff: {
+      diff: [{
+        on: {
+          pullRequest: {
+            branches: ['main'],
+          },
+        },
+        stackSelector: 'stage',
+        writeAsComment: true,
+        assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
+        assumeRegion: 'us-east-1',
+        commands: [
+          { dev: 'npm run cdk -- diff {stackSelector} --app=cdk.out/dev' },
+          { prod: 'npm run cdk -- diff {stackSelector} --app=cdk.out/prod' },
+        ],
+      }],
+      deploy: [{
+        id: 'dev',
         on: {
           pullRequest: {
             branches: ['main'],
           },
         },
         stackSelector: 'wave',
-        writeAsComment: true,
         assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
         assumeRegion: 'us-east-1',
         commands: [
-          { dev: 'npm run cdk diff {stackSelector} --app=cdk.out/dev' },
-          { prod: 'npm run cdk diff {stackSelector} --app=cdk.out/prod' },
+          { dev: 'npm run cdk -- deploy {stackSelector} --app=cdk.out/dev --concurrency 10 --require-approval never --exclusively' },
         ],
       },
+      {
+        id: 'prod',
+        on: {
+          push: {
+            branches: ['production'],
+          },
+        },
+        stackSelector: 'wave',
+        assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
+        assumeRegion: 'us-east-1',
+        commands: [
+          { prod: 'npm run cdk -- deploy {stackSelector} --app=cdk.out/prod --concurrency 10 --require-approval never --exclusively' },
+        ],
+      }],
     };
 
     const resp = createGitHubWorkflows(ghConfig, expressPipeline.waves);

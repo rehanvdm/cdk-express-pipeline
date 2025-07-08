@@ -19,7 +19,12 @@ export interface GitHubWorkflowConfig {
   /**
    * Configuration for the diff workflow
    */
-  readonly diff: DiffWorkflowConfig;
+  readonly diff: DiffWorkflowConfig[];
+
+  /**
+   * Configuration for the deploy workflow
+   */
+  readonly deploy: DeployWorkflowConfig[];
 }
 
 export interface SynthWorkflowConfig {
@@ -56,13 +61,23 @@ export interface WorkflowLocation {
 export interface WorkflowTriggersPullRequests {
   readonly branches?: string[];
 }
+export interface WorkflowTriggersPush {
+  readonly branches?: string[];
+}
 export interface WorkflowTriggers {
   readonly pullRequest?: WorkflowTriggersPullRequests;
+  readonly push?: WorkflowTriggersPush;
 }
+
 export interface DiffWorkflowConfig {
   /**
-   * Configuration for pull request triggers
+   * Unique identifier, postfixed to the generated workflow name. Can be omitted if only one workflow is specified.
    */
+  readonly id?: string;
+
+  /**
+  * Conditions that trigger the diff workflow
+  * */
   readonly on: WorkflowTriggers;
 
   /**
@@ -90,6 +105,39 @@ export interface DiffWorkflowConfig {
    * @default true
    */
   readonly writeAsComment?: boolean;
+}
+
+export interface DeployWorkflowConfig {
+
+  /**
+   * Unique identifier, postfixed to the generated workflow name. Can be omitted if only one workflow is specified.
+   */
+  readonly id?: string;
+
+  /**
+   * Conditions that trigger the deploy workflow
+   */
+  readonly on: WorkflowTriggers;
+
+  /**
+   * ARN of the role to assume for the diff operation
+   */
+  readonly assumeRoleArn: string;
+
+  /**
+   * AWS region to assume for the diff operation
+   */
+  readonly assumeRegion: string;
+
+  /**
+   * Selector for the stack type
+   */
+  readonly stackSelector: 'wave' | 'stage';
+
+  /**
+   * Commands to run for synthesis
+   */
+  readonly commands: Record<string, string>[];
 }
 
 
@@ -126,8 +174,27 @@ export function createGitHubWorkflows(githubConfig: GitHubWorkflowConfig, waves:
 
   const workflowFiles: GithubWorkflowFile[] = [];
   workflowFiles.push(synthReusableAction(workingDir, githubConfig.synth));
-  workflowFiles.push(diffReusableAction(githubConfig.diff));
-  workflowFiles.push(diffWorkflow(workingDir, githubConfig.diff, waves));
+  workflowFiles.push(diffReusableAction());
+  workflowFiles.push(deployReusableAction());
+
+
+  for (const diffConfig of githubConfig.diff) {
+    const hasMultipleWorkflows = githubConfig.diff.length > 1;
+    if (!diffConfig.id && hasMultipleWorkflows) {
+      throw new Error('Diff workflow configuration must have an id');
+    }
+
+    workflowFiles.push(diffWorkflow(workingDir, diffConfig, waves, hasMultipleWorkflows));
+  }
+
+  for (const deployConfig of githubConfig.deploy) {
+    const hasMultipleWorkflows = githubConfig.deploy.length > 1;
+    if (!deployConfig.id && hasMultipleWorkflows) {
+      throw new Error('Deploy workflow configuration must have an id');
+    }
+
+    workflowFiles.push(deployWorkflow(workingDir, deployConfig, waves, hasMultipleWorkflows));
+  }
 
   return workflowFiles;
 }
@@ -223,7 +290,7 @@ function synthReusableAction(workingDir: string, synthConfig: SynthWorkflowConfi
   };
 }
 
-function diffReusableAction(diffConfig: DiffWorkflowConfig): GithubWorkflowFile {
+function diffReusableAction(): GithubWorkflowFile {
   const workflowContent = new GithubWorkflow({
     name: 'CDK Diff Action',
     description: 'Run CDK diff for a specific stack pattern and post results to PR',
@@ -252,12 +319,20 @@ function diffReusableAction(diffConfig: DiffWorkflowConfig): GithubWorkflowFile 
         required: true,
         description: 'Title for the diff comment',
       },
+      'assume-role-arn': {
+        required: true,
+        description: 'The ARN of the role to assume for the deploy operation',
+      },
+      'assume-region': {
+        required: true,
+        description: 'The AWS region to assume for the deploy operation',
+      },
     },
     runs: {
       using: 'composite',
       steps: [
         restoreBuildCacheStep(),
-        assumeAwsRoleStep(diffConfig.assumeRoleArn, diffConfig.assumeRegion),
+        assumeAwsRoleStep('${{ inputs.assume-role-arn }}', '${{ inputs.assume-region }}'),
         {
           name: 'CDK Diff Comment',
           if: '${{ inputs.write-as-comment == true }} ',
@@ -286,6 +361,52 @@ function diffReusableAction(diffConfig: DiffWorkflowConfig): GithubWorkflowFile 
     content: workflowContent,
   };
 }
+function deployReusableAction(): GithubWorkflowFile {
+  const workflowContent = new GithubWorkflow({
+    name: 'CDK Deploy Action',
+    description: 'Run CDK deploy for a specific stack pattern',
+    inputs: {
+      'stack-selector-patterns': {
+        required: true,
+        description: 'The value of the {stackSelector} replacement in the command',
+      },
+      'command': {
+        required: true,
+        description: 'CDK deploy command',
+      },
+      'cloud-assembly-directory': {
+        required: true,
+        description: 'The directory where the CDK cloud assembly is located',
+      },
+      'assume-role-arn': {
+        required: true,
+        description: 'The ARN of the role to assume for the deploy operation',
+      },
+      'assume-region': {
+        required: true,
+        description: 'The AWS region to assume for the deploy operation',
+      },
+    },
+    runs: {
+      using: 'composite',
+      steps: [
+        restoreBuildCacheStep(),
+        assumeAwsRoleStep('${{ inputs.assume-role-arn }}', '${{ inputs.assume-region }}'),
+        {
+          name: 'CDK Deploy Command',
+          run: '${{ inputs.command }}',
+          shell: 'bash',
+        },
+      ],
+    },
+  });
+
+  return {
+    fileName: 'actions/cdk-express-pipeline-deploy/action.yml',
+    content: workflowContent,
+  };
+}
+
 
 function checkoutRepoStep() {
   return {
@@ -317,6 +438,11 @@ function assumeAwsRoleStep(assumeRoleArn: string, assumeRegion: string) {
   };
 }
 
+function capitalizeFirstLetter(input: string): string {
+  if (!input) return '';
+  return input.charAt(0).toUpperCase() + input.slice(1);
+}
+
 function toSnakeCase(str: string): string {
   return str
     .replace(/([a-z])([A-Z])/g, '$1_$2') // handle camelCase or PascalCase
@@ -337,14 +463,13 @@ function stepStackSelectors(stackSelector: 'wave' | 'stage', waves: IExpressWave
       for (const stage of wave.stages) {
         res.push({
           name: toSnakeCase(wave.id + '__' + stage.id),
-          selector: `'${wave.id}${wave.separator}${stage.id}${wave.separator}*'`,
+          selector: `${wave.id}${wave.separator}${stage.id}${wave.separator}*`,
         });
       }
     }
   }
   return res;
 }
-
 function extractAppArgument(command: string): string | undefined {
   const match = command.match(/--app(?:=|\s)(?:"([^"]+)"|'([^']+)'|(\S+))/);
 
@@ -353,7 +478,21 @@ function extractAppArgument(command: string): string | undefined {
   // Return whichever capturing group matched (double quotes, single quotes, or unquoted)
   return match[1] || match[2] || match[3];
 }
-function diffWorkflow(workingDir: string, diffConfig: DiffWorkflowConfig, waves: IExpressWave[]): GithubWorkflowFile {
+
+function formatWorkflowTriggers(workflowTriggers: WorkflowTriggers) {
+  let triggers: any = workflowTriggers;
+  if (workflowTriggers.pullRequest) {
+    // Need to change `pullRequest` to `pull_request` to match GitHub Actions syntax
+    triggers = {
+      ...workflowTriggers,
+      pull_request: workflowTriggers.pullRequest,
+    };
+    delete triggers.pullRequest;
+  }
+  return triggers;
+}
+function diffWorkflow(workingDir: string, diffConfig: DiffWorkflowConfig, waves: IExpressWave[],
+  requiresUniqueId: boolean): GithubWorkflowFile {
 
   console.log(workingDir);
   //defaults:
@@ -372,6 +511,8 @@ function diffWorkflow(workingDir: string, diffConfig: DiffWorkflowConfig, waves:
       'stack-selector-patterns': string;
       'command': string;
       'write-as-comment': boolean;
+      'assume-role-arn': string;
+      'assume-region': string;
     }[] = [];
     for (const stackSelector of stackSelectors) {
       matrixIncludes.push({
@@ -380,6 +521,8 @@ function diffWorkflow(workingDir: string, diffConfig: DiffWorkflowConfig, waves:
         'stack-selector-patterns': stackSelector.selector,
         'command': commandValue.replace('{stackSelector}', stackSelector.selector),
         'write-as-comment': !!diffConfig.writeAsComment,
+        'assume-role-arn': diffConfig.assumeRoleArn,
+        'assume-region': diffConfig.assumeRegion,
       });
     }
 
@@ -414,17 +557,17 @@ function diffWorkflow(workingDir: string, diffConfig: DiffWorkflowConfig, waves:
             'write-as-comment': '${{ matrix.write-as-comment }}',
             'comment-title': `CDK Diff: ${commandKey} - \${{ matrix.name }}`,
             'github-token': '${{ secrets.GITHUB_TOKEN }}',
+            'assume-role-arn': '${{ matrix.assume-role-arn }}',
+            'assume-region': '${{ matrix.assume-region }}',
           },
         },
       ],
     };
   }
 
-
   const workflowContent = new GithubWorkflow({
-    name: 'CDK Express Pipeline Diff',
-    // Need to change `pullRequest` to `pull_request` to match GitHub Actions syntax
-    ...(diffConfig.on.pullRequest ? { on: { pull_request: diffConfig.on.pullRequest } } : {}),
+    name: `CDK Express Pipeline Diff${(requiresUniqueId || diffConfig.id) ? ' - '+ capitalizeFirstLetter(diffConfig.id!) : '' }`,
+    on: formatWorkflowTriggers(diffConfig.on),
     jobs: {
       build: {
         'runs-on': 'ubuntu-latest',
@@ -442,7 +585,102 @@ function diffWorkflow(workingDir: string, diffConfig: DiffWorkflowConfig, waves:
   });
 
   return {
-    fileName: 'workflows/cdk-express-pipeline-diff.yml',
+    fileName: `workflows/cdk-express-pipeline-diff${(requiresUniqueId || diffConfig.id) ? '-'+diffConfig.id! : '' }.yml`,
+    content: workflowContent,
+  };
+}
+
+function deployWorkflow(workingDir: string, deployConfig: DeployWorkflowConfig, waves: IExpressWave[],
+  requiresUniqueId: boolean): GithubWorkflowFile {
+
+  console.log(workingDir);
+  //defaults:
+  //   run:
+  //     working-directory: ${workingDir}
+
+  const deployJobs = {};
+  for (let command of deployConfig.commands) {
+    const commandKey = Object.keys(command)[0];
+    const commandValue = command[commandKey];
+
+    const stackSelectors = stepStackSelectors(deployConfig.stackSelector, waves);
+    const matrixIncludes: {
+      'name': string;
+      'cloud-assembly-directory': string;
+      'stack-selector-patterns': string;
+      'command': string;
+      'assume-role-arn': string;
+      'assume-region': string;
+    }[] = [];
+    for (const stackSelector of stackSelectors) {
+      matrixIncludes.push({
+        'name': stackSelector.name,
+        'cloud-assembly-directory': extractAppArgument(commandValue) || 'cdk.out',
+        'stack-selector-patterns': stackSelector.selector,
+        'command': commandValue.replace('{stackSelector}', stackSelector.selector),
+        'assume-role-arn': deployConfig.assumeRoleArn,
+        'assume-region': deployConfig.assumeRegion,
+      });
+    }
+
+    // @ts-ignore
+    deployJobs['deploy__' + commandKey] = {
+      'name': `Deploy ${commandKey} - \${{ matrix.name }}`,
+      'needs': ['build'],
+      'runs-on': 'ubuntu-latest',
+      'permissions': {
+        'actions': 'write',
+        'contents': 'write',
+        'id-token': 'write',
+      },
+      'strategy': {
+        'matrix': {
+          include: matrixIncludes,
+        },
+        'fail-fast': false,
+      },
+      'steps': [
+        checkoutRepoStep(),
+        {
+          name: 'Run CDK Express Pipeline Synth',
+          uses: './.github/actions/cdk-express-pipeline-deploy',
+          with: {
+            'stack-selector-patterns': '${{ matrix.stack-selector-patterns }}',
+            'cloud-assembly-directory': '${{ matrix.cloud-assembly-directory }}',
+            'command': '${{ matrix.command }}',
+            'assume-role-arn': '${{ matrix.assume-role-arn }}',
+            'assume-region': '${{ matrix.assume-region }}',
+          },
+        },
+      ],
+    };
+  }
+
+  const workflowContent = new GithubWorkflow({
+    name: `CDK Express Pipeline Deploy${(requiresUniqueId || deployConfig.id) ? ' - '+ capitalizeFirstLetter(deployConfig.id!) : '' }`,
+    concurrency: {
+      'group': `cdk-express-pipeline-deploy${(requiresUniqueId || deployConfig.id) ? '-'+deployConfig.id! : '' }`,
+      'cancel-in-progress': false,
+    },
+    on: formatWorkflowTriggers(deployConfig.on),
+    jobs: {
+      build: {
+        'runs-on': 'ubuntu-latest',
+        'name': 'Build and Synth',
+        'steps': [
+          checkoutRepoStep(),
+          {
+            name: 'Run CDK Express Pipeline Synth',
+            uses: './.github/actions/cdk-express-pipeline-synth',
+          },
+        ],
+      },
+      ...deployJobs,
+    },
+  });
+
+  return {
+    fileName: `workflows/cdk-express-pipeline-deploy${(requiresUniqueId || deployConfig.id) ? '-'+deployConfig.id! : '' }.yml`,
     content: workflowContent,
   };
 }
