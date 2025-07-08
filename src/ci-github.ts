@@ -1,6 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { stringify } from 'yaml';
+// import { IExpressStack } from './express-stack';
+import { IExpressStage } from './express-stage';
 import { IExpressWave } from './express-wave';
 import { JsonPatch, Patch } from './utils/json-patch';
 
@@ -598,62 +600,112 @@ function deployWorkflow(workingDir: string, deployConfig: DeployWorkflowConfig, 
   //   run:
   //     working-directory: ${workingDir}
 
+  function fromatWaveJobId(wave: IExpressWave, commandKey: string): string {
+    return `deploy__${commandKey}__wave__${toSnakeCase(wave.id)}`;
+  }
+  function formatStageJobId(stage: IExpressStage, commandKey: string): string {
+    return `deploy__${commandKey}___${toSnakeCase(stage.wave.id)}__${toSnakeCase(stage.id)}`;
+  }
+  // function formatStackJobId(stack: IExpressStack, commandKey: string): string {
+  //   return `deploy__${commandKey}___${toSnakeCase(stack.stage.wave.id)}__${toSnakeCase(stack.stage.id)}__${toSnakeCase(stack.id)}`;
+  // }
+
   const deployJobs = {};
   for (let command of deployConfig.commands) {
     const commandKey = Object.keys(command)[0];
     const commandValue = command[commandKey];
 
-    const stackSelectors = stepStackSelectors(deployConfig.stackSelector, waves);
-    const matrixIncludes: {
-      'name': string;
-      'cloud-assembly-directory': string;
-      'stack-selector-patterns': string;
-      'command': string;
-      'assume-role-arn': string;
-      'assume-region': string;
-    }[] = [];
-    for (const stackSelector of stackSelectors) {
-      matrixIncludes.push({
-        'name': stackSelector.name,
-        'cloud-assembly-directory': extractAppArgument(commandValue) || 'cdk.out',
-        'stack-selector-patterns': stackSelector.selector,
-        'command': commandValue.replace('{stackSelector}', stackSelector.selector),
-        'assume-role-arn': deployConfig.assumeRoleArn,
-        'assume-region': deployConfig.assumeRegion,
-      });
-    }
+    // Handle different deployment strategies based on stackSelector
+    if (deployConfig.stackSelector === 'wave') {
+      for (let w = 0; w < waves.length; w++) {
+        const wave = waves[w];
+        const waveJobId = fromatWaveJobId(wave, commandKey);
 
-    // @ts-ignore
-    deployJobs['deploy__' + commandKey] = {
-      'name': `Deploy ${commandKey} - \${{ matrix.name }}`,
-      'needs': ['build'],
-      'runs-on': 'ubuntu-latest',
-      'permissions': {
-        'actions': 'write',
-        'contents': 'write',
-        'id-token': 'write',
-      },
-      'strategy': {
-        'matrix': {
-          include: matrixIncludes,
-        },
-        'fail-fast': false,
-      },
-      'steps': [
-        checkoutRepoStep(),
-        {
-          name: 'Run CDK Express Pipeline Synth',
-          uses: './.github/actions/cdk-express-pipeline-deploy',
-          with: {
-            'stack-selector-patterns': '${{ matrix.stack-selector-patterns }}',
-            'cloud-assembly-directory': '${{ matrix.cloud-assembly-directory }}',
-            'command': '${{ matrix.command }}',
-            'assume-role-arn': '${{ matrix.assume-role-arn }}',
-            'assume-region': '${{ matrix.assume-region }}',
+        const needs: string[] = ['build'];
+        if ( w > 0) {
+          const previousWaveJobId = fromatWaveJobId(waves[w - 1], commandKey);
+          needs.push(previousWaveJobId);
+        }
+
+        // @ts-ignore
+        deployJobs[waveJobId] = {
+          'name': `Deploy ${commandKey} - Wave ${wave.id}`,
+          'needs': needs,
+          'runs-on': 'ubuntu-latest',
+          'permissions': {
+            'actions': 'write',
+            'contents': 'write',
+            'id-token': 'write',
           },
-        },
-      ],
-    };
+          'steps': [
+            checkoutRepoStep(),
+            {
+              name: 'Run CDK Express Pipeline Deploy',
+              uses: './.github/actions/cdk-express-pipeline-deploy',
+              with: {
+                'stack-selector-patterns': `${wave.id}${wave.separator}*`,
+                'cloud-assembly-directory': extractAppArgument(commandValue) || 'cdk.out',
+                'command': commandValue.replace('{stackSelector}', `${wave.id}${wave.separator}*`),
+                'assume-role-arn': deployConfig.assumeRoleArn,
+                'assume-region': deployConfig.assumeRegion,
+              },
+            },
+          ],
+        };
+      }
+    } else if (deployConfig.stackSelector === 'stage') {
+
+      for (let w = 0; w < waves.length; w++) {
+        const wave = waves[w];
+
+        for (let s = 0; s < wave.stages.length; s++) {
+          const stage = wave.stages[s];
+
+          const stageJobId = formatStageJobId(stage, commandKey);
+
+          const needs: string[] = ['build'];
+          if (w > 0) {
+            // Each stage job in this wave needs to depend on the previous wave's stage jobs
+            for (const sPrev of waves[w - 1].stages) {
+              needs.push(formatStageJobId(sPrev, commandKey));
+            }
+          }
+
+          if (wave.sequentialStages && s > 0) {
+            // Each stage job needs to depend on the previous stage job in the same wave
+            const previousStageJobId = formatStageJobId(wave.stages[s - 1], commandKey);
+            needs.push(previousStageJobId);
+          }
+
+          // @ts-ignore
+          deployJobs[stageJobId] = {
+            'name': `Deploy ${commandKey} - ${wave.id}${wave.separator}${stage.id}`,
+            'needs': needs,
+            'runs-on': 'ubuntu-latest',
+            'permissions': {
+              'actions': 'write',
+              'contents': 'write',
+              'id-token': 'write',
+            },
+            'steps': [
+              checkoutRepoStep(),
+              {
+                name: 'Run CDK Express Pipeline Deploy',
+                uses: './.github/actions/cdk-express-pipeline-deploy',
+                with: {
+                  'stack-selector-patterns': `${wave.id}${wave.separator}${stage.id}${wave.separator}*`,
+                  'cloud-assembly-directory': extractAppArgument(commandValue) || 'cdk.out',
+                  'command': commandValue.replace('{stackSelector}', `${wave.id}${wave.separator}${stage.id}${wave.separator}*`),
+                  'assume-role-arn': deployConfig.assumeRoleArn,
+                  'assume-region': deployConfig.assumeRegion,
+                },
+              },
+            ],
+          };
+        }
+      }
+
+    }
   }
 
   const workflowContent = new GithubWorkflow({
