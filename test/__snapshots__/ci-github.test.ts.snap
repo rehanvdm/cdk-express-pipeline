@@ -373,11 +373,11 @@ exports[`CDK Express Pipeline CI Configuration snapshot all workflows for config
             },
           ],
         },
-        "deploy__dev__wave__app": {
-          "name": "Deploy dev - Wave app",
+        "deploy__dev__app": {
+          "name": "[dev] 🌊 app",
           "needs": [
             "build",
-            "deploy__dev__wave__global",
+            "deploy__dev__global",
           ],
           "permissions": {
             "actions": "write",
@@ -403,8 +403,8 @@ exports[`CDK Express Pipeline CI Configuration snapshot all workflows for config
             },
           ],
         },
-        "deploy__dev__wave__global": {
-          "name": "Deploy dev - Wave global",
+        "deploy__dev__global": {
+          "name": "[dev] 🌊 global",
           "needs": [
             "build",
           ],
@@ -470,11 +470,11 @@ exports[`CDK Express Pipeline CI Configuration snapshot all workflows for config
             },
           ],
         },
-        "deploy__prod__wave__app": {
-          "name": "Deploy prod - Wave app",
+        "deploy__prod__app": {
+          "name": "[prod] 🌊 app",
           "needs": [
             "build",
-            "deploy__prod__wave__global",
+            "deploy__prod__global",
           ],
           "permissions": {
             "actions": "write",
@@ -500,8 +500,8 @@ exports[`CDK Express Pipeline CI Configuration snapshot all workflows for config
             },
           ],
         },
-        "deploy__prod__wave__global": {
-          "name": "Deploy prod - Wave global",
+        "deploy__prod__global": {
+          "name": "[prod] 🌊 global",
           "needs": [
             "build",
           ],

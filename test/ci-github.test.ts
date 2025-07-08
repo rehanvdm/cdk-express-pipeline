@@ -238,7 +238,7 @@ describe('CDK Express Pipeline CI Configuration', () => {
             branches: ['main'],
           },
         },
-        stackSelector: 'stage',
+        stackSelector: 'stack',
         assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
         assumeRegion: 'us-east-1',
         commands: [
@@ -252,7 +252,7 @@ describe('CDK Express Pipeline CI Configuration', () => {
             branches: ['production'],
           },
         },
-        stackSelector: 'stage',
+        stackSelector: 'stack',
         assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
         assumeRegion: 'us-east-1',
         commands: [

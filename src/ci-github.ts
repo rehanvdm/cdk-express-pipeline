@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { stringify } from 'yaml';
-// import { IExpressStack } from './express-stack';
+import { IExpressStack } from './express-stack';
 import { IExpressStage } from './express-stage';
 import { IExpressWave } from './express-wave';
 import { JsonPatch, Patch } from './utils/json-patch';
@@ -95,7 +95,7 @@ export interface DiffWorkflowConfig {
   /**
    * Selector for the stack type
    */
-  readonly stackSelector: 'wave' | 'stage';
+  readonly stackSelector: 'wave' | 'stage' | 'stack';
 
   /**
    * Commands to run for synthesis
@@ -134,7 +134,7 @@ export interface DeployWorkflowConfig {
   /**
    * Selector for the stack type
    */
-  readonly stackSelector: 'wave' | 'stage';
+  readonly stackSelector: 'wave' | 'stage' | 'stack';
 
   /**
    * Commands to run for synthesis
@@ -453,7 +453,7 @@ function toSnakeCase(str: string): string {
     .replace(/^_+|_+$/g, '') // trim leading/trailing underscores
     .toLowerCase();
 }
-function stepStackSelectors(stackSelector: 'wave' | 'stage', waves: IExpressWave[]) {
+function stepStackSelectors(stackSelector: 'wave' | 'stage' | 'stack', waves: IExpressWave[]) {
   const res: { name: string; selector: string }[] = [];
   for (const wave of waves) {
     if (stackSelector === 'wave') {
@@ -467,6 +467,15 @@ function stepStackSelectors(stackSelector: 'wave' | 'stage', waves: IExpressWave
           name: toSnakeCase(wave.id + '__' + stage.id),
           selector: `${wave.id}${wave.separator}${stage.id}${wave.separator}*`,
         });
+      }
+    } else if (stackSelector === 'stack') {
+      for (const stage of wave.stages) {
+        for (const stack of stage.stacks) {
+          res.push({
+            name: toSnakeCase(wave.id + '__' + stage.id + '__' + stack.id),
+            selector: stack.id,
+          });
+        }
       }
     }
   }
@@ -600,15 +609,15 @@ function deployWorkflow(workingDir: string, deployConfig: DeployWorkflowConfig, 
   //   run:
   //     working-directory: ${workingDir}
 
-  function fromatWaveJobId(wave: IExpressWave, commandKey: string): string {
-    return `deploy__${commandKey}__wave__${toSnakeCase(wave.id)}`;
+  function formatWaveJobId(wave: IExpressWave, commandKey: string): string {
+    return `deploy__${commandKey}__${wave.id}`;
   }
   function formatStageJobId(stage: IExpressStage, commandKey: string): string {
-    return `deploy__${commandKey}___${toSnakeCase(stage.wave.id)}__${toSnakeCase(stage.id)}`;
+    return `deploy__${commandKey}___${stage.wave.id}${stage.wave.separator}${stage.id}`;
   }
-  // function formatStackJobId(stack: IExpressStack, commandKey: string): string {
-  //   return `deploy__${commandKey}___${toSnakeCase(stack.stage.wave.id)}__${toSnakeCase(stack.stage.id)}__${toSnakeCase(stack.id)}`;
-  // }
+  function formatStackJobId(stack: IExpressStack, commandKey: string): string {
+    return `deploy__${commandKey}___${stack.id}`;
+  }
 
   const deployJobs = {};
   for (let command of deployConfig.commands) {
@@ -619,17 +628,17 @@ function deployWorkflow(workingDir: string, deployConfig: DeployWorkflowConfig, 
     if (deployConfig.stackSelector === 'wave') {
       for (let w = 0; w < waves.length; w++) {
         const wave = waves[w];
-        const waveJobId = fromatWaveJobId(wave, commandKey);
+        const waveJobId = formatWaveJobId(wave, commandKey);
 
         const needs: string[] = ['build'];
         if ( w > 0) {
-          const previousWaveJobId = fromatWaveJobId(waves[w - 1], commandKey);
+          const previousWaveJobId = formatWaveJobId(waves[w - 1], commandKey);
           needs.push(previousWaveJobId);
         }
 
         // @ts-ignore
         deployJobs[waveJobId] = {
-          'name': `Deploy ${commandKey} - Wave ${wave.id}`,
+          'name': `[${commandKey}] 🌊 ${wave.id}`,
           'needs': needs,
           'runs-on': 'ubuntu-latest',
           'permissions': {
@@ -679,7 +688,7 @@ function deployWorkflow(workingDir: string, deployConfig: DeployWorkflowConfig, 
 
           // @ts-ignore
           deployJobs[stageJobId] = {
-            'name': `Deploy ${commandKey} - ${wave.id}${wave.separator}${stage.id}`,
+            'name': `[${commandKey}] 🏗 ${wave.id}${wave.separator}${stage.id}`,
             'needs': needs,
             'runs-on': 'ubuntu-latest',
             'permissions': {
@@ -702,6 +711,65 @@ function deployWorkflow(workingDir: string, deployConfig: DeployWorkflowConfig, 
               },
             ],
           };
+        }
+      }
+
+    } else if (deployConfig.stackSelector === 'stack') {
+
+      for (let w = 0; w < waves.length; w++) {
+        const wave = waves[w];
+
+        for (let s = 0; s < wave.stages.length; s++) {
+          const stage = wave.stages[s];
+
+          for (let st = 0; st < stage.stacks.length; st++) {
+            const stack = stage.stacks[st];
+
+            const stackJobId = formatStackJobId(stack, commandKey);
+
+            const needs: string[] = ['build'];
+            if (w > 0) {
+              // Each stack job in this wave needs to depend on the previous wave's stack jobs
+              for (const sPrev of waves[w - 1].stages) {
+                for (const stPrev of sPrev.stacks) {
+                  needs.push(formatStackJobId(stPrev, commandKey));
+                }
+              }
+            }
+
+            if (wave.sequentialStages && s > 0) {
+              // Each stack job needs to depend on the previous stage's stack jobs in the same wave
+              for (const stPrev of wave.stages[s - 1].stacks) {
+                needs.push(formatStackJobId(stPrev, commandKey));
+              }
+            }
+
+            // @ts-ignore
+            deployJobs[stackJobId] = {
+              'name': `[${commandKey}] 📦 ${stack.id}`,
+              'needs': needs,
+              'runs-on': 'ubuntu-latest',
+              'permissions': {
+                'actions': 'write',
+                'contents': 'write',
+                'id-token': 'write',
+              },
+              'steps': [
+                checkoutRepoStep(),
+                {
+                  name: 'Run CDK Express Pipeline Deploy',
+                  uses: './.github/actions/cdk-express-pipeline-deploy',
+                  with: {
+                    'stack-selector-patterns': stack.id,
+                    'cloud-assembly-directory': extractAppArgument(commandValue) || 'cdk.out',
+                    'command': commandValue.replace('{stackSelector}', stack.id),
+                    'assume-role-arn': deployConfig.assumeRoleArn,
+                    'assume-region': deployConfig.assumeRegion,
+                  },
+                },
+              ],
+            };
+          }
         }
       }
 
