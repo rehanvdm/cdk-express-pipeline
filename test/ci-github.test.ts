@@ -3,8 +3,9 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { App } from 'aws-cdk-lib';
 import { stringify } from 'yaml';
+import { JsonPatch } from '../src';
 import { CdkExpressPipeline } from '../src/cdk-express-pipeline';
-import { GitHubWorkflowConfig, createGitHubWorkflows, BuildConfig } from '../src/ci-github';
+import { GitHubWorkflowConfig, createGitHubWorkflows, BuildConfig, GithubWorkflow } from '../src/ci-github';
 import { ExpressStack } from '../src/express-stack';
 
 function getAppAndPipeline() {
@@ -185,7 +186,6 @@ describe('CDK Express Pipeline CI Configuration', () => {
     }
   });
 
-
   it('generate workflows for demo-ts project', async () => {
 
     const app = new App();
@@ -267,5 +267,135 @@ describe('CDK Express Pipeline CI Configuration', () => {
 
       await fs.writeFile(filePath, stringify(workflow.content.json));
     }
+  });
+});
+
+describe('JsonPatch and GithubWorkflow.patch()', () => {
+  let baseWorkflow: GithubWorkflow;
+
+  beforeEach(() => {
+    baseWorkflow = new GithubWorkflow({
+      name: 'Test Workflow',
+      description: 'A test workflow',
+      runs: {
+        using: 'composite',
+        steps: [
+          { name: 'Step 1', uses: 'actions/checkout@v4' },
+          { name: 'Step 2', run: 'echo "test"', shell: 'bash' },
+        ],
+      },
+    });
+  });
+
+  it('test basic JsonPatch operations', () => {
+    const testCases = [
+      {
+        op: JsonPatch.add('/on', { test: true }),
+        check: (w: any) => expect(w.on).toEqual({ test: true }),
+      },
+      {
+        op: JsonPatch.replace('/name', 'Custom Name'),
+        check: (w: any) => expect(w.name).toBe('Custom Name'),
+      },
+      {
+        op: JsonPatch.remove('/description'),
+        check: (w: any) => expect(w).not.toHaveProperty('description'),
+      },
+    ];
+
+    for (const { op, check } of testCases) {
+      const patched = baseWorkflow.patch(op);
+      check(patched.json);
+    }
+  });
+
+  it('test complex JsonPatch operations', () => {
+    const patched = baseWorkflow.patch(
+      JsonPatch.add('/runs/steps/-', {
+        name: 'Custom Step',
+        run: 'echo "test"',
+        shell: 'bash',
+      }),
+      JsonPatch.add('/runs/inputs', {
+        env: {
+          required: false,
+          default: 'dev',
+        },
+      }),
+      JsonPatch.copy('/name', '/copied-name'),
+      JsonPatch.move('/name', '/moved-name'),
+    );
+
+    console.log('Patched Workflow:', JSON.stringify(patched.json, null, 2));
+
+    expect(patched.json).toHaveProperty('copied-name');
+    expect(patched.json).toHaveProperty('moved-name');
+    expect(patched.json).not.toHaveProperty('name');
+    expect((patched.json as any).runs.inputs).toHaveProperty('env');
+    expect((patched.json as any).runs.steps).toContainEqual(expect.objectContaining({ name: 'Custom Step' }));
+  });
+
+  it('test JsonPatch test operations', () => {
+    // Test should pass
+    const patched = baseWorkflow.patch(
+      JsonPatch.test('/name', 'Test Workflow'),
+      JsonPatch.add('/test-passed', true),
+    );
+    expect((patched.json as any)['test-passed']).toBe(true);
+
+    // Test should fail
+    expect(() => {
+      baseWorkflow.patch(JsonPatch.test('/name', 'Wrong Name'));
+    }).toThrow();
+  });
+
+  it('test immutable operations and chaining', () => {
+    const originalName = (baseWorkflow.json as any).name;
+
+    // Test immutability
+    const patched = baseWorkflow.patch(JsonPatch.replace('/name', 'Modified'));
+    expect((baseWorkflow.json as any).name).toBe(originalName);
+    expect((patched.json as any).name).toBe('Modified');
+    expect(baseWorkflow).not.toBe(patched);
+
+    // Test chaining
+    const chained = baseWorkflow
+      .patch(JsonPatch.add('/step1', 'first'))
+      .patch(JsonPatch.add('/step2', 'second'))
+      .patch(JsonPatch.replace('/step2', 'modified'));
+
+    expect(chained.json).toHaveProperty('step1', 'first');
+    expect(chained.json).toHaveProperty('step2', 'modified');
+  });
+
+  it('test array operations', () => {
+    const patched = baseWorkflow.patch(
+      JsonPatch.add('/runs/steps/1', {
+        name: 'Inserted Step',
+        run: 'echo "inserted"',
+        shell: 'bash',
+      }),
+      JsonPatch.remove('/runs/steps/2'),
+      JsonPatch.replace('/runs/steps/0/uses', 'actions/checkout@v5'),
+    );
+
+    const steps = (patched.json as any).runs.steps;
+    expect(steps[0]).toHaveProperty('uses', 'actions/checkout@v5');
+    expect(steps[1]).toHaveProperty('name', 'Inserted Step');
+    expect(steps).toHaveLength(2); // Original step 2 was removed
+  });
+
+  it('test nested object operations', () => {
+    const patched = baseWorkflow.patch(
+      JsonPatch.add('/runs/steps/0/with', { ref: 'main', token: '${{ secrets.GITHUB_TOKEN }}' }),
+      JsonPatch.add('/runs/steps/0/if', '${{ github.event_name == "push" }}'),
+      JsonPatch.replace('/runs/using', 'node16'),
+    );
+
+    const firstStep = (patched.json as any).runs.steps[0];
+    expect(firstStep).toHaveProperty('with');
+    expect(firstStep.with).toEqual({ ref: 'main', token: '${{ secrets.GITHUB_TOKEN }}' });
+    expect(firstStep).toHaveProperty('if', '${{ github.event_name == "push" }}');
+    expect((patched.json as any).runs.using).toBe('node16');
   });
 });

@@ -152,7 +152,7 @@ export class GithubWorkflow {
    */
   public patch(...ops: Patch[]): GithubWorkflow {
     const jsonPatch = new JsonPatch();
-    const result = jsonPatch.patch(this.json, ...ops);
+    const result = jsonPatch.patch({ ...this.json }, ...ops);
     return new GithubWorkflow(result);
   }
 }
