@@ -957,26 +957,26 @@ The stage that the stack belongs to.
 
 ## Structs <a name="Structs" id="Structs"></a>
 
-### BuildWorkflowPathConfig <a name="BuildWorkflowPathConfig" id="cdk-express-pipeline.BuildWorkflowPathConfig"></a>
+### BuildConfig <a name="BuildConfig" id="cdk-express-pipeline.BuildConfig"></a>
 
-#### Initializer <a name="Initializer" id="cdk-express-pipeline.BuildWorkflowPathConfig.Initializer"></a>
+#### Initializer <a name="Initializer" id="cdk-express-pipeline.BuildConfig.Initializer"></a>
 
 ```typescript
-import { BuildWorkflowPathConfig } from 'cdk-express-pipeline'
+import { BuildConfig } from 'cdk-express-pipeline'
 
-const buildWorkflowPathConfig: BuildWorkflowPathConfig = { ... }
+const buildConfig: BuildConfig = { ... }
 ```
 
 #### Properties <a name="Properties" id="Properties"></a>
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#cdk-express-pipeline.BuildWorkflowPathConfig.property.type">type</a></code> | <code>string</code> | The type of workflow to use. |
-| <code><a href="#cdk-express-pipeline.BuildWorkflowPathConfig.property.workflow">workflow</a></code> | <code><a href="#cdk-express-pipeline.WorkflowLocation">WorkflowLocation</a></code> | Only required if type is 'workflow'. |
+| <code><a href="#cdk-express-pipeline.BuildConfig.property.type">type</a></code> | <code>string</code> | The type of workflow to use. |
+| <code><a href="#cdk-express-pipeline.BuildConfig.property.workflow">workflow</a></code> | <code><a href="#cdk-express-pipeline.WorkflowLocation">WorkflowLocation</a></code> | Only required if type is 'workflow'. |
 
 ---
 
-##### `type`<sup>Required</sup> <a name="type" id="cdk-express-pipeline.BuildWorkflowPathConfig.property.type"></a>
+##### `type`<sup>Required</sup> <a name="type" id="cdk-express-pipeline.BuildConfig.property.type"></a>
 
 ```typescript
 public readonly type: string;
@@ -988,7 +988,7 @@ The type of workflow to use.
 
 ---
 
-##### `workflow`<sup>Optional</sup> <a name="workflow" id="cdk-express-pipeline.BuildWorkflowPathConfig.property.workflow"></a>
+##### `workflow`<sup>Optional</sup> <a name="workflow" id="cdk-express-pipeline.BuildConfig.property.workflow"></a>
 
 ```typescript
 public readonly workflow: WorkflowLocation;
@@ -1313,7 +1313,6 @@ const gitHubWorkflowConfig: GitHubWorkflowConfig = { ... }
 | <code><a href="#cdk-express-pipeline.GitHubWorkflowConfig.property.deploy">deploy</a></code> | <code><a href="#cdk-express-pipeline.DeployWorkflowConfig">DeployWorkflowConfig</a>[]</code> | Configuration for the deploy workflow. |
 | <code><a href="#cdk-express-pipeline.GitHubWorkflowConfig.property.diff">diff</a></code> | <code><a href="#cdk-express-pipeline.DiffWorkflowConfig">DiffWorkflowConfig</a>[]</code> | Configuration for the diff workflow. |
 | <code><a href="#cdk-express-pipeline.GitHubWorkflowConfig.property.synth">synth</a></code> | <code><a href="#cdk-express-pipeline.SynthWorkflowConfig">SynthWorkflowConfig</a></code> | Configuration for the synth workflow. |
-| <code><a href="#cdk-express-pipeline.GitHubWorkflowConfig.property.workingDir">workingDir</a></code> | <code>string</code> | The working directory for the GitHub workflow. |
 
 ---
 
@@ -1350,19 +1349,6 @@ public readonly synth: SynthWorkflowConfig;
 - *Type:* <a href="#cdk-express-pipeline.SynthWorkflowConfig">SynthWorkflowConfig</a>
 
 Configuration for the synth workflow.
-
----
-
-##### `workingDir`<sup>Optional</sup> <a name="workingDir" id="cdk-express-pipeline.GitHubWorkflowConfig.property.workingDir"></a>
-
-```typescript
-public readonly workingDir: string;
-```
-
-- *Type:* string
-- *Default:* "."
-
-The working directory for the GitHub workflow.
 
 ---
 
@@ -1525,7 +1511,7 @@ const synthWorkflowConfig: SynthWorkflowConfig = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#cdk-express-pipeline.SynthWorkflowConfig.property.buildConfig">buildConfig</a></code> | <code><a href="#cdk-express-pipeline.BuildWorkflowPathConfig">BuildWorkflowPathConfig</a></code> | Configuration for the build workflow path. |
+| <code><a href="#cdk-express-pipeline.SynthWorkflowConfig.property.buildConfig">buildConfig</a></code> | <code><a href="#cdk-express-pipeline.BuildConfig">BuildConfig</a></code> | Configuration for the build workflow. |
 | <code><a href="#cdk-express-pipeline.SynthWorkflowConfig.property.commands">commands</a></code> | <code>{[ key: string ]: string}[]</code> | Commands to run for synthesis. |
 
 ---
@@ -1533,12 +1519,12 @@ const synthWorkflowConfig: SynthWorkflowConfig = { ... }
 ##### `buildConfig`<sup>Required</sup> <a name="buildConfig" id="cdk-express-pipeline.SynthWorkflowConfig.property.buildConfig"></a>
 
 ```typescript
-public readonly buildConfig: BuildWorkflowPathConfig;
+public readonly buildConfig: BuildConfig;
 ```
 
-- *Type:* <a href="#cdk-express-pipeline.BuildWorkflowPathConfig">BuildWorkflowPathConfig</a>
+- *Type:* <a href="#cdk-express-pipeline.BuildConfig">BuildConfig</a>
 
-Configuration for the build workflow path.
+Configuration for the build workflow.
 
 ---
 

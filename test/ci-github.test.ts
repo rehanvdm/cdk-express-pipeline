@@ -4,7 +4,7 @@ import * as path from 'path';
 import { App } from 'aws-cdk-lib';
 import { stringify } from 'yaml';
 import { CdkExpressPipeline } from '../src/cdk-express-pipeline';
-import { GitHubWorkflowConfig, createGitHubWorkflows, BuildWorkflowPathConfig } from '../src/ci-github';
+import { GitHubWorkflowConfig, createGitHubWorkflows, BuildConfig } from '../src/ci-github';
 import { ExpressStack } from '../src/express-stack';
 
 function getAppAndPipeline() {
@@ -28,9 +28,8 @@ describe('CDK Express Pipeline CI Configuration', () => {
   it('snapshot synth and build variants', async () => {
     const { pipeline } = getAppAndPipeline();
 
-    function buildConfigVariant(buildConfig: BuildWorkflowPathConfig): GitHubWorkflowConfig {
+    function buildConfigVariant(buildConfig: BuildConfig): GitHubWorkflowConfig {
       return {
-        workingDir: '.',
         synth: {
           buildConfig: buildConfig,
           commands: [
@@ -73,7 +72,6 @@ describe('CDK Express Pipeline CI Configuration', () => {
 
     function buildStackSelectorVariant(stackSelector: 'wave' | 'stage'): GitHubWorkflowConfig {
       return {
-        workingDir: '.',
         synth: {
           buildConfig: {
             type: 'preset-npm',
@@ -127,7 +125,6 @@ describe('CDK Express Pipeline CI Configuration', () => {
     new ExpressStack(app, 'api', wave2stage2);
 
     const ghConfig: GitHubWorkflowConfig = {
-      workingDir: '.',
       synth: {
         buildConfig: {
           type: 'preset-npm',
@@ -206,7 +203,6 @@ describe('CDK Express Pipeline CI Configuration', () => {
     new ExpressStack(app, 'StackC', wave2Stage1);
 
     const ghConfig: GitHubWorkflowConfig = {
-      workingDir: '.',
       synth: {
         buildConfig: {
           type: 'preset-npm',
