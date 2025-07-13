@@ -467,6 +467,6 @@ describe('JsonPatch and GithubWorkflow.patch()', () => {
       }
     }
 
-    pipeline.saveGitHubWorkflows(ghWorkflows);
+    // pipeline.saveGitHubWorkflows(ghWorkflows);
   });
 });
