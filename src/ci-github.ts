@@ -139,7 +139,7 @@ export interface DeployWorkflowConfig {
 
 export class GithubWorkflow {
 
-  public readonly json: object;
+  public json: object;
 
   constructor(json: object) {
     this.json = json;
@@ -153,6 +153,7 @@ export class GithubWorkflow {
   public patch(...ops: Patch[]): GithubWorkflow {
     const jsonPatch = new JsonPatch();
     const result = jsonPatch.patch({ ...this.json }, ...ops);
+    this.json = result;
     return new GithubWorkflow(result);
   }
 }
@@ -281,7 +282,6 @@ function synthReusableAction(synthConfig: SynthWorkflowConfig): GithubWorkflowFi
     content: workflowContent,
   };
 }
-
 function diffReusableAction(): GithubWorkflowFile {
   const workflowContent = new GithubWorkflow({
     name: 'CDK Diff Action',
@@ -501,6 +501,9 @@ function diffWorkflow(diffConfig: DiffWorkflowConfig, waves: IExpressWave[],
   for (let command of diffConfig.commands) {
     const commandKey = Object.keys(command)[0];
     const commandValue = command[commandKey];
+    if (!commandValue.includes('{stackSelector}')) {
+      throw new Error(`Command for diff workflow must include {stackSelector} placeholder, provided: ${commandValue}`);
+    }
 
     const stackSelectors = stepStackSelectors(diffConfig.stackSelector);
     const matrixIncludes: {
@@ -605,6 +608,9 @@ function deployWorkflow(deployConfig: DeployWorkflowConfig, waves: IExpressWave[
   for (let command of deployConfig.commands) {
     const commandKey = Object.keys(command)[0];
     const commandValue = command[commandKey];
+    if (!commandValue.includes('{stackSelector}')) {
+      throw new Error(`Command for deploy workflow must include {stackSelector} placeholder, provided: ${commandValue}`);
+    }
 
     // Handle different deployment strategies based on stackSelector
     if (deployConfig.stackSelector === 'wave') {

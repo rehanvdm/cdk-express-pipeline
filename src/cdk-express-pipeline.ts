@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { createGitHubWorkflows, saveWorkflowTemplates, GitHubWorkflowConfig } from './ci-github';
+import { createGitHubWorkflows, saveWorkflowTemplates, GitHubWorkflowConfig, GithubWorkflowFile } from './ci-github';
 import { ExpressStack } from './express-stack';
 import { ExpressWave, IExpressWave } from './express-wave';
 import { MermaidDiagramOutput } from './shared';
@@ -301,12 +301,15 @@ export class CdkExpressPipeline {
     return diagram;
   }
 
-  public async generateGitHubWorkflows(gitHubWorkflowConfig: GitHubWorkflowConfig, saveToFiles: true) {
-    const workflows = await createGitHubWorkflows(gitHubWorkflowConfig, this.waves);
+  public generateGitHubWorkflows(gitHubWorkflowConfig: GitHubWorkflowConfig, saveToFiles:boolean = true) {
+    const workflows = createGitHubWorkflows(gitHubWorkflowConfig, this.waves);
     if (saveToFiles) {
       saveWorkflowTemplates(workflows);
     }
     return workflows;
+  }
+  public saveGitHubWorkflows(workflows: GithubWorkflowFile[]) {
+    saveWorkflowTemplates(workflows);
   }
 }
 

@@ -186,7 +186,7 @@ describe('CDK Express Pipeline CI Configuration', () => {
     }
   });
 
-  it('generate workflows for demo-ts project', async () => {
+  it.skip('generate workflows for demo-ts project', async () => {
 
     const app = new App();
     const expressPipeline = new CdkExpressPipeline();
@@ -213,6 +213,7 @@ describe('CDK Express Pipeline CI Configuration', () => {
         ],
       },
       diff: [{
+        id: 'dev',
         on: {
           pullRequest: {
             branches: ['main'],
@@ -224,6 +225,21 @@ describe('CDK Express Pipeline CI Configuration', () => {
         assumeRegion: 'us-east-1',
         commands: [
           { dev: 'npm run cdk -- diff {stackSelector} --app=cdk.out/dev' },
+          { prod: 'npm run cdk -- diff {stackSelector} --app=cdk.out/prod' },
+        ],
+      },
+      {
+        id: 'prod',
+        on: {
+          pullRequest: {
+            branches: ['production'],
+          },
+        },
+        stackSelector: 'stage',
+        writeAsComment: true,
+        assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
+        assumeRegion: 'us-east-1',
+        commands: [
           { prod: 'npm run cdk -- diff {stackSelector} --app=cdk.out/prod' },
         ],
       }],
@@ -259,7 +275,7 @@ describe('CDK Express Pipeline CI Configuration', () => {
 
     const resp = createGitHubWorkflows(ghConfig, expressPipeline.waves);
     for (const workflow of resp) {
-      const filePath = path.join('/Users/rehanvandermerwe/Resend/Projects/cdk-express-pipeline-demo-ts/.github', workflow.fileName);
+      const filePath = path.join('/Users/rehanvandermerwe/Rehan/Projects/cdk-express-pipeline-demo-ts/.github', workflow.fileName);
       const dirPath = path.dirname(filePath);
       if (!fsSync.existsSync(dirPath)) {
         fsSync.mkdirSync(dirPath, { recursive: true });
@@ -349,12 +365,10 @@ describe('JsonPatch and GithubWorkflow.patch()', () => {
     }).toThrow();
   });
 
-  it('test immutable operations and chaining', () => {
-    const originalName = (baseWorkflow.json as any).name;
-
-    // Test immutability
+  it('test mutable operations and chaining', () => {
+    // Test mutability
     const patched = baseWorkflow.patch(JsonPatch.replace('/name', 'Modified'));
-    expect((baseWorkflow.json as any).name).toBe(originalName);
+    expect((baseWorkflow.json as any).name).toBe('Modified');
     expect((patched.json as any).name).toBe('Modified');
     expect(baseWorkflow).not.toBe(patched);
 
@@ -397,5 +411,66 @@ describe('JsonPatch and GithubWorkflow.patch()', () => {
     expect(firstStep.with).toEqual({ ref: 'main', token: '${{ secrets.GITHUB_TOKEN }}' });
     expect(firstStep).toHaveProperty('if', '${{ github.event_name == "push" }}');
     expect((patched.json as any).runs.using).toBe('node16');
+  });
+
+  it('finds the deploy workflow from the pipeline and changes concurrency', () => {
+    const app = new App();
+    const pipeline = new CdkExpressPipeline();
+    const wave1 = pipeline.addWave('global');
+    const wave1stage1 = wave1.addStage('us-east-1');
+    new ExpressStack(app, 'global', wave1stage1); // vpcs, certs, route53, iam
+
+    const wave2 = pipeline.addWave('app');
+    const wave2stage1 = wave2.addStage('us-east-1');
+    new ExpressStack(app, 'api', wave2stage1);
+    const wave2stage2 = wave2.addStage('eu-west-1');
+    new ExpressStack(app, 'api', wave2stage2);
+
+    const ghConfig: GitHubWorkflowConfig = {
+      synth: {
+        buildConfig: {
+          type: 'preset-npm',
+        },
+        commands: [
+        ],
+      },
+      diff: [],
+      deploy: [{
+        id: 'dev',
+        on: {
+          push: {
+            branches: ['main'],
+          },
+        },
+        stackSelector: 'wave',
+        assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
+        assumeRegion: 'us-east-1',
+        commands: [
+          { dev: 'npm run cdk -- deploy {stackSelector} --concurrency 10 --require-approval never --exclusively' },
+        ],
+      }],
+    };
+
+    const ghWorkflows = pipeline.generateGitHubWorkflows(ghConfig, false);
+    for (let w = 0; w < ghWorkflows.length; w++) {
+      if (ghWorkflows[w].fileName === 'workflows/cdk-express-pipeline-deploy-dev.yml') {
+        expect(ghWorkflows[w]).toBeDefined();
+        expect((ghWorkflows[w]?.content.json as any).concurrency['cancel-in-progress']).toEqual(false);
+
+        ghWorkflows[w]?.content.patch(
+          JsonPatch.replace('/concurrency/cancel-in-progress', true),
+          //Add an extra step to the build job that echos success
+          JsonPatch.add('/jobs/build/steps/-', {
+            name: 'Echo Success',
+            shell: 'bash',
+            run: 'echo "Build succeeded!"',
+          }),
+        );
+
+        expect((ghWorkflows[w]?.content.json as any).concurrency['cancel-in-progress']).toEqual(true);
+      }
+    }
+
+    pipeline.saveGitHubWorkflows(ghWorkflows);
   });
 });

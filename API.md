@@ -1699,6 +1699,7 @@ new CdkExpressPipeline(props?: CdkExpressPipelineProps)
 | <code><a href="#cdk-express-pipeline.CdkExpressPipeline.generateGitHubWorkflows">generateGitHubWorkflows</a></code> | *No description.* |
 | <code><a href="#cdk-express-pipeline.CdkExpressPipeline.generateMermaidDiagram">generateMermaidDiagram</a></code> | Generate a Mermaid diagram showing the deployment order. |
 | <code><a href="#cdk-express-pipeline.CdkExpressPipeline.printWaves">printWaves</a></code> | Print the order of deployment to the console. |
+| <code><a href="#cdk-express-pipeline.CdkExpressPipeline.saveGitHubWorkflows">saveGitHubWorkflows</a></code> | *No description.* |
 | <code><a href="#cdk-express-pipeline.CdkExpressPipeline.synth">synth</a></code> | Synthesize the pipeline which creates the dependencies between the stacks in the correct order. |
 
 ---
@@ -1732,7 +1733,7 @@ Default: false.
 ##### `generateGitHubWorkflows` <a name="generateGitHubWorkflows" id="cdk-express-pipeline.CdkExpressPipeline.generateGitHubWorkflows"></a>
 
 ```typescript
-public generateGitHubWorkflows(gitHubWorkflowConfig: GitHubWorkflowConfig, saveToFiles: boolean): GithubWorkflowFile[]
+public generateGitHubWorkflows(gitHubWorkflowConfig: GitHubWorkflowConfig, saveToFiles?: boolean): GithubWorkflowFile[]
 ```
 
 ###### `gitHubWorkflowConfig`<sup>Required</sup> <a name="gitHubWorkflowConfig" id="cdk-express-pipeline.CdkExpressPipeline.generateGitHubWorkflows.parameter.gitHubWorkflowConfig"></a>
@@ -1741,7 +1742,7 @@ public generateGitHubWorkflows(gitHubWorkflowConfig: GitHubWorkflowConfig, saveT
 
 ---
 
-###### `saveToFiles`<sup>Required</sup> <a name="saveToFiles" id="cdk-express-pipeline.CdkExpressPipeline.generateGitHubWorkflows.parameter.saveToFiles"></a>
+###### `saveToFiles`<sup>Optional</sup> <a name="saveToFiles" id="cdk-express-pipeline.CdkExpressPipeline.generateGitHubWorkflows.parameter.saveToFiles"></a>
 
 - *Type:* boolean
 
@@ -1774,6 +1775,18 @@ Print the order of deployment to the console.
 ###### `waves`<sup>Required</sup> <a name="waves" id="cdk-express-pipeline.CdkExpressPipeline.printWaves.parameter.waves"></a>
 
 - *Type:* <a href="#cdk-express-pipeline.IExpressWave">IExpressWave</a>[]
+
+---
+
+##### `saveGitHubWorkflows` <a name="saveGitHubWorkflows" id="cdk-express-pipeline.CdkExpressPipeline.saveGitHubWorkflows"></a>
+
+```typescript
+public saveGitHubWorkflows(workflows: GithubWorkflowFile[]): void
+```
+
+###### `workflows`<sup>Required</sup> <a name="workflows" id="cdk-express-pipeline.CdkExpressPipeline.saveGitHubWorkflows.parameter.workflows"></a>
+
+- *Type:* <a href="#cdk-express-pipeline.GithubWorkflowFile">GithubWorkflowFile</a>[]
 
 ---
 

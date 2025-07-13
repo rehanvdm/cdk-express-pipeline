@@ -30,6 +30,7 @@ export class JsonPatch {
    * array, the value is inserted before the given index. The - character can be
    * used instead of an index to insert at the end of an array.
    *
+   * @example JsonPatch.add('/milk', true)
    * @example JsonPatch.add('/biscuits/1', { "name": "Ginger Nut" })
    */
   public static add(path: string, value: any): Patch {
