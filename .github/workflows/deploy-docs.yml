@@ -1,16 +1,16 @@
 name: Deploy Documentation
 
 on:
-  push:
+#  push:
 #    branches: [ main ]
-    paths:
-      - 'docs/**'
-      - '.github/workflows/deploy-docs.yml'
+#    paths:
+#      - 'docs/**'
+#      - '.github/workflows/deploy-docs.yml'
   pull_request:
 #    branches: [ main ]
-    paths:
-      - 'docs/**'
-      - '.github/workflows/deploy-docs.yml'
+#    paths:
+#      - 'docs/**'
+#      - '.github/workflows/deploy-docs.yml'
   workflow_dispatch:
 
 permissions:
