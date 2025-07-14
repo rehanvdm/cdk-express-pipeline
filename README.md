@@ -16,7 +16,7 @@
 * [GitHub CI Workflow Generation](#github-ci-workflow-generation)
 * [Legacy Usage](#legacy-usage)
 * [Demo Projects](#demo-projects)
-* [Docs](#docs)
+* [Documentation](#documentation)
 
 <!-- TOC -->
 
@@ -244,11 +244,11 @@ The Wave, Stage and Stack order is as follows:
 
 For example, the following definition of Waves, Stages and Stacks as in CDK Express Pipelines:
 
-![order.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/order-25smaller.png)
+![order.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs-old/_imgs/order-25smaller.png)
 
 Will create a dependency graph as follows:
 
-![img.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/order_dependencies-25smaller.png)
+![img.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs-old/_imgs/order_dependencies-25smaller.png)
 
 When used with `cdk deploy '**' --concurrency 10`, it will deploy all stacks in parallel, 10 at a time, where possible
 while still adhering to the dependency graph. Stacks will be deployed in the following order:
@@ -256,15 +256,15 @@ while still adhering to the dependency graph. Stacks will be deployed in the fol
 <details>
 <summary>✨ Deployment order visualized ✨</summary>
 
-![order_1.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/order_1.png)
+![order_1.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs-old/_imgs/order_1.png)
 
-![order_2.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/order_2.png)
+![order_2.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs-old/_imgs/order_2.png)
 
-![order_3.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/order_3.png)
+![order_3.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs-old/_imgs/order_3.png)
 
-![order_4.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/order_4.png)
+![order_4.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs-old/_imgs/order_4.png)
 
-![order_5.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/order_5.png)
+![order_5.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs-old/_imgs/order_5.png)
 
 </details>
 
@@ -574,7 +574,7 @@ jobs:
 
 Produces the following output in the GitHub Action logs:
 
-![diff.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/action_logs/diff.png)
+![diff.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs-old/_imgs/action_logs/diff.png)
 
 </details>
 
@@ -630,7 +630,7 @@ jobs:
 
 Produces the following output in the GitHub Action logs:
 
-![diff.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/action_logs/deploy.png)
+![diff.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs-old/_imgs/action_logs/deploy.png)
 
 </details>
 
@@ -750,9 +750,9 @@ jobs:
 
 Produces the following output in the GitHub Action logs:
 
-![deploy_adv.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/action_logs/deploy_adv.png)
+![deploy_adv.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs-old/_imgs/action_logs/deploy_adv.png)
 
-![deploy_adv_1.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/_imgs/action_logs/deploy_adv_1.png)
+![deploy_adv_1.png](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs-old/_imgs/action_logs/deploy_adv_1.png)
 
 </details>
 
@@ -1298,8 +1298,20 @@ expressPipeline.synth([
 - [CDK Express Pipeline Demo TS](https://github.com/rehanvdm/cdk-express-pipeline-demo-ts)
 - [CDK Express Pipeline Demo Python](https://github.com/rehanvdm/cdk-express-pipeline-demo-python)
 
-## Docs
+## Documentation
 
-- [FAQ](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/FAQ.md)
-- [Projen Sacrifices](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs/Projen%20Sacrifices.md)
+📚 **Documentation Site**: [https://rehanvdm.github.io/cdk-express-pipeline](https://rehanvdm.github.io/cdk-express-pipeline)
+
+The documentation site is built with [Astro](https://astro.build) and [Starlight](https://starlight.astro.build) and provides:
+
+- **Guides**: Step-by-step tutorials and usage examples
+- **Reference**: Complete API documentation and FAQ
+- **Interactive Examples**: Code samples you can copy and run
+
+### Legacy Documentation
+
+The old documentation files have been moved to `docs-old/`:
+
+- [FAQ](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs-old/FAQ.md)
+- [Projen Sacrifices](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/docs-old/Projen%20Sacrifices.md)
 - [API](https://github.com/rehanvdm/cdk-express-pipeline/blob/main/API.md)
