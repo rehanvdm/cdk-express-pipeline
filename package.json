@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^2",
+    "@types/fast-json-patch": "^1.0.4",
     "@types/jest": "^29.5.14",
     "@types/node": "ts5.8",
     "@typescript-eslint/eslint-plugin": "^8",
@@ -66,6 +67,14 @@
     "aws-cdk-lib": "^2.133.0",
     "constructs": "^10.0.5"
   },
+  "dependencies": {
+    "fast-json-patch": "^3.1.1",
+    "yaml": "^2.8.0"
+  },
+  "bundledDependencies": [
+    "fast-json-patch",
+    "yaml"
+  ],
   "keywords": [
     "cdk"
   ],
