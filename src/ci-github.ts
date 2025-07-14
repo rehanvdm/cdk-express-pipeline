@@ -225,7 +225,7 @@ function synthReusableAction(synthConfig: SynthWorkflowConfig): GithubWorkflowFi
   });
 
   let buildSteps: object[] = [];
-  if ( synthConfig.buildConfig.type === 'preset-npm') {
+  if (synthConfig.buildConfig.type === 'preset-npm') {
     buildSteps = [{
       name: 'Set up node',
       uses: 'actions/setup-node@v4',

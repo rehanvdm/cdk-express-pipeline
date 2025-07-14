@@ -338,7 +338,7 @@ describe('JsonPatch and GithubWorkflow.patch()', () => {
       JsonPatch.move('/name', '/moved-name'),
     );
 
-    console.log('Patched Workflow:', JSON.stringify(patched.json, null, 2));
+    // console.log('Patched Workflow:', JSON.stringify(patched.json, null, 2));
 
     expect(patched.json).toHaveProperty('copied-name');
     expect(patched.json).toHaveProperty('moved-name');
