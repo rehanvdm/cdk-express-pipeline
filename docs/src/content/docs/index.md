@@ -6,7 +6,7 @@ hero:
   tagline: CDK pipelines provides constructs for Waves, Stages using only native CDK stack dependencies
   actions:
     - text: Get Started
-      link: /guides/introduction/
+      link: guides/introduction/
       icon: right-arrow
       variant: primary
     - text: View on GitHub
