@@ -1,17 +1,51 @@
-# CDK Express Pipeline
+---
+title: CDK Express Pipeline
+description: CDK pipelines provides constructs for Waves, Stages using only native CDK stack dependencies
+template: splash
+hero:
+  tagline: Provides Waves and Stages using CDK stack <code>.addDependency</code>. It uses the CDK CLI for deployments, making it build system agnostic.
+  actions:
+    - text: Get Started
+      link: /cdk-express-pipeline/guides/introduction/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/rehanvdm/cdk-express-pipeline
+      icon: external
+---
 
-[![npm version](https://badge.fury.io/js/cdk-express-pipeline.svg)](https://badge.fury.io/js/cdk-express-pipeline)
-[![PyPI version](https://badge.fury.io/py/cdk-express-pipeline.svg)](https://badge.fury.io/py/cdk-express-pipeline)
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 
-> [!IMPORTANT]
-> Full documentation is available at [https://rehanvdm.github.io/cdk-express-pipeline/](https://rehanvdm.github.io/cdk-express-pipeline/).
 
 ## What is CDK Express Pipeline?
 
-[CDK Express Pipeline](https://github.com/rehanvdm/cdk-express-pipeline/tree/main) is a library built on the AWS CDK,
-allowing you to define pipelines in a CDK-native method. It leverages the CDK CLI to compute and deploy the correct
-dependency graph between Waves, Stages, and Stacks using the <code>.addDependency</code> method, making it build-system
+[CDK Express Pipeline](https://github.com/rehanvdm/cdk-express-pipeline/tree/main) is a library built on the AWS CDK, 
+allowing you to define pipelines in a CDK-native method. It leverages the CDK CLI to compute and deploy the correct 
+dependency graph between Waves, Stages, and Stacks using the <code>.addDependency</code> method, making it build-system 
 agnostic and an alternative to AWS CDK Pipelines.
+
+<CardGrid>
+  <LinkCard
+    title="Introduction"
+    href="/cdk-express-pipeline/guides/introduction/"
+    description="Learn about CDK Express Pipeline and how it works"
+  />
+  <LinkCard
+    title="Tutorial - Getting Started"
+    href="/cdk-express-pipeline/tutorials/getting-started/"
+    description="Learn how to get started with CDK Express Pipeline"
+  />
+  <LinkCard
+    title="Deployment Order"
+    href="/cdk-express-pipeline/guides/deployment-order/"
+    description="Understand how CDK Express Pipeline determines the deployment order of Waves, Stages, and Stacks"
+  />
+  <LinkCard
+    title="Migrate From CDK Pipelines"
+    href="/cdk-express-pipeline/migrations/migrate-from-cdk-pipelines-to-cdk-express-pipeline/"
+    description="Learn how to migrate from CDK Pipelines to CDK Express Pipeline"
+  />
+</CardGrid>
 
 ## Key Features
 
@@ -33,7 +67,7 @@ npm install cdk-express-pipeline
 Let's illustrate a common patten, deploying infra stacks before application stacks. The `IamStack` is only in the
 `us-east-1` region, while the `NetworkingStack` is in both `us-east-1` and `eu-west-1`.
 
-The application stacks `AppAStack` and `AppBStack` depend on the networking stack and are deployed in both regions.
+The application stacks `AppAStack` and `AppBStack` depend on the networking stack and are deployed in both regions. 
 The `AppBStack` also depends on the `AppAStack`.
 
 ```typescript
@@ -120,11 +154,32 @@ graph TD
     Wave0 --> Wave1
 ```
 
-CDK Express Pipeline is build system agnostic, meaning you can run the `cdk deploy` command from any environment,
+CDK Express Pipeline is build system agnostic, meaning you can run the `cdk deploy` command from any environment, 
 such as your local machine, GitHub Actions, GitLab CI, etc. It includes a function to generate GitHub Actions workflow,
-more build systems can be added as needed.
+more build systems can be added as needed. 
 
-## Next Steps
+## Next Steps 
 
-> [!IMPORTANT]
-> Full documentation is available at [https://rehanvdm.github.io/cdk-express-pipeline/](https://rehanvdm.github.io/cdk-express-pipeline/).
+<CardGrid>
+  <LinkCard
+    title="Introduction"
+    href="/cdk-express-pipeline/guides/introduction/"
+    description="Learn about CDK Express Pipeline and how it works"
+  />
+  <LinkCard
+    title="Tutorial - Getting Started"
+    href="/cdk-express-pipeline/tutorials/getting-started/"
+    description="Learn how to get started with CDK Express Pipeline"
+  />
+  <LinkCard
+    title="Deployment Order"
+    href="/cdk-express-pipeline/guides/deployment-order/"
+    description="Understand how CDK Express Pipeline determines the deployment order of Waves, Stages, and Stacks"
+  />
+  <LinkCard
+    title="Migrate From CDK Pipelines"
+    href="/cdk-express-pipeline/migrations/migrate-from-cdk-pipelines-to-cdk-express-pipeline/"
+    description="Learn how to migrate from CDK Pipelines to CDK Express Pipeline"
+  />
+</CardGrid>
+

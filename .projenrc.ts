@@ -1,3 +1,4 @@
+import * as assert from 'node:assert';
 import { awscdk, javascript } from 'projen';
 import { ArrowParens, TrailingComma } from 'projen/lib/javascript';
 
@@ -67,4 +68,15 @@ project.gitignore.addPatterns('*.d.ts');
 project.gitignore.addPatterns('*.DS_Store');
 project.gitignore.addPatterns('pipeline-deployment-order.md');
 
+const releaseWorkflow = project.github?.workflows.find(w => w.name === 'release');
+assert.ok(releaseWorkflow);
+releaseWorkflow.on({
+  push: {
+    branches: ['main'],
+    paths: [
+      '!docs/**',
+      '!.github/workflows/deploy-docs.yml',
+    ],
+  },
+});
 project.synth();

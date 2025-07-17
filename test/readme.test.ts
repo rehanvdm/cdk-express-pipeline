@@ -248,3 +248,73 @@ describe('Readme Examples - CdkExpressPipelineLegacy', () => {
     ]);
   });
 });
+
+describe('Docs', () => {
+
+  beforeEach(() => {
+    /* Disable Jest's console.log that adds the location of log lines */
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    global.console = require('console');
+  });
+  afterEach(() => {
+    /* Restore Jest's console */
+    global.console = jestConsole;
+  });
+
+  // === Stack Definitions each their own class ===
+  class IamStack extends ExpressStack {
+    constructor(scope: Construct, id: string, stage: ExpressStage, stackProps?: StackProps) {
+      super(scope, id, stage, stackProps);
+
+      new cdk.aws_sns.Topic(this, 'MyTopic');
+      // ... more resources
+    }
+  }
+
+  class NetworkingStack extends ExpressStack {
+    constructor(scope: Construct, id: string, stage: ExpressStage, stackProps?: StackProps) {
+      super(scope, id, stage, stackProps);
+
+      new cdk.aws_sns.Topic(this, 'MyTopic');
+      // ... more resources
+    }
+  }
+
+  class AppAStack extends ExpressStack {
+    constructor(scope: Construct, id: string, stage: ExpressStage, stackProps?: StackProps) {
+      super(scope, id, stage, stackProps);
+    }
+  }
+  class AppBStack extends ExpressStack {
+    constructor(scope: Construct, id: string, stage: ExpressStage, stackProps?: StackProps) {
+      super(scope, id, stage, stackProps);
+    }
+  }
+
+  test('Extend ExpressStack class - Explicit', () => {
+    const app = new App();
+    const expressPipeline = new CdkExpressPipeline();
+
+    const regions = ['us-east-1', 'eu-west-1'];
+
+    const infraWave = expressPipeline.addWave('Infra');
+    const infraWaveUsEast1Stage = infraWave.addStage('us-east-1');
+    const infraWaveEuWest1Stage = infraWave.addStage('eu-west-1');
+    new IamStack(app, 'Iam', infraWaveUsEast1Stage);
+    new NetworkingStack(app, 'Networking', infraWaveUsEast1Stage);
+    new NetworkingStack(app, 'Networking', infraWaveEuWest1Stage);
+
+    const appWave = expressPipeline.addWave('Application');
+    for (const region of regions) {
+      const appWaveStage = appWave.addStage(region);
+      const appA = new AppAStack(app, 'AppA', appWaveStage);
+      const appB = new AppBStack(app, 'AppB', appWaveStage);
+      appB.addExpressDependency(appA);
+    }
+
+    expressPipeline.synth([
+      infraWave,
+      appWave,
+    ], true, {});
+  });
+});
