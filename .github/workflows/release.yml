@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "!docs/**"
+      - "!.github/workflows/deploy-docs.yml"
   workflow_dispatch: {}
 concurrency:
   group: ${{ github.workflow }}
