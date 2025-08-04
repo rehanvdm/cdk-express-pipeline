@@ -176,6 +176,79 @@ graph TD
 "
 `;
 
+exports[`CdkExpressPipeline Saved Assembly JSON 1`] = `
+"{
+  "waves": [
+    {
+      "waveId": "Wave1",
+      "stages": [
+        {
+          "stageId": "Stage1",
+          "stacks": [
+            {
+              "stackId": "Wave1_Stage1_StackA",
+              "stackName": "StackA"
+            },
+            {
+              "stackId": "Wave1_Stage1_StackB",
+              "stackName": "StackB"
+            }
+          ]
+        },
+        {
+          "stageId": "Stage2",
+          "stacks": [
+            {
+              "stackId": "Wave1_Stage2_StackA",
+              "stackName": "StackA"
+            },
+            {
+              "stackId": "Wave1_Stage2_StackB",
+              "stackName": "StackB"
+            },
+            {
+              "stackId": "Wave1_Stage2_StackC",
+              "stackName": "StackC"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "waveId": "Wave2",
+      "stages": [
+        {
+          "stageId": "Stage1",
+          "stacks": [
+            {
+              "stackId": "Wave2_Stage1_StackH",
+              "stackName": "StackH"
+            },
+            {
+              "stackId": "Wave2_Stage1_StackI",
+              "stackName": "StackI"
+            }
+          ]
+        },
+        {
+          "stageId": "Stage2",
+          "stacks": [
+            {
+              "stackId": "Wave2_Stage2_StackJ",
+              "stackName": "StackJ"
+            },
+            {
+              "stackId": "Wave2_Stage2_StackK",
+              "stackName": "StackK"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}"
+`;
+
 exports[`CdkExpressPipelineLegacy Correct Stack Highlight for deployment Testing Legacy Pipeline: Wave1Stage1* pattern 1`] = `
 "
 ORDER OF DEPLOYMENT

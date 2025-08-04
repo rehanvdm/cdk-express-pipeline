@@ -730,4 +730,45 @@ describe('CdkExpressPipeline', () => {
     expect(mermaidOutput).toMatchSnapshot();
   });
 
+  test('Saved Assembly JSON', () => {
+    process.env.CDK_OUTDIR = 'cdk-out/test';
+    const app = new App();
+
+    /* === Wave 1 === */
+    const wave1 = new ExpressWave('Wave1');
+    /* --- Wave 1, Stage 1--- */
+    const wave1Stage1 = new ExpressStage('Stage1', wave1);
+    const wave1Stage1StackA = new ExpressStack(app, 'StackA', wave1Stage1);
+    const wave1Stage1StackB = new ExpressStack(app, 'StackB', wave1Stage1);
+    wave1Stage1StackB.addExpressDependency(wave1Stage1StackA);
+
+    /* --- Wave 1, Stage 2 --- */
+    const wave1Stage2 = new ExpressStage('Stage2', wave1);
+    new ExpressStack(app, 'StackA', wave1Stage2);
+    const wave1Stage2StackB = new ExpressStack(app, 'StackB', wave1Stage2);
+    const wave1Stage2StackC = new ExpressStack(app, 'StackC', wave1Stage2);
+    wave1Stage2StackC.addExpressDependency(wave1Stage2StackB);
+
+    /* === Wave 2 === */
+    const wave2 = new ExpressWave('Wave2');
+    /* === Wave 2, Stage 1 === */
+    const wave2Stage1 = new ExpressStage('Stage1', wave2);
+    new ExpressStack(app, 'StackH', wave2Stage1);
+    new ExpressStack(app, 'StackI', wave2Stage1);
+
+    const wave2Stage2 = new ExpressStage('Stage2', wave2);
+    new ExpressStack(app, 'StackJ', wave2Stage2);
+    new ExpressStack(app, 'StackK', wave2Stage2);
+
+    const expressPipeline = new CdkExpressPipeline({
+      waves: [wave1, wave2],
+    });
+
+    expressPipeline.synth(expressPipeline.waves);
+
+    const cdkExpressPipelineAssembly = fs.readFileSync(path.join(process.cwd(), process.env.CDK_OUTDIR, 'cdk-express-pipeline.json'), 'utf8');
+    expect(cdkExpressPipelineAssembly).toMatchSnapshot();
+  });
+
+
 });

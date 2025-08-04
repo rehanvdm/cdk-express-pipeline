@@ -53,4 +53,5 @@ tsconfig.json
 *.d.ts
 *.DS_Store
 pipeline-deployment-order.md
+cdk-out/test/
 !/.projenrc.ts

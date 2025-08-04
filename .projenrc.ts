@@ -67,6 +67,7 @@ project.gitignore.addPatterns('*.js');
 project.gitignore.addPatterns('*.d.ts');
 project.gitignore.addPatterns('*.DS_Store');
 project.gitignore.addPatterns('pipeline-deployment-order.md');
+project.gitignore.addPatterns('cdk-out/test/');
 
 const releaseWorkflow = project.github?.workflows.find(w => w.name === 'release');
 assert.ok(releaseWorkflow);
