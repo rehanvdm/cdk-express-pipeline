@@ -9,6 +9,23 @@ import { getStackPatternToFilter, targetIdentifier } from './utils';
 export const CDK_EXPRESS_PIPELINE_DEPENDENCY_REASON = 'cdk-express-pipeline wave->stage->stack dependency';
 export const CDK_EXPRESS_PIPELINE_DEFAULT_SEPARATOR = '_';
 
+export interface CdkExpressPipelineAssemblyStack {
+  readonly stackId: string;
+  readonly stackName: string;
+}
+export interface CdkExpressPipelineAssemblyStage {
+  readonly stageId: string;
+  readonly stacks: CdkExpressPipelineAssemblyStack[];
+}
+export interface CdkExpressPipelineAssemblyWave {
+  readonly waveId: string;
+  readonly stages: CdkExpressPipelineAssemblyStage[];
+}
+
+export interface CdkExpressPipelineAssembly {
+  readonly waves: CdkExpressPipelineAssemblyWave[];
+}
+
 export interface CdkExpressPipelineProps {
   /**
    * The waves in the pipeline
@@ -82,6 +99,8 @@ export class CdkExpressPipeline {
       }
     }
 
+    this.saveAssembly();
+
     if (print) {
       this.printWaves(waves);
     }
@@ -98,6 +117,61 @@ export class CdkExpressPipeline {
       const fullPath = path.join(outputPath, fileName);
       fs.writeFileSync(fullPath, mermaidDiagram);
     }
+  }
+
+  private saveAssembly() {
+    if (!process.env.CDK_OUTDIR) {
+      console.info('CDK_OUTDIR environment variable is not set. Not saving cdk-express-pipeline assembly.');
+      return;
+    }
+
+    const cdkOutDir = path.join(process.cwd(), process.env.CDK_OUTDIR);
+    if (!fs.existsSync(cdkOutDir)) {
+      fs.mkdirSync( cdkOutDir, { recursive: true });
+    }
+
+    const cdkExpressOut: CdkExpressPipelineAssembly = {
+      waves: [],
+    };
+
+    for (const wave of this.waves) {
+      const waveShort: {
+        waveId: string;
+        stages: {
+          stageId: string;
+          stacks: {
+            stackId: string;
+            stackName: string;
+          }[];
+        }[];
+      } = {
+        waveId: wave.id,
+        stages: [],
+      };
+
+      for (const stage of wave.stages) {
+        const stageShort: {
+          stageId: string;
+          stacks: {
+            stackId: string;
+            stackName: string;
+          }[];
+        } = {
+          stageId: stage.id,
+          stacks: [],
+        };
+        for (const stack of stage.stacks) {
+          stageShort.stacks.push({
+            stackId: stack.id,
+            stackName: stack.stackName,
+          });
+        }
+        waveShort.stages.push(stageShort);
+      }
+      cdkExpressOut.waves.push(waveShort);
+    }
+
+    fs.writeFileSync(path.join(process.env.CDK_OUTDIR, 'cdk-express-pipeline.json'), JSON.stringify(cdkExpressOut, null, 2));
   }
 
   /**

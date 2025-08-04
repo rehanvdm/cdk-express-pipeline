@@ -1002,6 +1002,151 @@ Specify the workflow or reusable action to use for building
 
 ---
 
+### CdkExpressPipelineAssembly <a name="CdkExpressPipelineAssembly" id="cdk-express-pipeline.CdkExpressPipelineAssembly"></a>
+
+#### Initializer <a name="Initializer" id="cdk-express-pipeline.CdkExpressPipelineAssembly.Initializer"></a>
+
+```typescript
+import { CdkExpressPipelineAssembly } from 'cdk-express-pipeline'
+
+const cdkExpressPipelineAssembly: CdkExpressPipelineAssembly = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-express-pipeline.CdkExpressPipelineAssembly.property.waves">waves</a></code> | <code><a href="#cdk-express-pipeline.CdkExpressPipelineAssemblyWave">CdkExpressPipelineAssemblyWave</a>[]</code> | *No description.* |
+
+---
+
+##### `waves`<sup>Required</sup> <a name="waves" id="cdk-express-pipeline.CdkExpressPipelineAssembly.property.waves"></a>
+
+```typescript
+public readonly waves: CdkExpressPipelineAssemblyWave[];
+```
+
+- *Type:* <a href="#cdk-express-pipeline.CdkExpressPipelineAssemblyWave">CdkExpressPipelineAssemblyWave</a>[]
+
+---
+
+### CdkExpressPipelineAssemblyStack <a name="CdkExpressPipelineAssemblyStack" id="cdk-express-pipeline.CdkExpressPipelineAssemblyStack"></a>
+
+#### Initializer <a name="Initializer" id="cdk-express-pipeline.CdkExpressPipelineAssemblyStack.Initializer"></a>
+
+```typescript
+import { CdkExpressPipelineAssemblyStack } from 'cdk-express-pipeline'
+
+const cdkExpressPipelineAssemblyStack: CdkExpressPipelineAssemblyStack = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-express-pipeline.CdkExpressPipelineAssemblyStack.property.stackId">stackId</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#cdk-express-pipeline.CdkExpressPipelineAssemblyStack.property.stackName">stackName</a></code> | <code>string</code> | *No description.* |
+
+---
+
+##### `stackId`<sup>Required</sup> <a name="stackId" id="cdk-express-pipeline.CdkExpressPipelineAssemblyStack.property.stackId"></a>
+
+```typescript
+public readonly stackId: string;
+```
+
+- *Type:* string
+
+---
+
+##### `stackName`<sup>Required</sup> <a name="stackName" id="cdk-express-pipeline.CdkExpressPipelineAssemblyStack.property.stackName"></a>
+
+```typescript
+public readonly stackName: string;
+```
+
+- *Type:* string
+
+---
+
+### CdkExpressPipelineAssemblyStage <a name="CdkExpressPipelineAssemblyStage" id="cdk-express-pipeline.CdkExpressPipelineAssemblyStage"></a>
+
+#### Initializer <a name="Initializer" id="cdk-express-pipeline.CdkExpressPipelineAssemblyStage.Initializer"></a>
+
+```typescript
+import { CdkExpressPipelineAssemblyStage } from 'cdk-express-pipeline'
+
+const cdkExpressPipelineAssemblyStage: CdkExpressPipelineAssemblyStage = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-express-pipeline.CdkExpressPipelineAssemblyStage.property.stacks">stacks</a></code> | <code><a href="#cdk-express-pipeline.CdkExpressPipelineAssemblyStack">CdkExpressPipelineAssemblyStack</a>[]</code> | *No description.* |
+| <code><a href="#cdk-express-pipeline.CdkExpressPipelineAssemblyStage.property.stageId">stageId</a></code> | <code>string</code> | *No description.* |
+
+---
+
+##### `stacks`<sup>Required</sup> <a name="stacks" id="cdk-express-pipeline.CdkExpressPipelineAssemblyStage.property.stacks"></a>
+
+```typescript
+public readonly stacks: CdkExpressPipelineAssemblyStack[];
+```
+
+- *Type:* <a href="#cdk-express-pipeline.CdkExpressPipelineAssemblyStack">CdkExpressPipelineAssemblyStack</a>[]
+
+---
+
+##### `stageId`<sup>Required</sup> <a name="stageId" id="cdk-express-pipeline.CdkExpressPipelineAssemblyStage.property.stageId"></a>
+
+```typescript
+public readonly stageId: string;
+```
+
+- *Type:* string
+
+---
+
+### CdkExpressPipelineAssemblyWave <a name="CdkExpressPipelineAssemblyWave" id="cdk-express-pipeline.CdkExpressPipelineAssemblyWave"></a>
+
+#### Initializer <a name="Initializer" id="cdk-express-pipeline.CdkExpressPipelineAssemblyWave.Initializer"></a>
+
+```typescript
+import { CdkExpressPipelineAssemblyWave } from 'cdk-express-pipeline'
+
+const cdkExpressPipelineAssemblyWave: CdkExpressPipelineAssemblyWave = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-express-pipeline.CdkExpressPipelineAssemblyWave.property.stages">stages</a></code> | <code><a href="#cdk-express-pipeline.CdkExpressPipelineAssemblyStage">CdkExpressPipelineAssemblyStage</a>[]</code> | *No description.* |
+| <code><a href="#cdk-express-pipeline.CdkExpressPipelineAssemblyWave.property.waveId">waveId</a></code> | <code>string</code> | *No description.* |
+
+---
+
+##### `stages`<sup>Required</sup> <a name="stages" id="cdk-express-pipeline.CdkExpressPipelineAssemblyWave.property.stages"></a>
+
+```typescript
+public readonly stages: CdkExpressPipelineAssemblyStage[];
+```
+
+- *Type:* <a href="#cdk-express-pipeline.CdkExpressPipelineAssemblyStage">CdkExpressPipelineAssemblyStage</a>[]
+
+---
+
+##### `waveId`<sup>Required</sup> <a name="waveId" id="cdk-express-pipeline.CdkExpressPipelineAssemblyWave.property.waveId"></a>
+
+```typescript
+public readonly waveId: string;
+```
+
+- *Type:* string
+
+---
+
 ### CdkExpressPipelineProps <a name="CdkExpressPipelineProps" id="cdk-express-pipeline.CdkExpressPipelineProps"></a>
 
 #### Initializer <a name="Initializer" id="cdk-express-pipeline.CdkExpressPipelineProps.Initializer"></a>
