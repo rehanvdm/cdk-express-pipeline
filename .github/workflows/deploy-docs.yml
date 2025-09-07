@@ -6,6 +6,9 @@ on:
     paths:
       - 'docs/**'
       - '.github/workflows/deploy-docs.yml'
+  pull_request:
+    branches:
+      - feature/fix-astro-playwright
   workflow_dispatch:
 
 permissions:
@@ -40,7 +43,7 @@ jobs:
           npm ci
       - name: Install Playwright for mermaid images # Optimize later
         run: |
-          npx playwright install
+          npx playwright@1.54.1 install
 
       - name: Build with Astro
         run: |
