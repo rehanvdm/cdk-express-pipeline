@@ -1,7 +1,7 @@
 import { App } from 'aws-cdk-lib';
 import { JsonPatch } from '../src';
 import { CdkExpressPipeline } from '../src/cdk-express-pipeline';
-import { GitHubWorkflowConfig, createGitHubWorkflows, BuildConfig, GithubWorkflow } from '../src/ci-github';
+import { GitHubWorkflowConfig, createGitHubWorkflows, GithubWorkflow } from '../src/ci-github';
 import { ExpressStack } from '../src/express-stack';
 
 function getAppAndPipeline() {
@@ -22,69 +22,27 @@ function getAppAndPipeline() {
 
 describe('CDK Express Pipeline CI Configuration', () => {
 
-  it('snapshot synth and build variants', async () => {
-    const { pipeline } = getAppAndPipeline();
-
-    function buildConfigVariant(buildConfig: BuildConfig): GitHubWorkflowConfig {
-      return {
-        synth: {
-          buildConfig: buildConfig,
-          commands: [
-            { dev: '' },
-            { prod: '' },
-          ],
-        },
-        diff: [],
-        deploy: [],
-      };
-    }
-
-    const tests: { name: string; config: GitHubWorkflowConfig }[] = [
-      {
-        name: 'preset-npm',
-        config: buildConfigVariant({
-          type: 'preset-npm',
-        }),
-      },
-      {
-        name: 'workflow',
-        config: buildConfigVariant({
-          type: 'workflow',
-          workflow: {
-            path: '.github/actions/build',
-          },
-        }),
-      },
-    ];
-
-    for (const test of tests) {
-      const resp = createGitHubWorkflows(test.config, pipeline.waves);
-      const synthWorkflow = resp.find(w => w.fileName === 'actions/cdk-express-pipeline-synth/action.yml');
-      expect(synthWorkflow).toMatchSnapshot(test.name);
-    }
-  });
-
   it('snapshot diff stack selector variants', async () => {
     const { pipeline } = getAppAndPipeline();
 
     function buildStackSelectorVariant(stackSelector: 'wave' | 'stage'): GitHubWorkflowConfig {
       return {
-        synth: {
-          buildConfig: {
-            type: 'preset-npm',
-          },
-          commands: [
-          ],
+        buildConfig: {
+          type: 'preset-npm',
         },
         diff: [{
           on: {},
           stackSelector: stackSelector,
-          writeAsComment: true,
           assumeRoleArn: '',
           assumeRegion: '',
-          commands: [
-            { dev: 'npm run cdk -- diff {stackSelector} --app=cdk.out/dev' },
-          ],
+          commands:
+            {
+              dev: {
+                synth: "npm run cdk -- synth '**' -c env=dev --output=cdk.out/dev",
+                diff: 'npm run cdk -- diff {stackSelector} --app=cdk.out/dev',
+              },
+            },
+
         }],
         deploy: [],
       };
@@ -122,31 +80,10 @@ describe('CDK Express Pipeline CI Configuration', () => {
     new ExpressStack(app, 'api', wave2stage2);
 
     const ghConfig: GitHubWorkflowConfig = {
-      synth: {
-        buildConfig: {
-          type: 'preset-npm',
-        },
-        commands: [
-          { dev: "npm run cdk -- synth '**' -c env=dev --output=cdk.out/dev" },
-          { prod: "npm run cdk -- synth '**' -c env=prod --output=cdk.out/prod" },
-        ],
+      buildConfig: {
+        type: 'preset-npm',
       },
       diff: [{
-        on: {
-          pullRequest: {
-            branches: ['main'],
-          },
-        },
-        stackSelector: 'wave',
-        writeAsComment: true,
-        assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
-        assumeRegion: 'us-east-1',
-        commands: [
-          { dev: 'npm run cdk -- diff {stackSelector} --app=cdk.out/dev' },
-          { prod: 'npm run cdk -- diff {stackSelector} --app=cdk.out/prod' },
-        ],
-      }],
-      deploy: [{
         id: 'dev',
         on: {
           pullRequest: {
@@ -156,9 +93,16 @@ describe('CDK Express Pipeline CI Configuration', () => {
         stackSelector: 'wave',
         assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
         assumeRegion: 'us-east-1',
-        commands: [
-          { dev: 'npm run cdk -- deploy {stackSelector} --app=cdk.out/dev --concurrency 10 --require-approval never --exclusively' },
-        ],
+        commands: {
+          dev: {
+            synth: "npm run cdk -- synth '**' -c env=dev --output=cdk.out/dev",
+            diff: 'npm run cdk -- diff {stackSelector} --app=cdk.out/dev',
+          },
+          prod: {
+            synth: "npm run cdk -- synth '**' -c env=prod --output=cdk.out/prod",
+            diff: 'npm run cdk -- diff {stackSelector} --app=cdk.out/prod',
+          },
+        },
       },
       {
         id: 'prod',
@@ -170,9 +114,46 @@ describe('CDK Express Pipeline CI Configuration', () => {
         stackSelector: 'wave',
         assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
         assumeRegion: 'us-east-1',
-        commands: [
-          { prod: 'npm run cdk -- deploy {stackSelector} --app=cdk.out/prod --concurrency 10 --require-approval never --exclusively' },
-        ],
+        commands: {
+          prod: {
+            synth: "npm run cdk -- synth '**' -c env=prod --output=cdk.out/prod",
+            diff: 'npm run cdk -- diff {stackSelector} --app=cdk.out/prod',
+          },
+        },
+      }],
+      deploy: [{
+        id: 'dev',
+        on: {
+          pullRequest: {
+            branches: ['main'],
+          },
+        },
+        stackSelector: 'wave',
+        assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
+        assumeRegion: 'us-east-1',
+        commands: {
+          dev: {
+            synth: "npm run cdk -- synth '**' -c env=dev --output=cdk.out/dev",
+            deploy: 'npm run cdk -- deploy {stackSelector} --app=cdk.out/dev --concurrency 10 --require-approval never --exclusively',
+          },
+        },
+      },
+      {
+        id: 'prod',
+        on: {
+          pullRequest: {
+            branches: ['production'],
+          },
+        },
+        stackSelector: 'wave',
+        assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
+        assumeRegion: 'us-east-1',
+        commands: {
+          prod: {
+            synth: "npm run cdk -- synth '**' -c env=prod --output=cdk.out/prod",
+            deploy: 'npm run cdk -- deploy {stackSelector} --app=cdk.out/prod --concurrency 10 --require-approval never --exclusively',
+          },
+        },
       }],
     };
 
@@ -181,105 +162,6 @@ describe('CDK Express Pipeline CI Configuration', () => {
       expect(workflow).toMatchSnapshot();
     }
   });
-
-  // it('generate workflows for demo-ts project', async () => {
-  //
-  //   const app = new App();
-  //   const expressPipeline = new CdkExpressPipeline();
-  //   const wave1 = expressPipeline.addWave('Wave1');
-  //   const wave1Stage1 = wave1.addStage('Stage1');
-  //   const stackA = new ExpressStack(app, 'StackA', wave1Stage1);
-  //   const stackB = new ExpressStack(app, 'StackB', wave1Stage1);
-  //   stackB.addExpressDependency(stackA);
-  //   const wave1Stage2 = wave1.addStage('Stage2');
-  //   new ExpressStack(app, 'Stack2A', wave1Stage2);
-  //
-  //   const wave2 = expressPipeline.addWave('Wave2');
-  //   const wave2Stage1 = wave2.addStage('Stage1');
-  //   new ExpressStack(app, 'StackC', wave2Stage1);
-  //
-  //   const ghConfig: GitHubWorkflowConfig = {
-  //     synth: {
-  //       buildConfig: {
-  //         type: 'preset-npm',
-  //       },
-  //       commands: [
-  //         { dev: "npm run cdk -- synth '**' -c env=dev --output=cdk.out/dev" },
-  //         { prod: "npm run cdk -- synth '**' -c env=prod --output=cdk.out/prod" },
-  //       ],
-  //     },
-  //     diff: [{
-  //       id: 'dev',
-  //       on: {
-  //         pullRequest: {
-  //           branches: ['main'],
-  //         },
-  //       },
-  //       stackSelector: 'stage',
-  //       writeAsComment: true,
-  //       assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
-  //       assumeRegion: 'us-east-1',
-  //       commands: [
-  //         { dev: 'npm run cdk -- diff {stackSelector} --app=cdk.out/dev' },
-  //         { prod: 'npm run cdk -- diff {stackSelector} --app=cdk.out/prod' },
-  //       ],
-  //     },
-  //     {
-  //       id: 'prod',
-  //       on: {
-  //         pullRequest: {
-  //           branches: ['production'],
-  //         },
-  //       },
-  //       stackSelector: 'stage',
-  //       writeAsComment: true,
-  //       assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
-  //       assumeRegion: 'us-east-1',
-  //       commands: [
-  //         { prod: 'npm run cdk -- diff {stackSelector} --app=cdk.out/prod' },
-  //       ],
-  //     }],
-  //     deploy: [{
-  //       id: 'dev',
-  //       on: {
-  //         pullRequest: {
-  //           branches: ['main'],
-  //         },
-  //       },
-  //       stackSelector: 'stack',
-  //       assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
-  //       assumeRegion: 'us-east-1',
-  //       commands: [
-  //         { dev: 'npm run cdk -- deploy {stackSelector} --app=cdk.out/dev --concurrency 10 --require-approval never --exclusively' },
-  //       ],
-  //     },
-  //     {
-  //       id: 'prod',
-  //       on: {
-  //         push: {
-  //           branches: ['production'],
-  //         },
-  //       },
-  //       stackSelector: 'stack',
-  //       assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
-  //       assumeRegion: 'us-east-1',
-  //       commands: [
-  //         { prod: 'npm run cdk -- deploy {stackSelector} --app=cdk.out/prod --concurrency 10 --require-approval never --exclusively' },
-  //       ],
-  //     }],
-  //   };
-  //
-  //   const resp = createGitHubWorkflows(ghConfig, expressPipeline.waves);
-  //   for (const workflow of resp) {
-  //     const filePath = path.join('/Users/rehanvandermerwe/Rehan/Projects/cdk-express-pipeline-demo-ts/.github', workflow.fileName);
-  //     const dirPath = path.dirname(filePath);
-  //     if (!fsSync.existsSync(dirPath)) {
-  //       fsSync.mkdirSync(dirPath, { recursive: true });
-  //     }
-  //
-  //     await fs.writeFile(filePath, stringify(workflow.content.json));
-  //   }
-  // });
 });
 
 describe('JsonPatch and GithubWorkflow.patch()', () => {
@@ -423,12 +305,8 @@ describe('JsonPatch and GithubWorkflow.patch()', () => {
     new ExpressStack(app, 'api', wave2stage2);
 
     const ghConfig: GitHubWorkflowConfig = {
-      synth: {
-        buildConfig: {
-          type: 'preset-npm',
-        },
-        commands: [
-        ],
+      buildConfig: {
+        type: 'preset-npm',
       },
       diff: [],
       deploy: [{
@@ -441,9 +319,12 @@ describe('JsonPatch and GithubWorkflow.patch()', () => {
         stackSelector: 'wave',
         assumeRoleArn: 'arn:aws:iam::581184285249:role/githuboidc-git-hub-deploy-role',
         assumeRegion: 'us-east-1',
-        commands: [
-          { dev: 'npm run cdk -- deploy {stackSelector} --concurrency 10 --require-approval never --exclusively' },
-        ],
+        commands: {
+          dev: {
+            synth: "npm run cdk -- synth '**'",
+            deploy: 'npm run cdk -- deploy {stackSelector} --concurrency 10 --require-approval never --exclusively',
+          },
+        },
       }],
     };
 
@@ -456,7 +337,7 @@ describe('JsonPatch and GithubWorkflow.patch()', () => {
         ghWorkflows[w]?.content.patch(
           JsonPatch.replace('/concurrency/cancel-in-progress', true),
           //Add an extra step to the build job that echos success
-          JsonPatch.add('/jobs/build/steps/-', {
+          JsonPatch.add('/jobs/synth__dev/steps/-', {
             name: 'Echo Success',
             shell: 'bash',
             run: 'echo "Build succeeded!"',

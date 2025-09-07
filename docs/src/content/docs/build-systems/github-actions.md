@@ -273,13 +273,8 @@ const pipeline = new CdkExpressPipeline();
 
 // Define GitHub workflow configuration
 const ghConfig: GitHubWorkflowConfig = {
-  synth: {
-    buildConfig: {
-      type: 'preset-npm', // or 'workflow' to specify a GitHub workflow file for custom build process
-    },
-    commands: [
-      { prod: "npm run cdk -- synth '**'" },
-    ],
+  buildConfig: {
+    type: 'preset-npm', // or 'workflow' to specify a GitHub workflow file for custom build process
   },
   diff: [{
     on: {
@@ -288,12 +283,14 @@ const ghConfig: GitHubWorkflowConfig = {
       },
     },
     stackSelector: 'stage',
-    writeAsComment: true,
     assumeRoleArn: 'arn:aws:iam::123456789012:role/github-oidc-role',
     assumeRegion: 'us-east-1',
-    commands: [
-      { prod: 'npm run cdk -- diff {stackSelector}' },
-    ],
+    commands: {
+      prod: {
+        synth: "npm run cdk -- synth '**'",
+        diff: 'npm run cdk -- diff {stackSelector}',
+      },
+    },
   }],
   deploy: [{
     on: {
@@ -304,9 +301,12 @@ const ghConfig: GitHubWorkflowConfig = {
     stackSelector: 'stage',
     assumeRoleArn: 'arn:aws:iam::123456789012:role/github-oidc-role',
     assumeRegion: 'us-east-1',
-    commands: [
-      { prod: 'npm run cdk -- deploy {stackSelector} --concurrency 10 --require-approval never --exclusively' },
-    ],
+    commands: {
+      prod: {
+        synth: "npm run cdk -- synth '**'",
+        deploy: 'npm run cdk -- deploy {stackSelector} --concurrency 10 --require-approval never --exclusively',
+      },
+    },
   }],
 };
 
@@ -332,28 +332,23 @@ The workflow generation creates the following files in your `.github` directory:
 
 ### Configuration Options
 
-#### Synth Configuration
+#### Build Configuration
 
-The `synth` configuration defines how your CDK application is built and synthesized:
+The `buildConfig` configuration defines how your CDK application is built before it is synthesized:
 
 ```typescript
-synth: {
-  buildConfig: {
-    type: 'preset-npm', // Built-in npm build process
+buildConfig: {
+  type: 'preset-npm', // Built-in npm build process
     // OR
-    type: 'workflow',
-    workflow: {
-      path: '.github/actions/build', // Path to custom workflow
-    },
+  type: 'workflow',
+  workflow: {
+    path: '.github/actions/build', // Path to custom workflow
   },
-  commands: [
-    { prod: "npm run cdk -- synth '**'" },
-  ],
-}
+},
 ```
 
-The `buildConfig` can use a built-in preset (like `preset-npm`) which uses the standard NPM build process GitHub
-Action steps, installing node and then npm install. Alternatively, you can specify a **reusable action** that defines a
+Specify a built-in preset (like `preset-npm`) which uses the standard NPM build process GitHub
+Action steps, installing node and then doing npm install. Alternatively, you can specify a **reusable action** that defines a
 custom workflow in native GitHub Actions format, allowing for a more complex build processes. Like building
 assets in parallel, pushing to container registries etc. For example:
 
@@ -376,26 +371,6 @@ runs:
     # Additional steps to build Applications that are referenced in the CDK app
 ```
 
-The `commands` array defines the commands to run for synthesizing your CDK application. This allows you to generate
-multiple CDK cloud assemblies for different environments (e.g., dev, prod) by using environment-specific commands.
-
-This example assumes this is done with `env` [CDK context variable](https://docs.aws.amazon.com/cdk/v2/guide/context.html#context-cli)
-and shows how to generate two different cloud assemblies for `dev` and `prod` environments and store there output in
-separate directories within the `cdk.out` directory.
-
-:::caution[IMPORTANT]
-These commands must still place these cloud assemblies in the `cdk.out` directory. The `cdk.out` and `node_modules`
-will be cached and restored on workflow jobs within diff and deploy.
-:::
-```typescript
-synth: {
-  commands: [
-    {dev: "npm run cdk -- synth '**' -c env=dev --output=cdk.out/dev"},
-    {prod: "npm run cdk -- synth '**' -c env=prod --output=cdk.out/prod"},
-  ]
-}
-```
-
 #### Diff Configuration
 
 The `diff` configuration defines when and how CDK diff operations are performed:
@@ -412,7 +387,6 @@ diff: [{
     },
   },
   stackSelector: 'stage', // 'wave', 'stage', or 'stack'
-  writeAsComment: true, // Write diff output as PR comment
   assumeRoleArn: 'arn:aws:iam::123456789012:role/github-oidc-role',
   assumeRegion: 'us-east-1',
   commands: [
@@ -421,17 +395,31 @@ diff: [{
 }]
 ```
 
-:::caution[IMPORTANT]
-These commands must include the {stackSelector} string that gets replaced dynamically.
-:::
-
 The `on` field specifies the events that trigger the diff operation, you would most likely always want to trigger this
-on pull requests. The `writeAsComment` property uses the [corymhall/cdk-diff-action@v2](https://github.com/corymhall/cdk-diff-action)
-Action to write the diff output as a comment on the pull request. This is useful for reviewing changes before merging.
+on pull requests.
+
+The CDK diff will be written to the PR description, this is useful for reviewing changes before merging.
+More info can be found in the [rehanvdm/cdk-express-pipeline-github-diff](https://github.com/rehanvdm/cdk-express-pipeline-github-diff)
+GitHub action.
+
+![diff_pr.png](../../../assets/github-actions/diff_pr.png)
 
 See the [Stack Selectors](#stack-selectors) section below for details on the `stackSelector` option. The `assumeRoleArn`
 and `assumeRegion` options are used to configure the [AWS OIDC authentication](https://docs.github.com/en/actions/how-tos/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services)
 for the GitHub Actions workflow, allowing it to assume a role in your AWS account securely when doing `commands`.
+
+:::caution[IMPORTANT]
+The `commands.diff` property must include the {stackSelector} string that gets replaced dynamically.
+:::
+
+The `commands` object defines the commands to run for synthesizing and then diffing your CDK application. Specifying
+both `synth` and `diff` allows you to generate multiple CDK cloud assemblies for different environments 
+(e.g., dev, prod) by using environment-specific commands.
+
+This example assumes this is done with an `env` [CDK context variable](https://docs.aws.amazon.com/cdk/v2/guide/context.html#context-cli).
+It shows how to generate two different cloud assemblies for `dev` and `prod` environments and store there output in
+separate directories within the `cdk.out` directory.See [Multiple Environments](#multiple-environments) section
+below for an example of this.
 
 #### Deploy Configuration
 
@@ -447,15 +435,14 @@ deploy: [{
   stackSelector: 'stack', // 'wave', 'stage', or 'stack'
   assumeRoleArn: 'arn:aws:iam::123456789012:role/github-oidc-role',
   assumeRegion: 'us-east-1',
-  commands: [
-    { prod: 'npm run cdk -- deploy {stackSelector} --concurrency 10 --require-approval never --exclusively' },
-  ],
+  commands: {
+    prod: {
+      synth: "npm run cdk -- synth '**'",
+      deploy: 'npm run cdk -- deploy {stackSelector} --concurrency 10 --require-approval never --exclusively',
+    },
+  },
 }]
 ```
-
-:::caution[IMPORTANT]
-These commands must include the {stackSelector} string that gets replaced dynamically.
-:::
 
 The `on` field specifies the events that trigger the deploy operation, you would most likely always want to trigger this
 on pushes or on tag creation.
@@ -463,6 +450,15 @@ on pushes or on tag creation.
 See the [Stack Selectors](#stack-selectors) section below for details on the `stackSelector` option. The `assumeRoleArn`
 and `assumeRegion` options are used to configure the [AWS OIDC authentication](https://docs.github.com/en/actions/how-tos/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services)
 for the GitHub Actions workflow, allowing it to assume a role in your AWS account securely when doing the `commands`.
+
+:::caution[IMPORTANT]
+The `commands.deploy` property must include the {stackSelector} string that gets replaced dynamically.
+:::
+
+The `commands` object defines the commands to run for synthesizing and then deploying your CDK application. Specifying
+both `synth` and `deploy` allows you to generate multiple CDK cloud assemblies for different environments
+(e.g., dev, prod) by using environment-specific commands. See [Multiple Environments](#multiple-environments) section 
+below for an example of this.
 
 ### Stack Selectors
 
@@ -480,8 +476,7 @@ cache, which can add additional time, and thus cost. This might become an issue 
 and many stacks.
 
 Recommended defaults:
-- `diff` config: `'stage'` is a good balance between granularity and performance as each job will post a GitHub comment
-  if `writeAsComment` is set to `true`.
+- `diff` config: `'stage'` is a good balance between granularity and performance.
 - `deploy` config: `'stack'` is recommended so that each job only shows the CFN deployment logs for that stack and the
   job can be retried if it fails without affecting other stacks.
 
@@ -503,14 +498,8 @@ This example:
 
 ```typescript
 const ghConfig: GitHubWorkflowConfig = {
- synth: {
-   buildConfig: {
-     type: 'preset-npm',
-   },
-   commands: [
-     { development: "npm run cdk -- synth '**' -c env=development --output=cdk.out/development" },
-     { production: "npm run cdk -- synth '**' -c env=production --output=cdk.out/production" },
-   ],
+ buildConfig: {
+   type: 'preset-npm',
  },
  diff: [
    {
@@ -521,13 +510,18 @@ const ghConfig: GitHubWorkflowConfig = {
        },
      },
      stackSelector: 'stage',
-     writeAsComment: true,
      assumeRoleArn: 'arn:aws:iam::123456789012:role/github-oidc-role',
      assumeRegion: 'us-east-1',
-     commands: [
-       { development: 'npm run cdk -- diff {stackSelector} --app=cdk.out/development' },
-       { production: 'npm run cdk -- diff {stackSelector} --app=cdk.out/production' },
-     ],
+     commands: {
+       development: {
+         synth: "npm run cdk -- synth '**' -c env=development --output=cdk.out/development",
+         diff: 'npm run cdk -- diff {stackSelector} --app=cdk.out/development',
+       },
+       production: {
+         synth: "npm run cdk -- synth '**' -c env=production --output=cdk.out/production",
+         diff: 'npm run cdk -- diff {stackSelector} --app=cdk.out/production',
+       },
+     },
    },
    {
      id: 'production',
@@ -537,12 +531,14 @@ const ghConfig: GitHubWorkflowConfig = {
        },
      },
      stackSelector: 'stage',
-     writeAsComment: true,
      assumeRoleArn: 'arn:aws:iam::123456789012:role/github-oidc-role',
      assumeRegion: 'us-east-1',
-     commands: [
-       { production: 'npm run cdk -- diff {stackSelector} --app=cdk.out/production' },
-     ],
+     commands: {
+       production: {
+         synth: "npm run cdk -- synth '**' -c env=production --output=cdk.out/production",
+         diff: 'npm run cdk -- diff {stackSelector} --app=cdk.out/production',
+       },
+     },
    },
  ],
  deploy: [
@@ -556,9 +552,12 @@ const ghConfig: GitHubWorkflowConfig = {
      stackSelector: 'stack',
      assumeRoleArn: 'arn:aws:iam::123456789012:role/github-oidc-role',
      assumeRegion: 'us-east-1',
-     commands: [
-       { development: 'npm run cdk -- deploy {stackSelector} --concurrency 10 --require-approval never --exclusively --app=cdk.out/development' },
-     ],
+     commands: {
+       development: {
+         synth: "npm run cdk -- synth '**' -c env=development --output=cdk.out/development",
+         deploy: 'npm run cdk -- deploy {stackSelector} --app=cdk.out/development --concurrency 10 --require-approval never --exclusively',
+       },
+     },
    },
    {
      id: 'production',
@@ -570,9 +569,12 @@ const ghConfig: GitHubWorkflowConfig = {
      stackSelector: 'stack',
      assumeRoleArn: 'arn:aws:iam::123456789012:role/github-oidc-role',
      assumeRegion: 'us-east-1',
-     commands: [
-       { production: 'npm run cdk -- deploy {stackSelector} --concurrency 10 --require-approval never --exclusively --app=cdk.out/production' },
-     ],
+     commands: {
+       production: {
+         synth: "npm run cdk -- synth '**' -c env=production --output=cdk.out/production",
+         deploy: 'npm run cdk -- deploy {stackSelector} --app=cdk.out/production --concurrency 10 --require-approval never --exclusively',
+       },
+     },
    },
  ],
 }
