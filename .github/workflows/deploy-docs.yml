@@ -40,7 +40,7 @@ jobs:
           npm ci
       - name: Install Playwright for mermaid images # Optimize later
         run: |
-          npx playwright install
+          npx playwright@1.54.1 install
 
       - name: Build with Astro
         run: |
