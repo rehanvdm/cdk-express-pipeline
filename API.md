@@ -957,26 +957,26 @@ The stage that the stack belongs to.
 
 ## Structs <a name="Structs" id="Structs"></a>
 
-### BuildConfig <a name="BuildConfig" id="cdk-express-pipeline.BuildConfig"></a>
+### BuildWorkflowConfig <a name="BuildWorkflowConfig" id="cdk-express-pipeline.BuildWorkflowConfig"></a>
 
-#### Initializer <a name="Initializer" id="cdk-express-pipeline.BuildConfig.Initializer"></a>
+#### Initializer <a name="Initializer" id="cdk-express-pipeline.BuildWorkflowConfig.Initializer"></a>
 
 ```typescript
-import { BuildConfig } from 'cdk-express-pipeline'
+import { BuildWorkflowConfig } from 'cdk-express-pipeline'
 
-const buildConfig: BuildConfig = { ... }
+const buildWorkflowConfig: BuildWorkflowConfig = { ... }
 ```
 
 #### Properties <a name="Properties" id="Properties"></a>
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#cdk-express-pipeline.BuildConfig.property.type">type</a></code> | <code>string</code> | The type of workflow to use. |
-| <code><a href="#cdk-express-pipeline.BuildConfig.property.workflow">workflow</a></code> | <code><a href="#cdk-express-pipeline.WorkflowLocation">WorkflowLocation</a></code> | Only required if type is 'workflow'. |
+| <code><a href="#cdk-express-pipeline.BuildWorkflowConfig.property.type">type</a></code> | <code>string</code> | The type of workflow to use. |
+| <code><a href="#cdk-express-pipeline.BuildWorkflowConfig.property.workflow">workflow</a></code> | <code><a href="#cdk-express-pipeline.WorkflowLocation">WorkflowLocation</a></code> | Only required if type is 'workflow'. |
 
 ---
 
-##### `type`<sup>Required</sup> <a name="type" id="cdk-express-pipeline.BuildConfig.property.type"></a>
+##### `type`<sup>Required</sup> <a name="type" id="cdk-express-pipeline.BuildWorkflowConfig.property.type"></a>
 
 ```typescript
 public readonly type: string;
@@ -988,7 +988,7 @@ The type of workflow to use.
 
 ---
 
-##### `workflow`<sup>Optional</sup> <a name="workflow" id="cdk-express-pipeline.BuildConfig.property.workflow"></a>
+##### `workflow`<sup>Optional</sup> <a name="workflow" id="cdk-express-pipeline.BuildWorkflowConfig.property.workflow"></a>
 
 ```typescript
 public readonly workflow: WorkflowLocation;
@@ -1191,6 +1191,45 @@ The waves in the pipeline.
 
 ---
 
+### DeployCommand <a name="DeployCommand" id="cdk-express-pipeline.DeployCommand"></a>
+
+#### Initializer <a name="Initializer" id="cdk-express-pipeline.DeployCommand.Initializer"></a>
+
+```typescript
+import { DeployCommand } from 'cdk-express-pipeline'
+
+const deployCommand: DeployCommand = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-express-pipeline.DeployCommand.property.deploy">deploy</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#cdk-express-pipeline.DeployCommand.property.synth">synth</a></code> | <code>string</code> | *No description.* |
+
+---
+
+##### `deploy`<sup>Required</sup> <a name="deploy" id="cdk-express-pipeline.DeployCommand.property.deploy"></a>
+
+```typescript
+public readonly deploy: string;
+```
+
+- *Type:* string
+
+---
+
+##### `synth`<sup>Required</sup> <a name="synth" id="cdk-express-pipeline.DeployCommand.property.synth"></a>
+
+```typescript
+public readonly synth: string;
+```
+
+- *Type:* string
+
+---
+
 ### DeployWorkflowConfig <a name="DeployWorkflowConfig" id="cdk-express-pipeline.DeployWorkflowConfig"></a>
 
 #### Initializer <a name="Initializer" id="cdk-express-pipeline.DeployWorkflowConfig.Initializer"></a>
@@ -1207,7 +1246,7 @@ const deployWorkflowConfig: DeployWorkflowConfig = { ... }
 | --- | --- | --- |
 | <code><a href="#cdk-express-pipeline.DeployWorkflowConfig.property.assumeRegion">assumeRegion</a></code> | <code>string</code> | AWS region to assume for the diff operation. |
 | <code><a href="#cdk-express-pipeline.DeployWorkflowConfig.property.assumeRoleArn">assumeRoleArn</a></code> | <code>string</code> | ARN of the role to assume for the diff operation. |
-| <code><a href="#cdk-express-pipeline.DeployWorkflowConfig.property.commands">commands</a></code> | <code>{[ key: string ]: string}[]</code> | Commands to run for synthesis. |
+| <code><a href="#cdk-express-pipeline.DeployWorkflowConfig.property.commands">commands</a></code> | <code>{[ key: string ]: <a href="#cdk-express-pipeline.DeployCommand">DeployCommand</a>}</code> | Commands to run for deploy, the key is used to identify the commands in job names. |
 | <code><a href="#cdk-express-pipeline.DeployWorkflowConfig.property.on">on</a></code> | <code><a href="#cdk-express-pipeline.WorkflowTriggers">WorkflowTriggers</a></code> | Conditions that trigger the deploy workflow. |
 | <code><a href="#cdk-express-pipeline.DeployWorkflowConfig.property.stackSelector">stackSelector</a></code> | <code>string</code> | Selector for the stack type. |
 | <code><a href="#cdk-express-pipeline.DeployWorkflowConfig.property.id">id</a></code> | <code>string</code> | Unique identifier, postfixed to the generated workflow name. |
@@ -1241,12 +1280,12 @@ ARN of the role to assume for the diff operation.
 ##### `commands`<sup>Required</sup> <a name="commands" id="cdk-express-pipeline.DeployWorkflowConfig.property.commands"></a>
 
 ```typescript
-public readonly commands: {[ key: string ]: string}[];
+public readonly commands: {[ key: string ]: DeployCommand};
 ```
 
-- *Type:* {[ key: string ]: string}[]
+- *Type:* {[ key: string ]: <a href="#cdk-express-pipeline.DeployCommand">DeployCommand</a>}
 
-Commands to run for synthesis.
+Commands to run for deploy, the key is used to identify the commands in job names.
 
 ---
 
@@ -1288,6 +1327,45 @@ Can be omitted if only one workflow is specified.
 
 ---
 
+### DiffCommand <a name="DiffCommand" id="cdk-express-pipeline.DiffCommand"></a>
+
+#### Initializer <a name="Initializer" id="cdk-express-pipeline.DiffCommand.Initializer"></a>
+
+```typescript
+import { DiffCommand } from 'cdk-express-pipeline'
+
+const diffCommand: DiffCommand = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#cdk-express-pipeline.DiffCommand.property.diff">diff</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#cdk-express-pipeline.DiffCommand.property.synth">synth</a></code> | <code>string</code> | *No description.* |
+
+---
+
+##### `diff`<sup>Required</sup> <a name="diff" id="cdk-express-pipeline.DiffCommand.property.diff"></a>
+
+```typescript
+public readonly diff: string;
+```
+
+- *Type:* string
+
+---
+
+##### `synth`<sup>Required</sup> <a name="synth" id="cdk-express-pipeline.DiffCommand.property.synth"></a>
+
+```typescript
+public readonly synth: string;
+```
+
+- *Type:* string
+
+---
+
 ### DiffWorkflowConfig <a name="DiffWorkflowConfig" id="cdk-express-pipeline.DiffWorkflowConfig"></a>
 
 #### Initializer <a name="Initializer" id="cdk-express-pipeline.DiffWorkflowConfig.Initializer"></a>
@@ -1304,11 +1382,10 @@ const diffWorkflowConfig: DiffWorkflowConfig = { ... }
 | --- | --- | --- |
 | <code><a href="#cdk-express-pipeline.DiffWorkflowConfig.property.assumeRegion">assumeRegion</a></code> | <code>string</code> | AWS region to assume for the diff operation. |
 | <code><a href="#cdk-express-pipeline.DiffWorkflowConfig.property.assumeRoleArn">assumeRoleArn</a></code> | <code>string</code> | ARN of the role to assume for the diff operation. |
-| <code><a href="#cdk-express-pipeline.DiffWorkflowConfig.property.commands">commands</a></code> | <code>{[ key: string ]: string}[]</code> | Commands to run for synthesis. |
+| <code><a href="#cdk-express-pipeline.DiffWorkflowConfig.property.commands">commands</a></code> | <code>{[ key: string ]: <a href="#cdk-express-pipeline.DiffCommand">DiffCommand</a>}</code> | Commands to run for diff, the key is used to identify the commands in job names. |
 | <code><a href="#cdk-express-pipeline.DiffWorkflowConfig.property.on">on</a></code> | <code><a href="#cdk-express-pipeline.WorkflowTriggers">WorkflowTriggers</a></code> | Conditions that trigger the diff workflow. |
 | <code><a href="#cdk-express-pipeline.DiffWorkflowConfig.property.stackSelector">stackSelector</a></code> | <code>string</code> | Selector for the stack type. |
 | <code><a href="#cdk-express-pipeline.DiffWorkflowConfig.property.id">id</a></code> | <code>string</code> | Unique identifier, postfixed to the generated workflow name. |
-| <code><a href="#cdk-express-pipeline.DiffWorkflowConfig.property.writeAsComment">writeAsComment</a></code> | <code>boolean</code> | Whether to write the diff as a comment. |
 
 ---
 
@@ -1339,12 +1416,12 @@ ARN of the role to assume for the diff operation.
 ##### `commands`<sup>Required</sup> <a name="commands" id="cdk-express-pipeline.DiffWorkflowConfig.property.commands"></a>
 
 ```typescript
-public readonly commands: {[ key: string ]: string}[];
+public readonly commands: {[ key: string ]: DiffCommand};
 ```
 
-- *Type:* {[ key: string ]: string}[]
+- *Type:* {[ key: string ]: <a href="#cdk-express-pipeline.DiffCommand">DiffCommand</a>}
 
-Commands to run for synthesis.
+Commands to run for diff, the key is used to identify the commands in job names.
 
 ---
 
@@ -1383,19 +1460,6 @@ public readonly id: string;
 Unique identifier, postfixed to the generated workflow name.
 
 Can be omitted if only one workflow is specified.
-
----
-
-##### `writeAsComment`<sup>Optional</sup> <a name="writeAsComment" id="cdk-express-pipeline.DiffWorkflowConfig.property.writeAsComment"></a>
-
-```typescript
-public readonly writeAsComment: boolean;
-```
-
-- *Type:* boolean
-- *Default:* true
-
-Whether to write the diff as a comment.
 
 ---
 
@@ -1455,9 +1519,21 @@ const gitHubWorkflowConfig: GitHubWorkflowConfig = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
+| <code><a href="#cdk-express-pipeline.GitHubWorkflowConfig.property.buildConfig">buildConfig</a></code> | <code><a href="#cdk-express-pipeline.BuildWorkflowConfig">BuildWorkflowConfig</a></code> | Configuration for the build steps. |
 | <code><a href="#cdk-express-pipeline.GitHubWorkflowConfig.property.deploy">deploy</a></code> | <code><a href="#cdk-express-pipeline.DeployWorkflowConfig">DeployWorkflowConfig</a>[]</code> | Configuration for the deploy workflow. |
 | <code><a href="#cdk-express-pipeline.GitHubWorkflowConfig.property.diff">diff</a></code> | <code><a href="#cdk-express-pipeline.DiffWorkflowConfig">DiffWorkflowConfig</a>[]</code> | Configuration for the diff workflow. |
-| <code><a href="#cdk-express-pipeline.GitHubWorkflowConfig.property.synth">synth</a></code> | <code><a href="#cdk-express-pipeline.SynthWorkflowConfig">SynthWorkflowConfig</a></code> | Configuration for the synth workflow. |
+
+---
+
+##### `buildConfig`<sup>Required</sup> <a name="buildConfig" id="cdk-express-pipeline.GitHubWorkflowConfig.property.buildConfig"></a>
+
+```typescript
+public readonly buildConfig: BuildWorkflowConfig;
+```
+
+- *Type:* <a href="#cdk-express-pipeline.BuildWorkflowConfig">BuildWorkflowConfig</a>
+
+Configuration for the build steps.
 
 ---
 
@@ -1482,18 +1558,6 @@ public readonly diff: DiffWorkflowConfig[];
 - *Type:* <a href="#cdk-express-pipeline.DiffWorkflowConfig">DiffWorkflowConfig</a>[]
 
 Configuration for the diff workflow.
-
----
-
-##### `synth`<sup>Required</sup> <a name="synth" id="cdk-express-pipeline.GitHubWorkflowConfig.property.synth"></a>
-
-```typescript
-public readonly synth: SynthWorkflowConfig;
-```
-
-- *Type:* <a href="#cdk-express-pipeline.SynthWorkflowConfig">SynthWorkflowConfig</a>
-
-Configuration for the synth workflow.
 
 ---
 
@@ -1639,49 +1703,6 @@ public readonly value: any;
 ```
 
 - *Type:* any
-
----
-
-### SynthWorkflowConfig <a name="SynthWorkflowConfig" id="cdk-express-pipeline.SynthWorkflowConfig"></a>
-
-#### Initializer <a name="Initializer" id="cdk-express-pipeline.SynthWorkflowConfig.Initializer"></a>
-
-```typescript
-import { SynthWorkflowConfig } from 'cdk-express-pipeline'
-
-const synthWorkflowConfig: SynthWorkflowConfig = { ... }
-```
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#cdk-express-pipeline.SynthWorkflowConfig.property.buildConfig">buildConfig</a></code> | <code><a href="#cdk-express-pipeline.BuildConfig">BuildConfig</a></code> | Configuration for the build workflow. |
-| <code><a href="#cdk-express-pipeline.SynthWorkflowConfig.property.commands">commands</a></code> | <code>{[ key: string ]: string}[]</code> | Commands to run for synthesis. |
-
----
-
-##### `buildConfig`<sup>Required</sup> <a name="buildConfig" id="cdk-express-pipeline.SynthWorkflowConfig.property.buildConfig"></a>
-
-```typescript
-public readonly buildConfig: BuildConfig;
-```
-
-- *Type:* <a href="#cdk-express-pipeline.BuildConfig">BuildConfig</a>
-
-Configuration for the build workflow.
-
----
-
-##### `commands`<sup>Required</sup> <a name="commands" id="cdk-express-pipeline.SynthWorkflowConfig.property.commands"></a>
-
-```typescript
-public readonly commands: {[ key: string ]: string}[];
-```
-
-- *Type:* {[ key: string ]: string}[]
-
-Commands to run for synthesis.
 
 ---
 
