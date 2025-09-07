@@ -114,7 +114,7 @@ node_modules/",
           },
           {
             "name": "CDK Diff Generate",
-            "uses": "rehanvdm/cdk-express-pipeline-github-diff@v0.1.2",
+            "uses": "rehanvdm/cdk-express-pipeline-github-diff@v0.1.3",
             "with": {
               "cloud-assembly-directory": "\${{ inputs.cloud-assembly-directory }}",
               "github-token": "\${{ inputs.github-token }}",
@@ -328,7 +328,7 @@ exports[`CDK Express Pipeline CI Configuration snapshot all workflows for config
             },
             {
               "name": "Update PR Description",
-              "uses": "rehanvdm/cdk-express-pipeline-github-diff@v0.1.2",
+              "uses": "rehanvdm/cdk-express-pipeline-github-diff@v0.1.3",
               "with": {
                 "cloud-assemblies": "[{"header":"CDK Diff - dev","directory":"cdk.out/dev"},{"header":"CDK Diff - prod","directory":"cdk.out/prod"}]",
                 "github-token": "\${{ secrets.GITHUB_TOKEN }}",
@@ -467,7 +467,7 @@ exports[`CDK Express Pipeline CI Configuration snapshot all workflows for config
             },
             {
               "name": "Update PR Description",
-              "uses": "rehanvdm/cdk-express-pipeline-github-diff@v0.1.2",
+              "uses": "rehanvdm/cdk-express-pipeline-github-diff@v0.1.3",
               "with": {
                 "cloud-assemblies": "[{"header":"CDK Diff - prod","directory":"cdk.out/prod"}]",
                 "github-token": "\${{ secrets.GITHUB_TOKEN }}",
