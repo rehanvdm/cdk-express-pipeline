@@ -378,12 +378,12 @@ export class CdkExpressPipeline {
   public generateGitHubWorkflows(gitHubWorkflowConfig: GitHubWorkflowConfig, saveToFiles:boolean = true) {
     const workflows = createGitHubWorkflows(gitHubWorkflowConfig, this.waves);
     if (saveToFiles) {
-      saveWorkflowTemplates(workflows);
+      saveWorkflowTemplates(workflows, gitHubWorkflowConfig.directory);
     }
     return workflows;
   }
-  public saveGitHubWorkflows(workflows: GithubWorkflowFile[]) {
-    saveWorkflowTemplates(workflows);
+  public saveGitHubWorkflows(workflows: GithubWorkflowFile[], directory?: string) {
+    saveWorkflowTemplates(workflows, directory);
   }
 }
 

@@ -1522,6 +1522,7 @@ const gitHubWorkflowConfig: GitHubWorkflowConfig = { ... }
 | <code><a href="#cdk-express-pipeline.GitHubWorkflowConfig.property.buildConfig">buildConfig</a></code> | <code><a href="#cdk-express-pipeline.BuildWorkflowConfig">BuildWorkflowConfig</a></code> | Configuration for the build steps. |
 | <code><a href="#cdk-express-pipeline.GitHubWorkflowConfig.property.deploy">deploy</a></code> | <code><a href="#cdk-express-pipeline.DeployWorkflowConfig">DeployWorkflowConfig</a>[]</code> | Configuration for the deploy workflow. |
 | <code><a href="#cdk-express-pipeline.GitHubWorkflowConfig.property.diff">diff</a></code> | <code><a href="#cdk-express-pipeline.DiffWorkflowConfig">DiffWorkflowConfig</a>[]</code> | Configuration for the diff workflow. |
+| <code><a href="#cdk-express-pipeline.GitHubWorkflowConfig.property.directory">directory</a></code> | <code>string</code> | The directory path where GitHub workflow files will be saved. |
 
 ---
 
@@ -1558,6 +1559,21 @@ public readonly diff: DiffWorkflowConfig[];
 - *Type:* <a href="#cdk-express-pipeline.DiffWorkflowConfig">DiffWorkflowConfig</a>[]
 
 Configuration for the diff workflow.
+
+---
+
+##### `directory`<sup>Optional</sup> <a name="directory" id="cdk-express-pipeline.GitHubWorkflowConfig.property.directory"></a>
+
+```typescript
+public readonly directory: string;
+```
+
+- *Type:* string
+- *Default:* path.join(process.cwd(), '.github')
+
+The directory path where GitHub workflow files will be saved.
+
+Defaults to `.github` in the current working directory.
 
 ---
 
@@ -1947,12 +1963,18 @@ Print the order of deployment to the console.
 ##### `saveGitHubWorkflows` <a name="saveGitHubWorkflows" id="cdk-express-pipeline.CdkExpressPipeline.saveGitHubWorkflows"></a>
 
 ```typescript
-public saveGitHubWorkflows(workflows: GithubWorkflowFile[]): void
+public saveGitHubWorkflows(workflows: GithubWorkflowFile[], directory?: string): void
 ```
 
 ###### `workflows`<sup>Required</sup> <a name="workflows" id="cdk-express-pipeline.CdkExpressPipeline.saveGitHubWorkflows.parameter.workflows"></a>
 
 - *Type:* <a href="#cdk-express-pipeline.GithubWorkflowFile">GithubWorkflowFile</a>[]
+
+---
+
+###### `directory`<sup>Optional</sup> <a name="directory" id="cdk-express-pipeline.CdkExpressPipeline.saveGitHubWorkflows.parameter.directory"></a>
+
+- *Type:* string
 
 ---
 

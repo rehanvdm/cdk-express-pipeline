@@ -21,6 +21,14 @@ export interface GitHubWorkflowConfig {
    * Configuration for the deploy workflow
    */
   readonly deploy: DeployWorkflowConfig[];
+
+  /**
+   * The directory path where GitHub workflow files will be saved.
+   * Defaults to `.github` in the current working directory.
+   *
+   * @default path.join(process.cwd(), '.github')
+   */
+  readonly directory?: string;
 }
 
 export interface BuildWorkflowConfig {
@@ -186,8 +194,8 @@ export function createGitHubWorkflows(githubConfig: GitHubWorkflowConfig, waves:
   return workflowFiles;
 }
 
-export function saveWorkflowTemplates(templates: GithubWorkflowFile[]) {
-  const githubDir = path.join(process.cwd(), '.github');
+export function saveWorkflowTemplates(templates: GithubWorkflowFile[], directory?: string) {
+  const githubDir = directory || path.join(process.cwd(), '.github');
   if (!fs.existsSync(githubDir)) {
     fs.mkdirSync(githubDir, { recursive: true });
   }

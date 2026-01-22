@@ -35,7 +35,8 @@ const project = new awscdk.AwsCdkConstructLibrary({
       },
     },
   },
-  workflowNodeVersion: '20',
+  workflowNodeVersion: '24',
+  npmTrustedPublishing: true,
   // Publishing disabled as no secrets are set yet.
   publishToPypi: {
     distName: 'cdk_express_pipeline',
