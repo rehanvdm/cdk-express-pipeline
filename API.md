@@ -1250,6 +1250,7 @@ const deployWorkflowConfig: DeployWorkflowConfig = { ... }
 | <code><a href="#cdk-express-pipeline.DeployWorkflowConfig.property.on">on</a></code> | <code><a href="#cdk-express-pipeline.WorkflowTriggers">WorkflowTriggers</a></code> | Conditions that trigger the deploy workflow. |
 | <code><a href="#cdk-express-pipeline.DeployWorkflowConfig.property.stackSelector">stackSelector</a></code> | <code>string</code> | Selector for the stack type. |
 | <code><a href="#cdk-express-pipeline.DeployWorkflowConfig.property.id">id</a></code> | <code>string</code> | Unique identifier, postfixed to the generated workflow name. |
+| <code><a href="#cdk-express-pipeline.DeployWorkflowConfig.property.workingDirectory">workingDirectory</a></code> | <code>string</code> | The subdirectory where CDK commands should run. |
 
 ---
 
@@ -1327,6 +1328,19 @@ Can be omitted if only one workflow is specified.
 
 ---
 
+##### `workingDirectory`<sup>Optional</sup> <a name="workingDirectory" id="cdk-express-pipeline.DeployWorkflowConfig.property.workingDirectory"></a>
+
+```typescript
+public readonly workingDirectory: string;
+```
+
+- *Type:* string
+- *Default:* inherited from GitHubWorkflowConfig.workingDirectory
+
+The subdirectory where CDK commands should run.
+
+---
+
 ### DiffCommand <a name="DiffCommand" id="cdk-express-pipeline.DiffCommand"></a>
 
 #### Initializer <a name="Initializer" id="cdk-express-pipeline.DiffCommand.Initializer"></a>
@@ -1386,6 +1400,7 @@ const diffWorkflowConfig: DiffWorkflowConfig = { ... }
 | <code><a href="#cdk-express-pipeline.DiffWorkflowConfig.property.on">on</a></code> | <code><a href="#cdk-express-pipeline.WorkflowTriggers">WorkflowTriggers</a></code> | Conditions that trigger the diff workflow. |
 | <code><a href="#cdk-express-pipeline.DiffWorkflowConfig.property.stackSelector">stackSelector</a></code> | <code>string</code> | Selector for the stack type. |
 | <code><a href="#cdk-express-pipeline.DiffWorkflowConfig.property.id">id</a></code> | <code>string</code> | Unique identifier, postfixed to the generated workflow name. |
+| <code><a href="#cdk-express-pipeline.DiffWorkflowConfig.property.workingDirectory">workingDirectory</a></code> | <code>string</code> | The subdirectory where CDK commands should run. |
 
 ---
 
@@ -1463,6 +1478,19 @@ Can be omitted if only one workflow is specified.
 
 ---
 
+##### `workingDirectory`<sup>Optional</sup> <a name="workingDirectory" id="cdk-express-pipeline.DiffWorkflowConfig.property.workingDirectory"></a>
+
+```typescript
+public readonly workingDirectory: string;
+```
+
+- *Type:* string
+- *Default:* inherited from GitHubWorkflowConfig.workingDirectory
+
+The subdirectory where CDK commands should run.
+
+---
+
 ### ExpressWaveProps <a name="ExpressWaveProps" id="cdk-express-pipeline.ExpressWaveProps"></a>
 
 #### Initializer <a name="Initializer" id="cdk-express-pipeline.ExpressWaveProps.Initializer"></a>
@@ -1523,6 +1551,7 @@ const gitHubWorkflowConfig: GitHubWorkflowConfig = { ... }
 | <code><a href="#cdk-express-pipeline.GitHubWorkflowConfig.property.deploy">deploy</a></code> | <code><a href="#cdk-express-pipeline.DeployWorkflowConfig">DeployWorkflowConfig</a>[]</code> | Configuration for the deploy workflow. |
 | <code><a href="#cdk-express-pipeline.GitHubWorkflowConfig.property.diff">diff</a></code> | <code><a href="#cdk-express-pipeline.DiffWorkflowConfig">DiffWorkflowConfig</a>[]</code> | Configuration for the diff workflow. |
 | <code><a href="#cdk-express-pipeline.GitHubWorkflowConfig.property.directory">directory</a></code> | <code>string</code> | The directory path where GitHub workflow files will be saved. |
+| <code><a href="#cdk-express-pipeline.GitHubWorkflowConfig.property.workingDirectory">workingDirectory</a></code> | <code>string</code> | The subdirectory where CDK commands should run. |
 
 ---
 
@@ -1574,6 +1603,22 @@ public readonly directory: string;
 The directory path where GitHub workflow files will be saved.
 
 Defaults to `.github` in the current working directory.
+
+---
+
+##### `workingDirectory`<sup>Optional</sup> <a name="workingDirectory" id="cdk-express-pipeline.GitHubWorkflowConfig.property.workingDirectory"></a>
+
+```typescript
+public readonly workingDirectory: string;
+```
+
+- *Type:* string
+- *Default:* undefined (commands run from repo root)
+
+The subdirectory where CDK commands should run.
+
+Defaults to the repository root.
+Paths in commands (--output, --app) will be resolved relative to this directory.
 
 ---
 
