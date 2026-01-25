@@ -14,6 +14,11 @@ exports[`CDK Express Pipeline CI Configuration snapshot all workflows for config
           "description": "CDK synth command",
           "required": true,
         },
+        "working-directory": {
+          "default": ".",
+          "description": "The subdirectory where CDK commands should run",
+          "required": false,
+        },
       },
       "name": "CDK Express Pipeline Synth Action",
       "runs": {
@@ -39,6 +44,7 @@ exports[`CDK Express Pipeline CI Configuration snapshot all workflows for config
             "name": "CDK Synth",
             "run": "\${{ inputs.command }}",
             "shell": "bash",
+            "working-directory": "\${{ inputs.working-directory }}",
           },
           {
             "name": "Cache Build",
@@ -158,6 +164,11 @@ exports[`CDK Express Pipeline CI Configuration snapshot all workflows for config
           "description": "The value of the {stackSelector} replacement in the command",
           "required": true,
         },
+        "working-directory": {
+          "default": ".",
+          "description": "The subdirectory where CDK commands should run",
+          "required": false,
+        },
       },
       "name": "CDK Deploy Action",
       "runs": {
@@ -183,6 +194,7 @@ node_modules/",
             "name": "CDK Deploy Command",
             "run": "\${{ inputs.command }}",
             "shell": "bash",
+            "working-directory": "\${{ inputs.working-directory }}",
           },
         ],
         "using": "composite",
@@ -351,6 +363,7 @@ exports[`CDK Express Pipeline CI Configuration snapshot all workflows for config
               "with": {
                 "cloud-assembly-directory": "cdk.out/dev",
                 "command": "npm run cdk -- synth '**' -c env=dev --output=cdk.out/dev",
+                "working-directory": ".",
               },
             },
           ],
@@ -369,6 +382,7 @@ exports[`CDK Express Pipeline CI Configuration snapshot all workflows for config
               "with": {
                 "cloud-assembly-directory": "cdk.out/prod",
                 "command": "npm run cdk -- synth '**' -c env=prod --output=cdk.out/prod",
+                "working-directory": ".",
               },
             },
           ],
@@ -490,6 +504,7 @@ exports[`CDK Express Pipeline CI Configuration snapshot all workflows for config
               "with": {
                 "cloud-assembly-directory": "cdk.out/prod",
                 "command": "npm run cdk -- synth '**' -c env=prod --output=cdk.out/prod",
+                "working-directory": ".",
               },
             },
           ],
@@ -543,6 +558,7 @@ exports[`CDK Express Pipeline CI Configuration snapshot all workflows for config
                 "cloud-assembly-directory": "cdk.out/dev",
                 "command": "npm run cdk -- deploy app_* --app=cdk.out/dev --concurrency 10 --require-approval never --exclusively",
                 "stack-selector-patterns": "app_*",
+                "working-directory": ".",
               },
             },
           ],
@@ -572,6 +588,7 @@ exports[`CDK Express Pipeline CI Configuration snapshot all workflows for config
                 "cloud-assembly-directory": "cdk.out/dev",
                 "command": "npm run cdk -- deploy global_* --app=cdk.out/dev --concurrency 10 --require-approval never --exclusively",
                 "stack-selector-patterns": "global_*",
+                "working-directory": ".",
               },
             },
           ],
@@ -590,6 +607,7 @@ exports[`CDK Express Pipeline CI Configuration snapshot all workflows for config
               "with": {
                 "cloud-assembly-directory": "cdk.out/dev",
                 "command": "npm run cdk -- synth '**' -c env=dev --output=cdk.out/dev",
+                "working-directory": ".",
               },
             },
           ],
@@ -643,6 +661,7 @@ exports[`CDK Express Pipeline CI Configuration snapshot all workflows for config
                 "cloud-assembly-directory": "cdk.out/prod",
                 "command": "npm run cdk -- deploy app_* --app=cdk.out/prod --concurrency 10 --require-approval never --exclusively",
                 "stack-selector-patterns": "app_*",
+                "working-directory": ".",
               },
             },
           ],
@@ -672,6 +691,7 @@ exports[`CDK Express Pipeline CI Configuration snapshot all workflows for config
                 "cloud-assembly-directory": "cdk.out/prod",
                 "command": "npm run cdk -- deploy global_* --app=cdk.out/prod --concurrency 10 --require-approval never --exclusively",
                 "stack-selector-patterns": "global_*",
+                "working-directory": ".",
               },
             },
           ],
@@ -690,6 +710,7 @@ exports[`CDK Express Pipeline CI Configuration snapshot all workflows for config
               "with": {
                 "cloud-assembly-directory": "cdk.out/prod",
                 "command": "npm run cdk -- synth '**' -c env=prod --output=cdk.out/prod",
+                "working-directory": ".",
               },
             },
           ],
@@ -755,6 +776,426 @@ exports[`CDK Express Pipeline CI Configuration snapshot diff stack selector vari
     "command": "npm run cdk -- diff app_* --app=cdk.out/dev",
     "job-name": "Diff dev - app",
     "stack-selector-patterns": "app_*",
+  },
+]
+`;
+
+exports[`JsonPatch and GithubWorkflow.patch() snapshot workflows with workingDirectory 1`] = `
+[
+  {
+    "content": GithubWorkflow {
+      "json": {
+        "description": "Run CDK synth for a specific stack pattern and post results to PR",
+        "inputs": {
+          "cloud-assembly-directory": {
+            "description": "The directory where the CDK cloud assembly should be synthesized to, must be the same as specified in the command",
+            "required": true,
+          },
+          "command": {
+            "description": "CDK synth command",
+            "required": true,
+          },
+          "working-directory": {
+            "default": ".",
+            "description": "The subdirectory where CDK commands should run",
+            "required": false,
+          },
+        },
+        "name": "CDK Express Pipeline Synth Action",
+        "runs": {
+          "steps": [
+            {
+              "name": "Checkout repo",
+              "uses": "actions/checkout@v4",
+            },
+            {
+              "name": "Set up node",
+              "uses": "actions/setup-node@v4",
+              "with": {
+                "cache": "npm",
+                "node-version": 20,
+              },
+            },
+            {
+              "name": "Install dependencies",
+              "run": "npm ci",
+              "shell": "bash",
+            },
+            {
+              "name": "CDK Synth",
+              "run": "\${{ inputs.command }}",
+              "shell": "bash",
+              "working-directory": "\${{ inputs.working-directory }}",
+            },
+            {
+              "name": "Cache Build",
+              "uses": "actions/cache/save@v4",
+              "with": {
+                "key": "cache-build-\${{ github.sha }}-\${{ inputs.cloud-assembly-directory }}",
+                "path": "\${{ inputs.cloud-assembly-directory }}/
+node_modules/",
+              },
+            },
+          ],
+          "using": "composite",
+        },
+      },
+    },
+    "fileName": "actions/cdk-express-pipeline-synth/action.yml",
+  },
+  {
+    "content": GithubWorkflow {
+      "json": {
+        "inputs": {
+          "assume-region": {
+            "description": "The AWS region to assume for the deploy operation",
+            "required": true,
+          },
+          "assume-role-arn": {
+            "description": "The ARN of the role to assume for the deploy operation",
+            "required": true,
+          },
+          "cloud-assembly-directory": {
+            "description": "The directory where the CDK cloud assembly is located",
+            "required": true,
+          },
+          "command": {
+            "description": "CDK diff command",
+            "required": true,
+          },
+          "github-token": {
+            "description": "GitHub token for posting comments",
+            "required": true,
+          },
+          "job-name": {
+            "description": "Name of the job, used to link to action/job logs in summaries",
+            "required": false,
+          },
+          "stack-selector-patterns": {
+            "description": "The value of the {stackSelector} replacement in the command",
+            "required": true,
+          },
+        },
+        "name": "CDK Diff Action",
+        "runs": {
+          "steps": [
+            {
+              "name": "Restore Build Cache",
+              "uses": "actions/cache/restore@v4",
+              "with": {
+                "key": "cache-build-\${{ github.sha }}-\${{ inputs.cloud-assembly-directory }}",
+                "path": "\${{ inputs.cloud-assembly-directory }}/
+node_modules/",
+              },
+            },
+            {
+              "name": "Configure AWS credentials",
+              "uses": "aws-actions/configure-aws-credentials@v4",
+              "with": {
+                "aws-region": "\${{ inputs.assume-region }}",
+                "role-to-assume": "\${{ inputs.assume-role-arn }}",
+              },
+            },
+            {
+              "name": "CDK Diff Generate",
+              "uses": "rehanvdm/cdk-express-pipeline-github-diff@v0.1.3",
+              "with": {
+                "cloud-assembly-directory": "\${{ inputs.cloud-assembly-directory }}",
+                "github-token": "\${{ inputs.github-token }}",
+                "job-name": "\${{ inputs.job-name }}",
+                "mode": "generate",
+                "stack-selectors": "\${{ inputs.stack-selector-patterns }}",
+              },
+            },
+          ],
+          "using": "composite",
+        },
+      },
+    },
+    "fileName": "actions/cdk-express-pipeline-diff/action.yml",
+  },
+  {
+    "content": GithubWorkflow {
+      "json": {
+        "description": "Run CDK deploy for a specific stack pattern",
+        "inputs": {
+          "assume-region": {
+            "description": "The AWS region to assume for the deploy operation",
+            "required": true,
+          },
+          "assume-role-arn": {
+            "description": "The ARN of the role to assume for the deploy operation",
+            "required": true,
+          },
+          "cloud-assembly-directory": {
+            "description": "The directory where the CDK cloud assembly is located",
+            "required": true,
+          },
+          "command": {
+            "description": "CDK deploy command",
+            "required": true,
+          },
+          "stack-selector-patterns": {
+            "description": "The value of the {stackSelector} replacement in the command",
+            "required": true,
+          },
+          "working-directory": {
+            "default": ".",
+            "description": "The subdirectory where CDK commands should run",
+            "required": false,
+          },
+        },
+        "name": "CDK Deploy Action",
+        "runs": {
+          "steps": [
+            {
+              "name": "Restore Build Cache",
+              "uses": "actions/cache/restore@v4",
+              "with": {
+                "key": "cache-build-\${{ github.sha }}-\${{ inputs.cloud-assembly-directory }}",
+                "path": "\${{ inputs.cloud-assembly-directory }}/
+node_modules/",
+              },
+            },
+            {
+              "name": "Configure AWS credentials",
+              "uses": "aws-actions/configure-aws-credentials@v4",
+              "with": {
+                "aws-region": "\${{ inputs.assume-region }}",
+                "role-to-assume": "\${{ inputs.assume-role-arn }}",
+              },
+            },
+            {
+              "name": "CDK Deploy Command",
+              "run": "\${{ inputs.command }}",
+              "shell": "bash",
+              "working-directory": "\${{ inputs.working-directory }}",
+            },
+          ],
+          "using": "composite",
+        },
+      },
+    },
+    "fileName": "actions/cdk-express-pipeline-deploy/action.yml",
+  },
+  {
+    "content": GithubWorkflow {
+      "json": {
+        "jobs": {
+          "diff__dev": {
+            "name": "\${{ matrix.job-name }}",
+            "needs": [
+              "synth__dev",
+            ],
+            "permissions": {
+              "actions": "write",
+              "contents": "write",
+              "id-token": "write",
+              "pull-requests": "write",
+            },
+            "runs-on": "ubuntu-latest",
+            "steps": [
+              {
+                "name": "Checkout repo",
+                "uses": "actions/checkout@v4",
+              },
+              {
+                "name": "Run CDK Express Pipeline Synth",
+                "uses": "./.github/actions/cdk-express-pipeline-diff",
+                "with": {
+                  "assume-region": "\${{ matrix.assume-region }}",
+                  "assume-role-arn": "\${{ matrix.assume-role-arn }}",
+                  "cloud-assembly-directory": "\${{ matrix.cloud-assembly-directory }}",
+                  "command": "\${{ matrix.command }}",
+                  "github-token": "\${{ secrets.GITHUB_TOKEN }}",
+                  "job-name": "\${{ matrix.job-name }}",
+                  "stack-selector-patterns": "\${{ matrix.stack-selector-patterns }}",
+                },
+              },
+            ],
+            "strategy": {
+              "fail-fast": false,
+              "matrix": {
+                "include": [
+                  {
+                    "assume-region": "us-east-1",
+                    "assume-role-arn": "arn:aws:iam::123456789012:role/deploy",
+                    "cloud-assembly-directory": "infra/cdk.out/dev",
+                    "command": "pnpm cdk diff global_us-east-1_* --app=cdk.out/dev",
+                    "job-name": "Diff dev - global__us_east_1",
+                    "stack-selector-patterns": "global_us-east-1_*",
+                  },
+                  {
+                    "assume-region": "us-east-1",
+                    "assume-role-arn": "arn:aws:iam::123456789012:role/deploy",
+                    "cloud-assembly-directory": "infra/cdk.out/dev",
+                    "command": "pnpm cdk diff app_us-east-1_* --app=cdk.out/dev",
+                    "job-name": "Diff dev - app__us_east_1",
+                    "stack-selector-patterns": "app_us-east-1_*",
+                  },
+                ],
+              },
+            },
+          },
+          "print_diff": {
+            "name": "Print Diff",
+            "needs": [
+              "diff__dev",
+            ],
+            "permissions": {
+              "actions": "write",
+              "contents": "write",
+              "id-token": "write",
+              "pull-requests": "write",
+            },
+            "runs-on": "ubuntu-latest",
+            "steps": [
+              {
+                "name": "Checkout repo",
+                "uses": "actions/checkout@v4",
+              },
+              {
+                "name": "Update PR Description",
+                "uses": "rehanvdm/cdk-express-pipeline-github-diff@v0.1.3",
+                "with": {
+                  "cloud-assemblies": "[{"header":"CDK Diff - dev","directory":"infra/cdk.out/dev"}]",
+                  "github-token": "\${{ secrets.GITHUB_TOKEN }}",
+                  "mode": "print",
+                },
+              },
+            ],
+          },
+          "synth__dev": {
+            "name": "Synth dev",
+            "runs-on": "ubuntu-latest",
+            "steps": [
+              {
+                "name": "Checkout repo",
+                "uses": "actions/checkout@v4",
+              },
+              {
+                "name": "Run CDK Express Pipeline Synth",
+                "uses": "./.github/actions/cdk-express-pipeline-synth",
+                "with": {
+                  "cloud-assembly-directory": "infra/cdk.out/dev",
+                  "command": "pnpm cdk synth '**' -c env=dev --output=cdk.out/dev",
+                  "working-directory": "infra",
+                },
+              },
+            ],
+          },
+        },
+        "name": "CDK Express Pipeline Diff - Dev",
+        "on": {
+          "pull_request": {
+            "branches": [
+              "main",
+            ],
+          },
+        },
+      },
+    },
+    "fileName": "workflows/cdk-express-pipeline-diff-dev.yml",
+  },
+  {
+    "content": GithubWorkflow {
+      "json": {
+        "concurrency": {
+          "cancel-in-progress": false,
+          "group": "cdk-express-pipeline-deploy-dev",
+        },
+        "jobs": {
+          "deploy__dev___app_us-east-1_api": {
+            "name": "[dev] 📦 app_us-east-1_api",
+            "needs": [
+              "deploy__dev___global_us-east-1_global",
+            ],
+            "permissions": {
+              "actions": "write",
+              "contents": "write",
+              "id-token": "write",
+            },
+            "runs-on": "ubuntu-latest",
+            "steps": [
+              {
+                "name": "Checkout repo",
+                "uses": "actions/checkout@v4",
+              },
+              {
+                "name": "Run CDK Express Pipeline Deploy",
+                "uses": "./.github/actions/cdk-express-pipeline-deploy",
+                "with": {
+                  "assume-region": "us-east-1",
+                  "assume-role-arn": "arn:aws:iam::123456789012:role/deploy",
+                  "cloud-assembly-directory": "infra/cdk.out/dev",
+                  "command": "pnpm cdk deploy app_us-east-1_api --app=cdk.out/dev --require-approval never",
+                  "stack-selector-patterns": "app_us-east-1_api",
+                  "working-directory": "infra",
+                },
+              },
+            ],
+          },
+          "deploy__dev___global_us-east-1_global": {
+            "name": "[dev] 📦 global_us-east-1_global",
+            "needs": [
+              "synth__dev",
+            ],
+            "permissions": {
+              "actions": "write",
+              "contents": "write",
+              "id-token": "write",
+            },
+            "runs-on": "ubuntu-latest",
+            "steps": [
+              {
+                "name": "Checkout repo",
+                "uses": "actions/checkout@v4",
+              },
+              {
+                "name": "Run CDK Express Pipeline Deploy",
+                "uses": "./.github/actions/cdk-express-pipeline-deploy",
+                "with": {
+                  "assume-region": "us-east-1",
+                  "assume-role-arn": "arn:aws:iam::123456789012:role/deploy",
+                  "cloud-assembly-directory": "infra/cdk.out/dev",
+                  "command": "pnpm cdk deploy global_us-east-1_global --app=cdk.out/dev --require-approval never",
+                  "stack-selector-patterns": "global_us-east-1_global",
+                  "working-directory": "infra",
+                },
+              },
+            ],
+          },
+          "synth__dev": {
+            "name": "Synth dev",
+            "runs-on": "ubuntu-latest",
+            "steps": [
+              {
+                "name": "Checkout repo",
+                "uses": "actions/checkout@v4",
+              },
+              {
+                "name": "Run CDK Express Pipeline Synth",
+                "uses": "./.github/actions/cdk-express-pipeline-synth",
+                "with": {
+                  "cloud-assembly-directory": "infra/cdk.out/dev",
+                  "command": "pnpm cdk synth '**' -c env=dev --output=cdk.out/dev",
+                  "working-directory": "infra",
+                },
+              },
+            ],
+          },
+        },
+        "name": "CDK Express Pipeline Deploy - Dev",
+        "on": {
+          "push": {
+            "branches": [
+              "main",
+            ],
+          },
+        },
+      },
+    },
+    "fileName": "workflows/cdk-express-pipeline-deploy-dev.yml",
   },
 ]
 `;

@@ -350,4 +350,83 @@ describe('JsonPatch and GithubWorkflow.patch()', () => {
 
     // pipeline.saveGitHubWorkflows(ghWorkflows);
   });
+
+  it('snapshot workflows with workingDirectory', () => {
+    const app = new App();
+    const pipeline = new CdkExpressPipeline();
+    const wave1 = pipeline.addWave('global');
+    const wave1stage1 = wave1.addStage('us-east-1');
+    new ExpressStack(app, 'global', wave1stage1);
+
+    const wave2 = pipeline.addWave('app');
+    const wave2stage1 = wave2.addStage('us-east-1');
+    new ExpressStack(app, 'api', wave2stage1);
+
+    const ghConfig: GitHubWorkflowConfig = {
+      buildConfig: {
+        type: 'preset-npm',
+      },
+      workingDirectory: 'infra',
+      diff: [{
+        id: 'dev',
+        on: {
+          pullRequest: {
+            branches: ['main'],
+          },
+        },
+        stackSelector: 'stage',
+        assumeRoleArn: 'arn:aws:iam::123456789012:role/deploy',
+        assumeRegion: 'us-east-1',
+        commands: {
+          dev: {
+            synth: "pnpm cdk synth '**' -c env=dev --output=cdk.out/dev",
+            diff: 'pnpm cdk diff {stackSelector} --app=cdk.out/dev',
+          },
+        },
+      }],
+      deploy: [{
+        id: 'dev',
+        on: {
+          push: {
+            branches: ['main'],
+          },
+        },
+        stackSelector: 'stack',
+        assumeRoleArn: 'arn:aws:iam::123456789012:role/deploy',
+        assumeRegion: 'us-east-1',
+        commands: {
+          dev: {
+            synth: "pnpm cdk synth '**' -c env=dev --output=cdk.out/dev",
+            deploy: 'pnpm cdk deploy {stackSelector} --app=cdk.out/dev --require-approval never',
+          },
+        },
+      }],
+    };
+
+    const workflowFiles = createGitHubWorkflows(ghConfig, pipeline.waves);
+
+    // Verify working-directory is passed
+    const synthAction = workflowFiles.find(f => f.fileName.includes('synth'));
+    expect((synthAction?.content.json as any).inputs?.['working-directory']).toBeDefined();
+    expect((synthAction?.content.json as any).inputs?.['working-directory']?.default).toBe('.');
+
+    // Verify paths are resolved in diff workflow
+    const diffWorkflow = workflowFiles.find(f => f.fileName.includes('diff-dev'));
+    const synthJob = (diffWorkflow?.content.json as any).jobs?.synth__dev;
+    expect(synthJob?.steps?.[1]?.with?.['cloud-assembly-directory']).toBe('infra/cdk.out/dev');
+    expect(synthJob?.steps?.[1]?.with?.['working-directory']).toBe('infra');
+
+    // Verify paths are resolved in deploy workflow
+    const deployWorkflow = workflowFiles.find(f => f.fileName.includes('deploy-dev'));
+    const deploySynthJob = (deployWorkflow?.content.json as any).jobs?.synth__dev;
+    expect(deploySynthJob?.steps?.[1]?.with?.['cloud-assembly-directory']).toBe('infra/cdk.out/dev');
+    expect(deploySynthJob?.steps?.[1]?.with?.['working-directory']).toBe('infra');
+
+    // Verify deploy jobs have working-directory
+    const firstDeployJob = Object.values((deployWorkflow?.content.json as any).jobs || {})
+      .find((job: any) => job.name?.includes('📦')) as any;
+    expect(firstDeployJob?.steps?.[1]?.with?.['working-directory']).toBe('infra');
+
+    expect(workflowFiles).toMatchSnapshot();
+  });
 });

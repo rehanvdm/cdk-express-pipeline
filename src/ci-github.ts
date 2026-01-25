@@ -29,6 +29,13 @@ export interface GitHubWorkflowConfig {
    * @default path.join(process.cwd(), '.github')
    */
   readonly directory?: string;
+
+  /**
+   * The subdirectory where CDK commands should run. Defaults to the repository root.
+   * Paths in commands (--output, --app) will be resolved relative to this directory.
+   * @default undefined (commands run from repo root)
+   */
+  readonly workingDirectory?: string;
 }
 
 export interface BuildWorkflowConfig {
@@ -99,6 +106,12 @@ export interface DiffWorkflowConfig {
    * Commands to run for diff, the key is used to identify the commands in job names
    */
   readonly commands: Record<string, DiffCommand>;
+
+  /**
+   * The subdirectory where CDK commands should run
+   * @default inherited from GitHubWorkflowConfig.workingDirectory
+   */
+  readonly workingDirectory?: string;
 }
 
 export interface DeployWorkflowConfig {
@@ -132,6 +145,12 @@ export interface DeployWorkflowConfig {
    * Commands to run for deploy, the key is used to identify the commands in job names
    */
   readonly commands: Record<string, DeployCommand>;
+
+  /**
+   * The subdirectory where CDK commands should run
+   * @default inherited from GitHubWorkflowConfig.workingDirectory
+   */
+  readonly workingDirectory?: string;
 }
 
 
@@ -179,7 +198,7 @@ export function createGitHubWorkflows(githubConfig: GitHubWorkflowConfig, waves:
       throw new Error('Diff workflow configuration must have an id');
     }
 
-    workflowFiles.push(diffWorkflow(diffConfig, waves, hasMultipleWorkflows));
+    workflowFiles.push(diffWorkflow(diffConfig, waves, hasMultipleWorkflows, githubConfig));
   }
 
   for (const deployConfig of githubConfig.deploy) {
@@ -188,7 +207,7 @@ export function createGitHubWorkflows(githubConfig: GitHubWorkflowConfig, waves:
       throw new Error('Deploy workflow configuration must have an id');
     }
 
-    workflowFiles.push(deployWorkflow(deployConfig, waves, hasMultipleWorkflows));
+    workflowFiles.push(deployWorkflow(deployConfig, waves, hasMultipleWorkflows, githubConfig));
   }
 
   return workflowFiles;
@@ -210,6 +229,16 @@ export function saveWorkflowTemplates(templates: GithubWorkflowFile[], directory
     const yamlContent = `${AUTO_GENERATED_COMMENT}\n${stringify(template.content.json)}`;
     fs.writeFileSync(filePath, yamlContent);
   });
+}
+
+/**
+ * Resolves CDK cloud assembly path relative to working directory
+ */
+function resolvePath(cloudAssemblyPath: string, workingDirectory?: string): string {
+  if (!workingDirectory) return cloudAssemblyPath;
+  // Only prepend if path is relative (not absolute)
+  if (cloudAssemblyPath.startsWith('/') || cloudAssemblyPath.startsWith('.')) return cloudAssemblyPath;
+  return `${workingDirectory}/${cloudAssemblyPath}`;
 }
 
 function synthReusableAction(buildConfig: BuildWorkflowConfig): GithubWorkflowFile {
@@ -252,6 +281,11 @@ function synthReusableAction(buildConfig: BuildWorkflowConfig): GithubWorkflowFi
         required: true,
         description: 'The directory where the CDK cloud assembly should be synthesized to, must be the same as specified in the command',
       },
+      'working-directory': {
+        required: false,
+        description: 'The subdirectory where CDK commands should run',
+        default: '.',
+      },
     },
     runs: {
       using: 'composite',
@@ -262,9 +296,10 @@ function synthReusableAction(buildConfig: BuildWorkflowConfig): GithubWorkflowFi
         },
         ...buildSteps,
         {
-          name: 'CDK Synth',
-          shell: 'bash',
-          run: '${{ inputs.command }}',
+          'name': 'CDK Synth',
+          'shell': 'bash',
+          'working-directory': '${{ inputs.working-directory }}',
+          'run': '${{ inputs.command }}',
         },
         {
           name: 'Cache Build',
@@ -369,6 +404,11 @@ function deployReusableAction(): GithubWorkflowFile {
         required: true,
         description: 'The AWS region to assume for the deploy operation',
       },
+      'working-directory': {
+        required: false,
+        description: 'The subdirectory where CDK commands should run',
+        default: '.',
+      },
     },
     runs: {
       using: 'composite',
@@ -376,9 +416,10 @@ function deployReusableAction(): GithubWorkflowFile {
         restoreBuildCacheStep('${{ inputs.cloud-assembly-directory }}'),
         assumeAwsRoleStep('${{ inputs.assume-role-arn }}', '${{ inputs.assume-region }}'),
         {
-          name: 'CDK Deploy Command',
-          run: '${{ inputs.command }}',
-          shell: 'bash',
+          'name': 'CDK Deploy Command',
+          'working-directory': '${{ inputs.working-directory }}',
+          'run': '${{ inputs.command }}',
+          'shell': 'bash',
         },
       ],
     },
@@ -446,7 +487,7 @@ function formatWorkflowTriggers(workflowTriggers: WorkflowTriggers) {
   return triggers;
 }
 function diffWorkflow(diffConfig: DiffWorkflowConfig, waves: IExpressWave[],
-  requiresUniqueId: boolean): GithubWorkflowFile {
+  requiresUniqueId: boolean, githubConfig?: GitHubWorkflowConfig): GithubWorkflowFile {
 
   function toSnakeCase(str: string): string {
     return str
@@ -498,6 +539,10 @@ function diffWorkflow(diffConfig: DiffWorkflowConfig, waves: IExpressWave[],
       throw new Error('The --output argument of synth must be the same as the --app argument for diff');
     }
 
+    // Get and resolve working directory
+    const workingDirectory = diffConfig.workingDirectory || githubConfig?.workingDirectory;
+    const resolvedCloudAssemblyDir = resolvePath(cloudAssemblyDir, workingDirectory);
+
     if (!commandDiff.diff.includes('{stackSelector}')) {
       throw new Error(`Command for diff workflow must include {stackSelector} placeholder, provided: ${commandDiff.diff}`);
     }
@@ -505,7 +550,7 @@ function diffWorkflow(diffConfig: DiffWorkflowConfig, waves: IExpressWave[],
 
     printCloudAssemblies.push({
       header: `CDK Diff - ${commandKey}`,
-      directory: cloudAssemblyDir,
+      directory: resolvedCloudAssemblyDir,
     });
     const matrixIncludes: {
       'job-name': string;
@@ -518,7 +563,7 @@ function diffWorkflow(diffConfig: DiffWorkflowConfig, waves: IExpressWave[],
     for (const stackSelector of stackSelectors) {
       matrixIncludes.push({
         'job-name': `Diff ${commandKey} - ${stackSelector.name}`,
-        'cloud-assembly-directory': cloudAssemblyDir,
+        'cloud-assembly-directory': resolvedCloudAssemblyDir,
         'stack-selector-patterns': stackSelector.selector,
         'command': commandDiff.diff.replace('{stackSelector}', stackSelector.selector),
         'assume-role-arn': diffConfig.assumeRoleArn,
@@ -537,7 +582,8 @@ function diffWorkflow(diffConfig: DiffWorkflowConfig, waves: IExpressWave[],
           uses: './.github/actions/cdk-express-pipeline-synth',
           with: {
             'command': commandDiff.synth,
-            'cloud-assembly-directory': cloudAssemblyDir,
+            'cloud-assembly-directory': resolvedCloudAssemblyDir,
+            'working-directory': workingDirectory || '.',
           },
         },
       ],
@@ -618,7 +664,7 @@ function diffWorkflow(diffConfig: DiffWorkflowConfig, waves: IExpressWave[],
 }
 
 function deployWorkflow(deployConfig: DeployWorkflowConfig, waves: IExpressWave[],
-  requiresUniqueId: boolean): GithubWorkflowFile {
+  requiresUniqueId: boolean, githubConfig?: GitHubWorkflowConfig): GithubWorkflowFile {
 
   function formatWaveJobId(wave: IExpressWave, commandKey: string): string {
     return `deploy__${commandKey}__${wave.id}`;
@@ -641,6 +687,10 @@ function deployWorkflow(deployConfig: DeployWorkflowConfig, waves: IExpressWave[
       throw new Error(`Command for deploy workflow must include {stackSelector} placeholder, provided: ${commandDeploy.deploy}`);
     }
 
+    // Get and resolve working directory
+    const workingDirectory = deployConfig.workingDirectory || githubConfig?.workingDirectory;
+    const resolvedCloudAssemblyDir = resolvePath(cloudAssemblyDir, workingDirectory);
+
     const synthJobId = 'synth__' + commandKey;
     // @ts-ignore
     jobs[synthJobId] = {
@@ -653,7 +703,8 @@ function deployWorkflow(deployConfig: DeployWorkflowConfig, waves: IExpressWave[
           uses: './.github/actions/cdk-express-pipeline-synth',
           with: {
             'command': commandDeploy.synth,
-            'cloud-assembly-directory': cloudAssemblyDir,
+            'cloud-assembly-directory': resolvedCloudAssemblyDir,
+            'working-directory': workingDirectory || '.',
           },
         },
       ],
@@ -690,10 +741,11 @@ function deployWorkflow(deployConfig: DeployWorkflowConfig, waves: IExpressWave[
               uses: './.github/actions/cdk-express-pipeline-deploy',
               with: {
                 'stack-selector-patterns': `${wave.id}${wave.separator}*`,
-                'cloud-assembly-directory': cloudAssemblyDir,
+                'cloud-assembly-directory': resolvedCloudAssemblyDir,
                 'command': commandDeploy.deploy.replace('{stackSelector}', `${wave.id}${wave.separator}*`),
                 'assume-role-arn': deployConfig.assumeRoleArn,
                 'assume-region': deployConfig.assumeRegion,
+                'working-directory': workingDirectory || '.',
               },
             },
           ],
@@ -742,10 +794,11 @@ function deployWorkflow(deployConfig: DeployWorkflowConfig, waves: IExpressWave[
                 uses: './.github/actions/cdk-express-pipeline-deploy',
                 with: {
                   'stack-selector-patterns': `${wave.id}${wave.separator}${stage.id}${wave.separator}*`,
-                  'cloud-assembly-directory': cloudAssemblyDir,
+                  'cloud-assembly-directory': resolvedCloudAssemblyDir,
                   'command': commandDeploy.deploy.replace('{stackSelector}', `${wave.id}${wave.separator}${stage.id}${wave.separator}*`),
                   'assume-role-arn': deployConfig.assumeRoleArn,
                   'assume-region': deployConfig.assumeRegion,
+                  'working-directory': workingDirectory || '.',
                 },
               },
             ],
@@ -802,10 +855,11 @@ function deployWorkflow(deployConfig: DeployWorkflowConfig, waves: IExpressWave[
                   uses: './.github/actions/cdk-express-pipeline-deploy',
                   with: {
                     'stack-selector-patterns': stack.id,
-                    'cloud-assembly-directory': cloudAssemblyDir,
+                    'cloud-assembly-directory': resolvedCloudAssemblyDir,
                     'command': commandDeploy.deploy.replace('{stackSelector}', stack.id),
                     'assume-role-arn': deployConfig.assumeRoleArn,
                     'assume-region': deployConfig.assumeRegion,
+                    'working-directory': workingDirectory || '.',
                   },
                 },
               ],
