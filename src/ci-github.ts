@@ -42,7 +42,7 @@ export interface BuildWorkflowConfig {
   /**
    * The type of workflow to use
    */
-  readonly type: 'preset-npm' | 'workflow';
+  readonly type: 'preset-npm' | 'preset-pnpm' | 'workflow';
 
   /**
    * Only required if type is 'workflow'. Specify the workflow or reusable action to use for building
@@ -189,7 +189,7 @@ export function createGitHubWorkflows(githubConfig: GitHubWorkflowConfig, waves:
   const workflowFiles: GithubWorkflowFile[] = [];
   workflowFiles.push(synthReusableAction(githubConfig.buildConfig));
   workflowFiles.push(diffReusableAction());
-  workflowFiles.push(deployReusableAction());
+  workflowFiles.push(deployReusableAction(githubConfig.buildConfig));
 
 
   for (const diffConfig of githubConfig.diff) {
@@ -257,6 +257,23 @@ function synthReusableAction(buildConfig: BuildWorkflowConfig): GithubWorkflowFi
       run: 'npm ci',
       shell: 'bash',
     }];
+  } else if (buildConfig.type === 'preset-pnpm') {
+    buildSteps = [
+      setupPnpmStep(),
+      {
+        name: 'Set up node',
+        uses: 'actions/setup-node@v4',
+        with: {
+          'node-version': 20,
+          'cache': 'pnpm',
+        },
+      },
+      {
+        name: 'Install dependencies',
+        run: 'pnpm install --frozen-lockfile',
+        shell: 'bash',
+      },
+    ];
   } else if (buildConfig.type === 'workflow') {
     if (!buildConfig.workflow?.path) {
       throw new Error('Workflow is required when using "workflow" type for build');
@@ -379,7 +396,7 @@ function diffReusableAction(): GithubWorkflowFile {
     content: workflowContent,
   };
 }
-function deployReusableAction(): GithubWorkflowFile {
+function deployReusableAction(buildConfig: BuildWorkflowConfig): GithubWorkflowFile {
   const workflowContent = new GithubWorkflow({
     name: 'CDK Deploy Action',
     description: 'Run CDK deploy for a specific stack pattern',
@@ -414,6 +431,14 @@ function deployReusableAction(): GithubWorkflowFile {
       using: 'composite',
       steps: [
         restoreBuildCacheStep('${{ inputs.cloud-assembly-directory }}'),
+        ...(buildConfig.type === 'preset-pnpm' ? [
+          setupPnpmStep(),
+          {
+            name: 'Install dependencies',
+            run: 'pnpm install --frozen-lockfile',
+            shell: 'bash',
+          },
+        ] : []),
         assumeAwsRoleStep('${{ inputs.assume-role-arn }}', '${{ inputs.assume-region }}'),
         {
           'name': 'CDK Deploy Command',
@@ -459,6 +484,12 @@ function assumeAwsRoleStep(assumeRoleArn: string, assumeRegion: string) {
       'role-to-assume': assumeRoleArn,
       'aws-region': assumeRegion,
     },
+  };
+}
+function setupPnpmStep() {
+  return {
+    name: 'Setup pnpm',
+    uses: 'pnpm/action-setup@v4',
   };
 }
 

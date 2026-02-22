@@ -274,7 +274,7 @@ const pipeline = new CdkExpressPipeline();
 // Define GitHub workflow configuration
 const ghConfig: GitHubWorkflowConfig = {
   buildConfig: {
-    type: 'preset-npm', // or 'workflow' to specify a GitHub workflow file for custom build process
+    type: 'preset-npm', // or 'preset-pnpm', or 'workflow' to specify a GitHub workflow file for a custom build process
   },
   diff: [{
     on: {
@@ -340,6 +340,8 @@ The `buildConfig` configuration defines how your CDK application is built before
 buildConfig: {
   type: 'preset-npm', // Built-in npm build process
     // OR
+  type: 'preset-pnpm', // Built-in pnpm build process
+    // OR
   type: 'workflow',
   workflow: {
     path: '.github/actions/build', // Path to custom workflow
@@ -347,15 +349,19 @@ buildConfig: {
 },
 ```
 
-Specify a built-in preset (like `preset-npm`) which uses the standard NPM build process GitHub
-Action steps, installing node and then doing npm install. Alternatively, you can specify a **reusable action** that defines a
-custom workflow in native GitHub Actions format, allowing for a more complex build processes. Like building
-assets in parallel, pushing to container registries etc. For example:
+Use a built-in preset for the most common package managers:
+
+- **`preset-npm`** — sets up Node 20 with npm cache and runs `npm ci`
+- **`preset-pnpm`** — sets up Node 20 with pnpm and cache, and runs `pnpm install`
+
+Alternatively, you can specify a **reusable action** (`type: 'workflow'`) that defines a custom workflow in native
+GitHub Actions format, allowing for more complex build processes such as building assets in parallel, pushing to
+container registries, etc. For example:
 
 ```yaml
 # .github/actions/build/action.yml
 name: Custom Build
-description: Only needed if Synth build step is set to 'workflow'. When able, use the `preset-` instead
+description: Only needed if Synth build step is set to 'workflow'. When able, use a `preset-` instead
 runs:
   using: composite
   steps:
@@ -367,7 +373,7 @@ runs:
     - name: Install dependencies
       run: npm ci
       shell: bash
-    
+
     # Additional steps to build Applications that are referenced in the CDK app
 ```
 
@@ -460,6 +466,25 @@ both `synth` and `deploy` allows you to generate multiple CDK cloud assemblies f
 (e.g., dev, prod) by using environment-specific commands. See [Multiple Environments](#multiple-environments) section 
 below for an example of this.
 
+#### Subdirectory
+
+By default, the generator assumes your CDK entry point lives at the repository root. If your CDK app is in a
+subdirectory (e.g. `infra/`), you need two extra fields in `GitHubWorkflowConfig`:
+
+| Field | Purpose                                                                                              |
+|---|------------------------------------------------------------------------------------------------------|
+| `directory` | Where to write the generated `.github` files, should point to the repo-root `.github` folder         |
+| `workingDirectory` | The subdirectory that CDK commands (`synth`, `diff`, `deploy`) are run from inside each workflow job |
+
+```typescript
+import * as path from 'path';
+
+const ghConfig: GitHubWorkflowConfig = {
+  directory: path.join(__dirname, '..', '.github'), 
+  workingDirectory: 'infra',                        
+  ...
+};
+```
 ### Stack Selectors
 
 The `stackSelector` option determines how stacks are targeted in diff and deploy operations:

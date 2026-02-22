@@ -162,6 +162,41 @@ describe('CDK Express Pipeline CI Configuration', () => {
       expect(workflow).toMatchSnapshot();
     }
   });
+
+  it('snapshot synth and deploy reusable actions for preset-pnpm', async () => {
+    const { pipeline } = getAppAndPipeline();
+
+    const ghConfig: GitHubWorkflowConfig = {
+      buildConfig: {
+        type: 'preset-pnpm',
+      },
+      diff: [],
+      deploy: [{
+        id: 'dev',
+        on: {
+          push: {
+            branches: ['main'],
+          },
+        },
+        stackSelector: 'wave',
+        assumeRoleArn: 'arn:aws:iam::123456789012:role/deploy',
+        assumeRegion: 'us-east-1',
+        commands: {
+          dev: {
+            synth: "pnpm cdk synth '**' -c env=dev --output=cdk.out/dev",
+            deploy: 'pnpm cdk deploy {stackSelector} --app=cdk.out/dev --concurrency 10 --require-approval never --exclusively',
+          },
+        },
+      }],
+    };
+
+    const resp = createGitHubWorkflows(ghConfig, pipeline.waves);
+
+    const synthAction = resp.find(w => w.fileName === 'actions/cdk-express-pipeline-synth/action.yml');
+    const deployAction = resp.find(w => w.fileName === 'actions/cdk-express-pipeline-deploy/action.yml');
+    expect(synthAction).toMatchSnapshot('preset-pnpm synth action');
+    expect(deployAction).toMatchSnapshot('preset-pnpm deploy action');
+  });
 });
 
 describe('JsonPatch and GithubWorkflow.patch()', () => {
