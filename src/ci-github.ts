@@ -431,7 +431,14 @@ function deployReusableAction(buildConfig: BuildWorkflowConfig): GithubWorkflowF
       using: 'composite',
       steps: [
         restoreBuildCacheStep('${{ inputs.cloud-assembly-directory }}'),
-        ...(buildConfig.type === 'preset-pnpm' ? [setupPnpmStep()] : []),
+        ...(buildConfig.type === 'preset-pnpm' ? [
+          setupPnpmStep(),
+          {
+            name: 'Install dependencies',
+            run: 'pnpm install',
+            shell: 'bash',
+          },
+        ] : []),
         assumeAwsRoleStep('${{ inputs.assume-role-arn }}', '${{ inputs.assume-region }}'),
         {
           'name': 'CDK Deploy Command',

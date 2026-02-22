@@ -829,6 +829,11 @@ node_modules/",
             "uses": "pnpm/action-setup@v4",
           },
           {
+            "name": "Install dependencies",
+            "run": "pnpm install",
+            "shell": "bash",
+          },
+          {
             "name": "Configure AWS credentials",
             "uses": "aws-actions/configure-aws-credentials@v4",
             "with": {
