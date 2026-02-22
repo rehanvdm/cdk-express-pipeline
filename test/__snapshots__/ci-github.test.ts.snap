@@ -780,6 +780,145 @@ exports[`CDK Express Pipeline CI Configuration snapshot diff stack selector vari
 ]
 `;
 
+exports[`CDK Express Pipeline CI Configuration snapshot synth and deploy reusable actions for preset-pnpm: preset-pnpm deploy action 1`] = `
+{
+  "content": GithubWorkflow {
+    "json": {
+      "description": "Run CDK deploy for a specific stack pattern",
+      "inputs": {
+        "assume-region": {
+          "description": "The AWS region to assume for the deploy operation",
+          "required": true,
+        },
+        "assume-role-arn": {
+          "description": "The ARN of the role to assume for the deploy operation",
+          "required": true,
+        },
+        "cloud-assembly-directory": {
+          "description": "The directory where the CDK cloud assembly is located",
+          "required": true,
+        },
+        "command": {
+          "description": "CDK deploy command",
+          "required": true,
+        },
+        "stack-selector-patterns": {
+          "description": "The value of the {stackSelector} replacement in the command",
+          "required": true,
+        },
+        "working-directory": {
+          "default": ".",
+          "description": "The subdirectory where CDK commands should run",
+          "required": false,
+        },
+      },
+      "name": "CDK Deploy Action",
+      "runs": {
+        "steps": [
+          {
+            "name": "Restore Build Cache",
+            "uses": "actions/cache/restore@v4",
+            "with": {
+              "key": "cache-build-\${{ github.sha }}-\${{ inputs.cloud-assembly-directory }}",
+              "path": "\${{ inputs.cloud-assembly-directory }}/
+node_modules/",
+            },
+          },
+          {
+            "name": "Setup pnpm",
+            "uses": "pnpm/action-setup@v4",
+          },
+          {
+            "name": "Configure AWS credentials",
+            "uses": "aws-actions/configure-aws-credentials@v4",
+            "with": {
+              "aws-region": "\${{ inputs.assume-region }}",
+              "role-to-assume": "\${{ inputs.assume-role-arn }}",
+            },
+          },
+          {
+            "name": "CDK Deploy Command",
+            "run": "\${{ inputs.command }}",
+            "shell": "bash",
+            "working-directory": "\${{ inputs.working-directory }}",
+          },
+        ],
+        "using": "composite",
+      },
+    },
+  },
+  "fileName": "actions/cdk-express-pipeline-deploy/action.yml",
+}
+`;
+
+exports[`CDK Express Pipeline CI Configuration snapshot synth and deploy reusable actions for preset-pnpm: preset-pnpm synth action 1`] = `
+{
+  "content": GithubWorkflow {
+    "json": {
+      "description": "Run CDK synth for a specific stack pattern and post results to PR",
+      "inputs": {
+        "cloud-assembly-directory": {
+          "description": "The directory where the CDK cloud assembly should be synthesized to, must be the same as specified in the command",
+          "required": true,
+        },
+        "command": {
+          "description": "CDK synth command",
+          "required": true,
+        },
+        "working-directory": {
+          "default": ".",
+          "description": "The subdirectory where CDK commands should run",
+          "required": false,
+        },
+      },
+      "name": "CDK Express Pipeline Synth Action",
+      "runs": {
+        "steps": [
+          {
+            "name": "Checkout repo",
+            "uses": "actions/checkout@v4",
+          },
+          {
+            "name": "Setup pnpm",
+            "uses": "pnpm/action-setup@v4",
+          },
+          {
+            "name": "Set up node",
+            "uses": "actions/setup-node@v4",
+            "with": {
+              "cache": "pnpm",
+              "node-version": 20,
+            },
+          },
+          {
+            "name": "Install dependencies",
+            "run": "pnpm install",
+            "shell": "bash",
+          },
+          {
+            "name": "CDK Synth",
+            "run": "\${{ inputs.command }}",
+            "shell": "bash",
+            "working-directory": "\${{ inputs.working-directory }}",
+          },
+          {
+            "name": "Cache Build",
+            "uses": "actions/cache/save@v4",
+            "with": {
+              "key": "cache-build-\${{ github.sha }}-\${{ inputs.cloud-assembly-directory }}",
+              "path": "\${{ inputs.cloud-assembly-directory }}/
+node_modules/",
+            },
+          },
+        ],
+        "using": "composite",
+      },
+    },
+  },
+  "fileName": "actions/cdk-express-pipeline-synth/action.yml",
+}
+`;
+
 exports[`JsonPatch and GithubWorkflow.patch() snapshot workflows with workingDirectory 1`] = `
 [
   {
