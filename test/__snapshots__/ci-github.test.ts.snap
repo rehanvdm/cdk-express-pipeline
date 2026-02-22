@@ -830,7 +830,7 @@ node_modules/",
           },
           {
             "name": "Install dependencies",
-            "run": "pnpm install",
+            "run": "pnpm install --frozen-lockfile",
             "shell": "bash",
           },
           {
@@ -897,7 +897,7 @@ exports[`CDK Express Pipeline CI Configuration snapshot synth and deploy reusabl
           },
           {
             "name": "Install dependencies",
-            "run": "pnpm install",
+            "run": "pnpm install --frozen-lockfile",
             "shell": "bash",
           },
           {

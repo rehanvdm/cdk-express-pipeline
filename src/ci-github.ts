@@ -270,7 +270,7 @@ function synthReusableAction(buildConfig: BuildWorkflowConfig): GithubWorkflowFi
       },
       {
         name: 'Install dependencies',
-        run: 'pnpm install',
+        run: 'pnpm install --frozen-lockfile',
         shell: 'bash',
       },
     ];
@@ -435,7 +435,7 @@ function deployReusableAction(buildConfig: BuildWorkflowConfig): GithubWorkflowF
           setupPnpmStep(),
           {
             name: 'Install dependencies',
-            run: 'pnpm install',
+            run: 'pnpm install --frozen-lockfile',
             shell: 'bash',
           },
         ] : []),
