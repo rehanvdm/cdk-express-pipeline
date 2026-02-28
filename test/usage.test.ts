@@ -596,6 +596,14 @@ describe('CdkExpressPipeline', () => {
         pattern: 'Wave1_Stage1_StackB',
         testName: 'Wave1_Stage1_StackB pattern',
       },
+      {
+        pattern: 'Wave1_*_StackB',
+        testName: 'Wave1_*_StackB pattern (star in the middle)',
+      },
+      {
+        pattern: '*_Stage1_Stack*',
+        testName: '*_Stage1_Stack* pattern (star at start and in the middle)',
+      },
     ];
 
     test.each(testArray)('Testing: $testName', ({

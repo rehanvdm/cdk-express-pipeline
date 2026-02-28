@@ -1,5 +1,55 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`CdkExpressPipeline Correct Stack Highlight for deployment Testing: *_Stage1_Stack* pattern (star at start and in the middle) 1`] = `
+"
+ORDER OF DEPLOYMENT
+🌊 Waves  - Deployed sequentially.
+🏗 Stages - Deployed in parallel by default, unless the wave is marked \`[Seq 🏗]\` for sequential stage execution.
+📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).
+           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.
+           - Stack deployment order within the stage is shown in square brackets (ex: [1])
+
+  🌊 Wave1
+    🏗 Stage1
+|     📦 StackA (Wave1_Stage1_StackA) [1]
+|     📦 StackB (Wave1_Stage1_StackB) [2]
+|        ↳ StackA
+|     📦 StackC (Wave1_Stage1_StackC) [1]
+    🏗 Stage2
+      📦 StackD (Wave1_Stage2_StackD) [1]
+  🌊 Wave2
+    🏗 Stage1
+|     📦 StackE (Wave2_Stage1_StackE) [1]
+|     📦 StackF (Wave2_Stage1_StackF) [2]
+|        ↳ StackE
+"
+`;
+
+exports[`CdkExpressPipeline Correct Stack Highlight for deployment Testing: Wave1_*_StackB pattern (star in the middle) 1`] = `
+"
+ORDER OF DEPLOYMENT
+🌊 Waves  - Deployed sequentially.
+🏗 Stages - Deployed in parallel by default, unless the wave is marked \`[Seq 🏗]\` for sequential stage execution.
+📦 Stacks - Deployed after their dependent stacks within the stage (dependencies shown below them with ↳).
+           - Lines prefixed with a pipe (|) indicate stacks matching the CDK pattern.
+           - Stack deployment order within the stage is shown in square brackets (ex: [1])
+
+| 🌊 Wave1
+|   🏗 Stage1
+      📦 StackA (Wave1_Stage1_StackA) [1]
+|     📦 StackB (Wave1_Stage1_StackB) [2]
+|        ↳ StackA
+      📦 StackC (Wave1_Stage1_StackC) [1]
+|   🏗 Stage2
+      📦 StackD (Wave1_Stage2_StackD) [1]
+  🌊 Wave2
+    🏗 Stage1
+      📦 StackE (Wave2_Stage1_StackE) [1]
+      📦 StackF (Wave2_Stage1_StackF) [2]
+         ↳ StackE
+"
+`;
+
 exports[`CdkExpressPipeline Correct Stack Highlight for deployment Testing: Wave1_Stage1* pattern 1`] = `
 "
 ORDER OF DEPLOYMENT
