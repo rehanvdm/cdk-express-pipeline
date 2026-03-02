@@ -8,8 +8,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   authorAddress: 'rehan.vdm4+github@gmail.com',
   cdkVersion: '2.133.0',
   defaultReleaseBranch: 'main',
-  jsiiVersion: '~5.8.0',
-  typescriptVersion: '~5.8.0',
+  jsiiVersion: '~5.9.27',
   name: 'cdk-express-pipeline',
   description: 'CDK pipelines provides constructs for Waves, Stages using only native CDK stack dependencies',
   packageManager: javascript.NodePackageManager.NPM,
@@ -52,7 +51,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
     },
   },
 });
-project.package.addEngine('node', '~20.*');
+project.package.addEngine('node', '~24.*');
 project.package.addEngine('npm', '~10.*');
 
 // Need to clear before compiling and packaging. Have to remove these because they are not cleared for some reason,

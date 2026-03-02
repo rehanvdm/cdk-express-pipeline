@@ -62,6 +62,7 @@ Stack properties.
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#cdk-express-pipeline.ExpressStack.toString">toString</a></code> | Returns a string representation of this construct. |
+| <code><a href="#cdk-express-pipeline.ExpressStack.with">with</a></code> | Applies one or more mixins to this construct. |
 | <code><a href="#cdk-express-pipeline.ExpressStack.addDependency">addDependency</a></code> | Use `addDependency` for dependencies between stacks in an ExpressStage. |
 | <code><a href="#cdk-express-pipeline.ExpressStack.addMetadata">addMetadata</a></code> | Adds an arbitary key-value pair, with information you want to record about the stack. |
 | <code><a href="#cdk-express-pipeline.ExpressStack.addTransform">addTransform</a></code> | Add a Transform to this stack. A Transform is a macro that AWS CloudFormation uses to process your template. |
@@ -88,6 +89,27 @@ public toString(): string
 ```
 
 Returns a string representation of this construct.
+
+##### `with` <a name="with" id="cdk-express-pipeline.ExpressStack.with"></a>
+
+```typescript
+public with(mixins: ...IMixin[]): IConstruct
+```
+
+Applies one or more mixins to this construct.
+
+Mixins are applied in order. The list of constructs is captured at the
+start of the call, so constructs added by a mixin will not be visited.
+Use multiple `with()` calls if subsequent mixins should apply to added
+constructs.
+
+###### `mixins`<sup>Required</sup> <a name="mixins" id="cdk-express-pipeline.ExpressStack.with.parameter.mixins"></a>
+
+- *Type:* ...constructs.IMixin[]
+
+The mixins to apply.
+
+---
 
 ##### `addDependency` <a name="addDependency" id="cdk-express-pipeline.ExpressStack.addDependency"></a>
 
@@ -514,7 +536,7 @@ The ExpressStack dependencies of the stack.
 
 ---
 
-##### ~~`isConstruct`~~ <a name="isConstruct" id="cdk-express-pipeline.ExpressStack.isConstruct"></a>
+##### `isConstruct` <a name="isConstruct" id="cdk-express-pipeline.ExpressStack.isConstruct"></a>
 
 ```typescript
 import { ExpressStack } from 'cdk-express-pipeline'
@@ -523,6 +545,20 @@ ExpressStack.isConstruct(x: any)
 ```
 
 Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="cdk-express-pipeline.ExpressStack.isConstruct.parameter.x"></a>
 

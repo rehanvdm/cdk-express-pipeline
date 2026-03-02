@@ -49,7 +49,7 @@ jobs:
       - name: Set up node
         uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -101,7 +101,7 @@ jobs:
       - name: Set up node
         uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -165,7 +165,7 @@ jobs:
       - name: Set up node
         uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -351,8 +351,8 @@ buildConfig: {
 
 Use a built-in preset for the most common package managers:
 
-- **`preset-npm`** — sets up Node 20 with npm cache and runs `npm ci`
-- **`preset-pnpm`** — sets up Node 20 with pnpm and cache, and runs `pnpm install`
+- **`preset-npm`** — sets up Node 24 with npm cache and runs `npm ci`
+- **`preset-pnpm`** — sets up Node 24 with pnpm and cache, and runs `pnpm install`
 
 Alternatively, you can specify a **reusable action** (`type: 'workflow'`) that defines a custom workflow in native
 GitHub Actions format, allowing for more complex build processes such as building assets in parallel, pushing to
@@ -368,7 +368,7 @@ runs:
     - name: Set up node
       uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 24
         cache: npm
     - name: Install dependencies
       run: npm ci

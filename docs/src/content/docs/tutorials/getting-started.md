@@ -184,7 +184,7 @@ Before starting, make sure you have:
             - name: Set up node
               uses: actions/setup-node@v3
               with:
-                 node-version: 20
+                 node-version: 24
                  cache: npm
    
             - name: Install dependencies
