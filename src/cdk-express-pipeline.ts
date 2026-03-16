@@ -204,7 +204,7 @@ export class CdkExpressPipeline {
 
         console.log(`${stageTargetCharacter} 🏗 ${stage.id}`);
         for (const stack of stage.stacks) {
-          const targetStack = targetIdentifier(patternToFilter, stack.id);
+          const targetStack = targetIdentifier(patternToFilter, stack.id, true);
           const stackTargetCharacter = targetStack ? '|    ' : '     ';
           const stackOrder = stackOrderMap.get(stack.id);
 
