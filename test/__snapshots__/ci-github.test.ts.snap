@@ -32,7 +32,7 @@ exports[`CDK Express Pipeline CI Configuration snapshot all workflows for config
             "uses": "actions/setup-node@v4",
             "with": {
               "cache": "npm",
-              "node-version": 20,
+              "node-version": 24,
             },
           },
           {
@@ -892,7 +892,7 @@ exports[`CDK Express Pipeline CI Configuration snapshot synth and deploy reusabl
             "uses": "actions/setup-node@v4",
             "with": {
               "cache": "pnpm",
-              "node-version": 20,
+              "node-version": 24,
             },
           },
           {
@@ -957,7 +957,7 @@ exports[`JsonPatch and GithubWorkflow.patch() snapshot workflows with workingDir
               "uses": "actions/setup-node@v4",
               "with": {
                 "cache": "npm",
-                "node-version": 20,
+                "node-version": 24,
               },
             },
             {
