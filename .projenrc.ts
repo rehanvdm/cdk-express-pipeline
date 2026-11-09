@@ -34,6 +34,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
       },
     },
   },
+  depsUpgrade: false,
   workflowNodeVersion: '24',
   npmTrustedPublishing: true,
   // Publishing disabled as no secrets are set yet.
